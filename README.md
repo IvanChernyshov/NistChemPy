@@ -8,8 +8,12 @@ At the moment the code only supports IR, MS and UV/Vis spectra; support for othe
 
 ## Installation
 
-NistChemPy can be installed via [PyPI]() or [conda]() package manager, the only dependence is the Beautiful Soup library.
+Install NistChemPy using:
+
+```
+pip install nistchempy
+```
 
 ## How To
 
-The main NistChemPy features including search and compound manipulations are shown in the [tutorial](tutorial.ipynb).
+The main NistChemPy features including search and compound manipulations are shown in the [tutorial](https://github.com/EPiCs-group/NistChemPy/blob/main/tutorial.ipynb).
