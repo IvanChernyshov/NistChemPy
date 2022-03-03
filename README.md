@@ -12,4 +12,4 @@ NistChemPy can be installed via [PyPI]() or [conda]() package manager, the only 
 
 ## How To
 
-The main NistChemPy features including search and compound manipulations are shown in [HowTo IPython notebook](HowTo.ipynb).
+The main NistChemPy features including search and compound manipulations are shown in the [tutorial](tutorial.ipynb).

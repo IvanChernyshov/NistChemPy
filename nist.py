@@ -276,38 +276,46 @@ class Compound():
 
 #%% Search-related classes
 
+def print_search_parameters():
+    '''
+    Prints available search parameters
+    '''
+    info = {'Units': 'Units for thermodynamic data, "SI" or "CAL" for calorie-based',
+            'MatchIso': 'Exactly match the specified isotopes (formula search only)',
+            'AllowOther': 'Allow elements not specified in formula (formula search only)',
+            'AllowExtra': 'Allow more atoms of elements in formula than specified (formula search only)',
+            'NoIon': 'Exclude ions from the search (formula search only)',
+            'cTG': 'Contains gas-phase thermodynamic data',
+            'cTC': 'Contains condensed-phase thermodynamic data',
+            'cTP': 'Contains phase-change thermodynamic data',
+            'cTR': 'Contains reaction thermodynamic data',
+            'cIE': 'Contains ion energetics thermodynamic data',
+            'cIC': 'Contains ion cluster thermodynamic data',
+            'cIR': 'Contains IR data',
+            'cTZ': 'Contains THz IR data',
+            'cMS': 'Contains MS data',
+            'cUV': 'Contains UV/Vis data',
+            'cGC': 'Contains gas chromatography data',
+            'cES': 'Contains vibrational and electronic energy levels',
+            'cDI': 'Contains constants of diatomic molecules',
+            'cSO': 'Contains info on Henry\'s law'}
+    max_len = max([len(_) for _ in info])
+    spaces = [' '*(max_len - len(_) + 1) for _ in info]
+    for (key, val), space in zip(info.items(), spaces):
+        print(f'{key}{space}:   {val}')
+
+
 class SearchParameters():
     '''
     Object containing parameters for compound search in NIST WebBook
     To get the full description of available options please use
-    "print_options" method
+    "print_search_parameters" function
     '''
-    info = {'Units': ('Units for thermodynamic data, "SI" or "CAL" for calorie-based', 'SI'),
-            'MatchIso': ('Exactly match the specified isotopes (formula search only)', False),
-            'AllowOther': ('Allow elements not specified in formula (formula search only)', False),
-            'AllowExtra': ('Allow more atoms of elements in formula than specified (formula search only)', False),
-            'NoIon': ('Exclude ions from the search (formula search only)', True),
-            'cTG': ('Contains gas-phase thermodynamic data', False),
-            'cTC': ('Contains condensed-phase thermodynamic data', False),
-            'cTP': ('Contains phase-change thermodynamic data', False),
-            'cTR': ('Contains reaction thermodynamic data', False),
-            'cIE': ('Contains ion energetics thermodynamic data', False),
-            'cIC': ('Contains ion cluster thermodynamic data', False),
-            'cIR': ('Contains IR data', False),
-            'cTZ': ('Contains THz IR data', False),
-            'cMS': ('Contains MS data', False),
-            'cUV': ('Contains UV/Vis data', False),
-            'cGC': ('Contains gas chromatography data', False),
-            'cES': ('Contains vibrational and electronic energy levels', False),
-            'cDI': ('Contains constants of diatomic molecules', False),
-            'cSO': ('Contains info on Henry\'s law', False)}
-    
-    def print_options(self):
-        '''
-        Prints available search options
-        '''
-        for key, val in self.info.items():
-            print(f'{key}: {val[0]}')
+    info = {'Units': 'SI',
+            'MatchIso': False, 'AllowOther': False, 'AllowExtra': False, 'NoIon': False,
+            'cTG': False, 'cTC': False, 'cTP': False, 'cTR': False, 'cIE': False, 'cIC': False,
+            'cIR': False, 'cTZ': False, 'cMS': False, 'cUV': False, 'cGC': False,
+            'cES': False, 'cDI': False, 'cSO': False}
     
     def get_request_parameters(self):
         '''
@@ -326,7 +334,7 @@ class SearchParameters():
     def __init__(self, **kwargs):
         # set default
         for key, val in self.info.items():
-            setattr(self, key, val[1])
+            setattr(self, key, val)
         # check kwargs
         for key, val in kwargs.items():
             if key not in self.info:
@@ -338,7 +346,7 @@ class SearchParameters():
             setattr(self, key, val)
     
     def __str__(self):
-        sep = ',\n' + ' '*17
+        sep = ', ' # ',\n' + ' '*17
         text = [f'SearchParameters(Units={self.Units}'] + \
                [f'{key}={getattr(self, key)}' for key in self.info if key != 'Units' and getattr(self, key)]
         text[-1] = text[-1] + ')'
@@ -346,20 +354,12 @@ class SearchParameters():
         return sep.join(text)
     
     def __repr__(self):
-        sep = ',\n' + ' '*17
+        sep = ', ' # ',\n' + ' '*17
         text = [f'SearchParameters(Units={self.Units}'] + \
                [f'{key}={getattr(self, key)}' for key in self.info if key != 'Units' and getattr(self, key)]
         text[-1] = text[-1] + ')'
         
         return sep.join(text)
-
-
-class LostDataException(Exception):
-    '''
-    Exception for searches with > 400 of output results
-    '''
-    def __init__(self, message):
-        super().__init__(message)
 
 
 class Search():
