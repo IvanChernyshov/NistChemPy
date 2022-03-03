@@ -8,7 +8,7 @@ At the moment the code only supports IR, MS and UV/Vis spectra; support for othe
 
 ## Installation
 
-Install NistChemPy using:
+Install NistChemPy using [pip](https://pypi.org/project/NistChemPy/):
 
 ```
 pip install nistchempy
