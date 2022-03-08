@@ -38,7 +38,7 @@ IDs = [ref.split('=')[-1] for ref in refs if 'ID=' in ref]
 inchis = [ref.split('inchi/')[-1] for ref in refs if 'inchi/' in ref]
 
 # save as json
-with open('compounds.json', 'w') as outf:
+with open('data/compounds.json', 'w') as outf:
     json.dump({'ID': IDs, 'inchi': inchis}, outf)
 
 
