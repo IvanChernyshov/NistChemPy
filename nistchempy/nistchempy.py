@@ -16,6 +16,27 @@ from bs4 import BeautifulSoup, Comment
 import pandas as pd
 
 
+#%% All NIST Data
+
+def get_all_data():
+    '''
+    Returns pandas dataframe containing info on all NIST Chem WebBook compounds
+    '''
+    dt0 = {'mol_weight': 'float64'}
+    dt1 = {k: 'string' for k in ('ID', 'name', 'formula', 'inchi', 'inchi_key', 'cas_rn')}
+    dt2 = {k: 'bool' for k in ('mol2D', 'mol3D', 'cIR', 'cTZ', 'cMS', 'cUV', 'cGC',
+                               'cTG', 'cTC', 'cTP', 'cSO', 'cTR', 'cIE', 'cIC', 'cES', 'cDI')}
+    dtypes = {**dt0, **dt1, **dt2}
+    pkg = importlib_resources.files('nistchempy')
+    data_file = pkg / 'nist_data.zip'
+    with importlib_resources.as_file(data_file) as path:
+        zf = zipfile.ZipFile(path) 
+        df = pd.read_csv(zf.open('nist_data.csv'), dtype = dtypes)
+        zf.close()
+    
+    return df
+
+
 #%% Support functions
 
 def _is_compound(soup):
@@ -40,27 +61,6 @@ def _is_compound(soup):
     return None
 
 
-#%% All NIST Data
-
-def get_all_data():
-    '''
-    Returns pandas dataframe containing info on all NIST Chem WebBook compounds
-    '''
-    dt0 = {'mol_weight': 'float64'}
-    dt1 = {k: 'string' for k in ('ID', 'name', 'formula', 'inchi', 'inchi_key', 'cas_rn')}
-    dt2 = {k: 'bool' for k in ('mol2D', 'mol3D', 'cIR', 'cTZ', 'cMS', 'cUV', 'cGC',
-                               'cTG', 'cTC', 'cTP', 'cSO', 'cTR', 'cIE', 'cIC', 'cES', 'cDI')}
-    dtypes = {**dt0, **dt1, **dt2}
-    pkg = importlib_resources.files('nistchempy')
-    data_file = pkg / 'nist_data.zip'
-    with importlib_resources.as_file(data_file) as path:
-        zf = zipfile.ZipFile(path) 
-        df = pd.read_csv(zf.open('nist_data.csv'), dtype = dtypes)
-        zf.close()
-    
-    return df
-
-
 #%% Compound-related classes
 
 class Spectrum():
@@ -68,9 +68,9 @@ class Spectrum():
     Class for IR, MS, and UV-Vis extracted from NIST Chemistry WebBook
     '''
     
-    _pretty_names = {'ir': 'IR spectrum',
-                     'ms': 'Mass spectrum',
-                     'uvvis': 'UV-Vis spectrum'}
+    _pretty_names = {'IR': 'IR spectrum',
+                     'MS': 'Mass spectrum',
+                     'UV': 'UV-Vis spectrum'}
     
     def __init__(self, compound, spec_type, spec_idx, jdx):
         self.compound = compound
@@ -105,8 +105,10 @@ class Compound():
     _COMP_ID = '/cgi/cbook.cgi'
     
     # mappings for spectra
-    _MASKS = {'80': 'ir', '200': 'ms', '400': 'uvvis'}
-    _SPECS = {'ir': 'IR', 'ms': 'Mass', 'uvvis': 'UVVis'}
+    _MASKS = {'1': 'cTG', '2': 'cTC', '4': 'cTP', '8': 'cTR', '10': 'cSO',
+              '20': 'cIE', '40': 'cIC', '80': 'cIR', '100': 'cTZ', '200': 'cMS',
+              '400': 'cUV', '800': 'cES', '1000': 'cDI', '2000': 'cGC'}
+    _SPECS = {'IR': 'IR', 'MS': 'Mass', 'UV': 'UVVis'}
     
     def _load_compound_info(self):
         '''
@@ -132,7 +134,8 @@ class Compound():
         hits = info.findChildren(text = re.compile('Other names'))
         if hits:
             text = hits[0].findParent('li').text.replace('Other names:', '')
-            self.synonyms = [_.strip(';') for _ in text.split()]
+            synonyms = [_.strip(';').strip() for _ in text.split('\n')]
+            self.synonyms = [_ for _ in synonyms if _]
         # formula
         hits = info.findChildren(text = re.compile('Formula'))
         if hits:
@@ -159,11 +162,11 @@ class Compound():
         # 2D structure
         hits = info.findChildren(attrs = {'href': re.compile('Str2File')})
         if hits:
-            self.data_refs['mol2d'] = self._NIST_URL + hits[0].attrs['href']
+            self.data_refs['mol2D'] = self._NIST_URL + hits[0].attrs['href']
         # 3D structure
         hits = info.findChildren(attrs = {'href': re.compile('Str3File')})
         if hits:
-            self.data_refs['mol3d'] = self._NIST_URL + hits[0].attrs['href']
+            self.data_refs['mol3D'] = self._NIST_URL + hits[0].attrs['href']
         # other data and spectroscopy
         hits = info.findChildren(attrs = {'href': re.compile('/cgi/cbook.cgi.*Mask=\d')})
         for hit in hits:
@@ -171,31 +174,31 @@ class Compound():
             key = self._MASKS.get(mask, hit.text)
             self.data_refs[key] = self._NIST_URL + hit.attrs['href']
     
-    def get_2d(self):
+    def get_2D(self):
         '''
         Loads 2D structure in MOL2 format
         '''
-        r = requests.get(self.data_refs['mol2d'])
+        r = requests.get(self.data_refs['mol2D'])
         if r.ok:
-            self.mol2d = r.text
+            self.mol2D = r.text
     
-    def get_3d(self):
+    def get_3D(self):
         '''
         Loads 3D structure in MOL2 format
         '''
-        r = requests.get(self.data_refs['mol3d'])
+        r = requests.get(self.data_refs['mol3D'])
         if r.ok:
-            self.mol3d = r.text
+            self.mol3D = r.text
     
     def get_spectra(self, spec_type):
         '''
-        Loads available mass spectra in JDX format
+        Loads available mass spectra in JCAMP-DX format
         '''
         if spec_type not in self._SPECS:
             raise ValueError(f'Bad spec_type value: {spec_type}')
-        if spec_type not in self.data_refs:
+        if 'c'+spec_type not in self.data_refs:
             return
-        r = requests.get(self.data_refs[spec_type])
+        r = requests.get(self.data_refs['c'+spec_type])
         if not r.ok:
             return
         soup = BeautifulSoup(re.sub('clss=', 'class=', r.text),
@@ -215,39 +218,39 @@ class Compound():
     
     def get_ir_spectra(self):
         '''
-        Loads available IR spectra in JDX format
+        Loads available IR spectra in JCAMP-DX format
         '''
         
-        return self.get_spectra('ir')
+        return self.get_spectra('IR')
     
-    def get_mass_spectra(self):
+    def get_ms_spectra(self):
         '''
-        Loads available mass spectra in JDX format
+        Loads available mass spectra in JCAMP-DX format
         '''
         
-        return self.get_spectra('ms')
+        return self.get_spectra('MS')
     
-    def get_uvvis_spectra(self):
+    def get_uv_spectra(self):
         '''
-        Loads available UV-Vis spectra in JDX format
+        Loads available UV-Vis spectra in JCAMP-DX format
         '''
         
-        return self.get_spectra('uvvis')
+        return self.get_spectra('UV')
     
     def get_all_spectra(self):
         '''
         Loads available spectroscopic data
         '''
-        self.get_mass_spectra()
+        self.get_ms_spectra()
         self.get_ir_spectra()
-        self.get_uvvis_spectra()
+        self.get_uv_spectra()
     
     def get_all_data(self):
         '''
         Loads available structural and spectroscopic data
         '''
-        self.get_2d()
-        self.get_3d()
+        self.get_2D()
+        self.get_3D()
         self.get_all_spectra()
     
     def save_spectra(self, spec_type, path_dir = './'):
@@ -263,19 +266,19 @@ class Compound():
         '''
         Saves IR spectra to the specified folder
         '''
-        self.save_spectra('ir', path_dir)
+        self.save_spectra('IR', path_dir)
     
     def save_ms_spectra(self, path_dir = './'):
         '''
         Saves mass spectra to the specified folder
         '''
-        self.save_spectra('ms', path_dir)
+        self.save_spectra('MS', path_dir)
     
-    def save_uvvis_spectra(self, path_dir = './'):
+    def save_uv_spectra(self, path_dir = './'):
         '''
         Saves all UV-Vis spectra to the specified folder
         '''
-        self.save_spectra('uvvis', path_dir)
+        self.save_spectra('UV', path_dir)
     
     def save_all_spectra(self, path_dir = './'):
         '''
@@ -283,14 +286,14 @@ class Compound():
         '''
         self.save_ir_spectra(path_dir)
         self.save_ms_spectra(path_dir)
-        self.save_uvvis_spectra(path_dir)
+        self.save_uv_spectra(path_dir)
     
     def __init__(self, ID):
         self.ID = ID
         for prop, val in [('name', None), ('synonyms', []), ('formula', None), ('mol_weight', None),
                           ('inchi', None), ('inchi_key', None), ('cas_rn', None),
-                          ('ir', []), ('ms', []), ('uvvis', []),
-                          ('mol2d', None), ('mol3d', None),
+                          ('IR', []), ('MS', []), ('UV', []),
+                          ('mol2D', None), ('mol3D', None),
                           ('data_refs', {})]:
             setattr(self, prop, val)
         self._load_compound_info()
