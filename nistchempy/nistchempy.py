@@ -4,14 +4,21 @@ Python API for NIST Chemistry WebBook
 
 #%% Imports
 
+import sys
+if sys.version_info < (3, 9):
+    import importlib_resources
+else:
+    import importlib.resources as importlib_resources
+
 import re, os, requests
 from urllib.parse import urlparse, parse_qs
 from bs4 import BeautifulSoup, Comment
+import pandas as pd
 
 
 #%% Support functions
 
-def is_compound(soup):
+def _is_compound(soup):
     '''
     Checks if html is a single compound page and returns NIST ID if yes
     '''
@@ -31,6 +38,20 @@ def is_compound(soup):
         return re.search(r'/cgi/cbook.cgi\?Form=(.*?)&', comment).group(1)
     
     return None
+
+
+#%% All NIST Data
+
+def get_all_data():
+    '''
+    Returns pandas dataframe containing info on all NIST Chem WebBook compounds
+    '''
+    pkg = importlib_resources.files('nistchempy')
+    data_file = pkg / 'nist_data.csv'
+    with importlib_resources.as_file(data_file) as path:
+        df = pd.read_csv(path)
+    
+    return df
 
 
 #%% Compound-related classes
@@ -416,7 +437,7 @@ class Search():
             self.lost = False
             return
         # check if one compound
-        flag = is_compound(soup)
+        flag = _is_compound(soup)
         if flag:
             self.success = True
             self.IDs = [flag]
