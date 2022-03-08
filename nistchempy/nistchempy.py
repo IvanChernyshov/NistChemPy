@@ -439,9 +439,17 @@ class Search():
         soup = BeautifulSoup(re.sub('clss=', 'class=', r.text),
                              features = 'html.parser')
         # check if no compounds
-        err = 'no matching species found' if search_type == 'inchi' else 'not found'
-        if sum([err in _.text.lower() for _ in soup.findAll('h1')]):
-            self.success = True
+        if search_type == 'inchi':
+            errs = ['information from the inchi', 'no matching species found']
+        else:
+            errs = ['not found']
+        err_flag = False
+        for err in errs:
+            if sum([err in _.text.lower() for _ in soup.findAll('h1')]):
+                err_flag = True
+                break
+        if err_flag:
+            self.success = False
             self.IDs = []
             self.compounds = []
             self.lost = False
