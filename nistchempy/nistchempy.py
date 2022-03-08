@@ -172,7 +172,10 @@ class Compound():
         for hit in hits:
             mask = re.search('Mask=(\d+)', hit.attrs['href']).group(1)
             key = self._MASKS.get(mask, hit.text)
-            self.data_refs[key] = self._NIST_URL + hit.attrs['href']
+            if key in self.data_refs:
+                self.data_refs[key] += [self._NIST_URL + hit.attrs['href']]
+            else:
+                self.data_refs[key] = [self._NIST_URL + hit.attrs['href']]
     
     def get_2D(self):
         '''
