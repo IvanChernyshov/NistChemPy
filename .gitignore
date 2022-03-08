@@ -1,6 +1,7 @@
 # currently useful info, not for the package
 misc/
 nist_map/
+nist_map/*
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
