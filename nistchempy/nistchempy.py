@@ -10,7 +10,7 @@ if sys.version_info < (3, 9):
 else:
     import importlib.resources as importlib_resources
 
-import re, os, requests
+import re, os, requests, zipfile
 from urllib.parse import urlparse, parse_qs
 from bs4 import BeautifulSoup, Comment
 import pandas as pd
@@ -46,10 +46,17 @@ def get_all_data():
     '''
     Returns pandas dataframe containing info on all NIST Chem WebBook compounds
     '''
+    dt0 = {'mol_weight': 'float64'}
+    dt1 = {k: 'string' for k in ('ID', 'name', 'formula', 'inchi', 'inchi_key', 'cas_rn')}
+    dt2 = {k: 'bool' for k in ('mol2D', 'mol3D', 'cIR', 'cTZ', 'cMS', 'cUV', 'cGC',
+                               'cTG', 'cTC', 'cTP', 'cSO', 'cTR', 'cIE', 'cIC', 'cES', 'cDI')}
+    dtypes = {**dt0, **dt1, **dt2}
     pkg = importlib_resources.files('nistchempy')
-    data_file = pkg / 'nist_data.csv'
+    data_file = pkg / 'nist_data.zip'
     with importlib_resources.as_file(data_file) as path:
-        df = pd.read_csv(path)
+        zf = zipfile.ZipFile(path) 
+        df = pd.read_csv(zf.open('nist_data.csv'), dtype = dtypes)
+        zf.close()
     
     return df
 
