@@ -472,7 +472,7 @@ class Search():
                 err_flag = True
                 break
         if err_flag:
-            self.success = False
+            self.success = True
             self.IDs = []
             self.compounds = []
             self.lost = False
