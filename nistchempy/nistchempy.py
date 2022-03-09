@@ -181,6 +181,8 @@ class Compound():
         '''
         Loads 2D structure in MOL2 format
         '''
+        if 'mol2D' not in self.data_refs:
+            return
         r = requests.get(self.data_refs['mol2D'])
         if r.ok:
             self.mol2D = r.text
@@ -189,6 +191,8 @@ class Compound():
         '''
         Loads 3D structure in MOL2 format
         '''
+        if 'mol3D' not in self.data_refs:
+            return
         r = requests.get(self.data_refs['mol3D'])
         if r.ok:
             self.mol3D = r.text
@@ -201,7 +205,7 @@ class Compound():
             raise ValueError(f'Bad spec_type value: {spec_type}')
         if 'c'+spec_type not in self.data_refs:
             return
-        r = requests.get(self.data_refs['c'+spec_type])
+        r = requests.get(self.data_refs['c'+spec_type][0])
         if not r.ok:
             return
         soup = BeautifulSoup(re.sub('clss=', 'class=', r.text),
