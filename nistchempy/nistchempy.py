@@ -16,6 +16,11 @@ from bs4 import BeautifulSoup, Comment
 import pandas as pd
 
 
+#%% Package info
+
+__version__ = '0.2.3'
+
+
 #%% All NIST Data
 
 def get_all_data():
