@@ -69,6 +69,7 @@ class Spectrum():
     '''
     
     _pretty_names = {'IR': 'IR spectrum',
+                     'TZ': 'THz IR spectrum',
                      'MS': 'Mass spectrum',
                      'UV': 'UV-Vis spectrum'}
     
@@ -108,7 +109,7 @@ class Compound():
     _MASKS = {'1': 'cTG', '2': 'cTC', '4': 'cTP', '8': 'cTR', '10': 'cSO',
               '20': 'cIE', '40': 'cIC', '80': 'cIR', '100': 'cTZ', '200': 'cMS',
               '400': 'cUV', '800': 'cES', '1000': 'cDI', '2000': 'cGC'}
-    _SPECS = {'IR': 'IR', 'MS': 'Mass', 'UV': 'UVVis'}
+    _SPECS = {'IR': 'IR', 'TZ': 'THz', 'MS': 'Mass', 'UV': 'UVVis'}
     
     def _load_compound_info(self):
         '''
@@ -230,6 +231,13 @@ class Compound():
         
         return self.get_spectra('IR')
     
+    def get_tz_spectra(self):
+        '''
+        Loads available IR spectra in JCAMP-DX format
+        '''
+        
+        return self.get_spectra('TZ')
+    
     def get_ms_spectra(self):
         '''
         Loads available mass spectra in JCAMP-DX format
@@ -248,8 +256,9 @@ class Compound():
         '''
         Loads available spectroscopic data
         '''
-        self.get_ms_spectra()
         self.get_ir_spectra()
+        self.get_tz_spectra()
+        self.get_ms_spectra()
         self.get_uv_spectra()
     
     def get_all_data(self):
@@ -275,6 +284,12 @@ class Compound():
         '''
         self.save_spectra('IR', path_dir)
     
+    def save_tz_spectra(self, path_dir = './'):
+        '''
+        Saves IR spectra to the specified folder
+        '''
+        self.save_spectra('TZ', path_dir)
+    
     def save_ms_spectra(self, path_dir = './'):
         '''
         Saves mass spectra to the specified folder
@@ -292,6 +307,7 @@ class Compound():
         Saves all UV-Vis spectra to the specified folder
         '''
         self.save_ir_spectra(path_dir)
+        self.save_tz_spectra(path_dir)
         self.save_ms_spectra(path_dir)
         self.save_uv_spectra(path_dir)
     
@@ -299,7 +315,7 @@ class Compound():
         self.ID = ID
         for prop, val in [('name', None), ('synonyms', []), ('formula', None), ('mol_weight', None),
                           ('inchi', None), ('inchi_key', None), ('cas_rn', None),
-                          ('IR', []), ('MS', []), ('UV', []),
+                          ('IR', []), ('TZ', []), ('MS', []), ('UV', []),
                           ('mol2D', None), ('mol3D', None),
                           ('data_refs', {})]:
             setattr(self, prop, val)
