@@ -1,69 +1,16 @@
-'''
-Python API for NIST Chemistry WebBook
-'''
+'''Main classes for quering the NIST Chemistry WebBook'''
 
 #%% Imports
 
-import sys
-if sys.version_info < (3, 9):
-    import importlib_resources
-else:
-    import importlib.resources as importlib_resources
+import re as _re
+import os as _os
 
-import re, os, requests, zipfile
-from urllib.parse import urlparse, parse_qs
-from bs4 import BeautifulSoup, Comment
-import pandas as pd
+import requests as _requests
+import urllib.parse as _uparse
 
+import bs4 as _bs4
 
-#%% Package info
-
-__version__ = '0.2.3'
-
-
-#%% All NIST Data
-
-def get_all_data():
-    '''
-    Returns pandas dataframe containing info on all NIST Chem WebBook compounds
-    '''
-    dt0 = {'mol_weight': 'float64'}
-    dt1 = {k: 'string' for k in ('ID', 'name', 'formula', 'inchi', 'inchi_key', 'cas_rn')}
-    dt2 = {k: 'bool' for k in ('mol2D', 'mol3D', 'cIR', 'cTZ', 'cMS', 'cUV', 'cGC',
-                               'cTG', 'cTC', 'cTP', 'cSO', 'cTR', 'cIE', 'cIC', 'cES', 'cDI')}
-    dtypes = {**dt0, **dt1, **dt2}
-    pkg = importlib_resources.files('nistchempy')
-    data_file = pkg / 'nist_data.zip'
-    with importlib_resources.as_file(data_file) as path:
-        zf = zipfile.ZipFile(path) 
-        df = pd.read_csv(zf.open('nist_data.csv'), dtype = dtypes)
-        zf.close()
-    
-    return df
-
-
-#%% Support functions
-
-def _is_compound(soup):
-    '''
-    Checks if html is a single compound page and returns NIST ID if yes
-    '''
-    header = soup.findAll('h1', {'id': 'Top'})
-    if not header:
-        return None
-    # get info
-    header = header[0]
-    info = header.findNext('ul')
-    if not info:
-        return None
-    # extract NIST ID
-    for comment in soup.findAll(text = lambda text: isinstance(text, Comment)):
-        comment = str(comment).replace('\r\n', '').replace('\n', '')
-        if not '/cgi/cbook.cgi' in comment:
-            continue
-        return re.search(r'/cgi/cbook.cgi\?Form=(.*?)&', comment).group(1)
-    
-    return None
+import nistchempy.parsing as _parsing
 
 
 #%% Compound-related classes
@@ -90,7 +37,7 @@ class Spectrum():
         '''
         path = name if name else f'{self.compound.ID}_{self.spec_type}_{self.spec_idx}.jdx'
         if path_dir:
-            path = os.path.join(path_dir, path)
+            path = _os.path.join(path_dir, path)
         with open(path, 'w') as outf:
             outf.write(self.jdx_text)
     
@@ -120,12 +67,12 @@ class Compound():
         '''
         Loads main compound info
         '''
-        r = requests.get(self._NIST_URL + self._COMP_ID, {'ID': self.ID, 'Units': 'SI'})
+        r = _requests.get(self._NIST_URL + self._COMP_ID, {'ID': self.ID, 'Units': 'SI'})
         if not r.ok:
             raise ConnectionError(f'Bad NIST response, status code: {r.status_code}')
         # check if it is compound page
-        soup = BeautifulSoup(re.sub('clss=', 'class=', r.text),
-                             features = 'html.parser')
+        soup = _bs4.BeautifulSoup(_re.sub('clss=', 'class=', r.text),
+                                  features = 'html.parser')
         header = soup.findAll('h1', {'id': 'Top'})
         if not header:
             raise ValueError(f'Bad compound ID: {self.ID}')
@@ -137,18 +84,18 @@ class Compound():
         # name
         self.name = header.text
         # synonyms
-        hits = info.findChildren(text = re.compile('Other names'))
+        hits = info.findChildren(text = _re.compile('Other names'))
         if hits:
             text = hits[0].findParent('li').text.replace('Other names:', '')
             synonyms = [_.strip(';').strip() for _ in text.split('\n')]
             self.synonyms = [_ for _ in synonyms if _]
         # formula
-        hits = info.findChildren(text = re.compile('Formula'))
+        hits = info.findChildren(text = _re.compile('Formula'))
         if hits:
             text = hits[0].findParent('li').text.replace('Formula:', '')
-            self.formula = re.sub(r'(\d)([a-zA-Z])', r'\1 \2', text.strip())
+            self.formula = _re.sub(r'(\d)([a-zA-Z])', r'\1 \2', text.strip())
         # mol weight
-        hits = info.findChildren(text = re.compile('Molecular weight'))
+        hits = info.findChildren(text = _re.compile('Molecular weight'))
         if hits:
             text = hits[0].findParent('li').text.replace('Molecular weight:', '')
             self.mol_weight = float(text)
@@ -158,25 +105,25 @@ class Compound():
             for hit in hits:
                 if 'InChI=' in hit.text:
                     self.inchi = hit.text
-                elif re.search(r'', hit.text):
+                elif _re.search(r'', hit.text):
                     self.inchi_key = hit.text
         # CAS RN
-        hits = info.findChildren(text = re.compile('CAS Registry Number:'))
+        hits = info.findChildren(text = _re.compile('CAS Registry Number:'))
         if hits:
             text = hits[0].findParent('li').text.replace('CAS Registry Number:', '')
             self.cas_rn = text.strip()
         # 2D structure
-        hits = info.findChildren(attrs = {'href': re.compile('Str2File')})
+        hits = info.findChildren(attrs = {'href': _re.compile('Str2File')})
         if hits:
             self.data_refs['mol2D'] = self._NIST_URL + hits[0].attrs['href']
         # 3D structure
-        hits = info.findChildren(attrs = {'href': re.compile('Str3File')})
+        hits = info.findChildren(attrs = {'href': _re.compile('Str3File')})
         if hits:
             self.data_refs['mol3D'] = self._NIST_URL + hits[0].attrs['href']
         # other data and spectroscopy
-        hits = info.findChildren(attrs = {'href': re.compile('/cgi/cbook.cgi.*Mask=\d')})
+        hits = info.findChildren(attrs = {'href': _re.compile('/cgi/cbook.cgi.*Mask=\d')})
         for hit in hits:
-            mask = re.search('Mask=(\d+)', hit.attrs['href']).group(1)
+            mask = _re.search('Mask=(\d+)', hit.attrs['href']).group(1)
             key = self._MASKS.get(mask, hit.text)
             if key in self.data_refs:
                 self.data_refs[key] += [self._NIST_URL + hit.attrs['href']]
@@ -189,7 +136,7 @@ class Compound():
         '''
         if 'mol2D' not in self.data_refs:
             return
-        r = requests.get(self.data_refs['mol2D'])
+        r = _requests.get(self.data_refs['mol2D'])
         if r.ok:
             self.mol2D = r.text
     
@@ -199,7 +146,7 @@ class Compound():
         '''
         if 'mol3D' not in self.data_refs:
             return
-        r = requests.get(self.data_refs['mol3D'])
+        r = _requests.get(self.data_refs['mol3D'])
         if r.ok:
             self.mol3D = r.text
     
@@ -211,20 +158,20 @@ class Compound():
             raise ValueError(f'Bad spec_type value: {spec_type}')
         if 'c'+spec_type not in self.data_refs:
             return
-        r = requests.get(self.data_refs['c'+spec_type][0])
+        r = _requests.get(self.data_refs['c'+spec_type][0])
         if not r.ok:
             return
-        soup = BeautifulSoup(re.sub('clss=', 'class=', r.text),
-                             features = 'html.parser')
+        soup = _bs4.BeautifulSoup(_re.sub('clss=', 'class=', r.text),
+                                  features = 'html.parser')
         # get available spectrum indexes
-        idxs = soup.findAll(attrs = {'href': re.compile('Index=')})
-        idxs = [re.search(r'Index=(\d+)', _.attrs['href']).group(1) for _ in idxs]
+        idxs = soup.findAll(attrs = {'href': _re.compile('Index=')})
+        idxs = [_re.search(r'Index=(\d+)', _.attrs['href']).group(1) for _ in idxs]
         idxs = sorted(list(set(idxs)))
         # load jdxs
         for idx in idxs:
-            spec = requests.get(self._NIST_URL + self._COMP_ID,
-                                {'JCAMP': self.ID, 'Index': idx,
-                                 'Type': self._SPECS[spec_type]})
+            spec = _requests.get(self._NIST_URL + self._COMP_ID,
+                                 {'JCAMP': self.ID, 'Index': idx,
+                                  'Type': self._SPECS[spec_type]})
             if spec.ok:
                 spec = Spectrum(self, spec_type, idx, spec.text)
                 getattr(self, spec_type).append(spec)
@@ -278,7 +225,7 @@ class Compound():
         '''
         Saves all spectra of given type to the specified folder
         '''
-        if not os.path.isdir(path_dir):
+        if not _os.path.isdir(path_dir):
             raise ValueError(f'"{path_dir}" must be directory')
         for spec in getattr(self, spec_type):
             spec.save(f'{self.ID}_{spec_type}_{spec.spec_idx}.jdx', path_dir)
@@ -444,10 +391,17 @@ class Search():
     def find_compounds(self, identifier, search_type, **kwargs):
         '''
         Search for species data by chemical name
-        search_type must be one of 'formula', 'name', 'inchi', 'cas'
-        clear_found: clear all found compounds
-        raise_lost: raise exception if limit of 400 compounds per search
-                    was achieved
+        
+        Arguments:
+            identifier (str): compound ID / formula / name
+            search_type (str): identifier type, available options are:
+                - 'formula'
+                - 'name'
+                - 'inchi'
+                - 'cas'
+            clear_found: clear all found compounds
+            raise_lost: raise exception if limit of 400 compounds per search
+                        was achieved
         '''
         if search_type not in self.search_types:
             raise ValueError(f'Bad search_type value: {search_type}')
@@ -457,15 +411,15 @@ class Search():
         addend = SearchParameters(**kwargs)
         params.update(addend.get_request_parameters())
         # load webpage
-        r = requests.get(self._NIST_URL + self._COMP_ID, params)
+        r = _requests.get(self._NIST_URL + self._COMP_ID, params)
         if not r.ok:
             self.success = False
             self.IDs = []
             self.compounds = []
             self.lost = False
             return
-        soup = BeautifulSoup(re.sub('clss=', 'class=', r.text),
-                             features = 'html.parser')
+        soup = _bs4.BeautifulSoup(_re.sub('clss=', 'class=', r.text),
+                                  features = 'html.parser')
         # check if no compounds
         if search_type == 'inchi':
             errs = ['information from the inchi', 'no matching species found']
@@ -483,7 +437,7 @@ class Search():
             self.lost = False
             return
         # check if one compound
-        flag = _is_compound(soup)
+        flag = _parsing.is_compound(soup)
         if flag:
             self.success = True
             self.IDs = [flag]
@@ -491,8 +445,8 @@ class Search():
             self.lost = False
             return
         # extract IDs
-        refs = soup.find('ol').findChildren('a', href = re.compile(self._COMP_ID))
-        IDs = [parse_qs(urlparse(a.attrs['href']).query)['ID'][0] for a in refs]
+        refs = soup.find('ol').findChildren('a', href = _re.compile(self._COMP_ID))
+        IDs = [_uparse.parse_qs(_uparse.urlparse(a.attrs['href']).query)['ID'][0] for a in refs]
         self.IDs = IDs
         self.compounds = []
         self.success = True
