@@ -1,6 +1,5 @@
-# currently useful info, not for the package
-misc/
-nist_map/
+# project-specific
+update/data/*
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

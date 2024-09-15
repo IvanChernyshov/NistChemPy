@@ -1,14 +1,17 @@
-# imports
-from .nistchempy import __version__, \
-                        get_all_data, Compound, Spectrum, \
-                        print_search_parameters, \
-                        SearchParameters, Search
+'''This package is a Python interface for the NIST Chemistry WebBook database
+that provides additional data for the efficient compound search and 
+automatic retrievement of the stored physico-chemical data
 
-# module functions
-__all__ = [
-    '__version__',
-    'get_all_data',
-    'Compound', 'Spectrum'
-    'print_search_parameters', 'SearchParameters', 'Search'
-]
+'''
+
+__version__ = '0.3.0'
+__updated__ = 'October 02, 2024'
+__license__ = 'MIT'
+
+
+from nistchempy.compound_list import get_all_data
+from nistchempy.data_structs import Compound, Spectrum
+from nistchempy.data_structs import Search, SearchParameters
+from nistchempy.data_structs import print_search_parameters
+
 
