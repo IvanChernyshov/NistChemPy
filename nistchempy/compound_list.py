@@ -18,17 +18,7 @@ def get_all_data() -> _pd.core.frame.DataFrame:
     '''Returns pandas dataframe containing info on all NIST Chem WebBook compounds
     
     Returns:
-        _pd.core.frame.DataFrame: dataframe containing the following compound info:
-            - ID (str): internal NIST Chemistry WebBook Compound ID;
-            - name (str): chemical name;
-            - formula (str): chemical formula;
-            - mol_weight (float): molecular weight;
-            - inchi (str): InChI string;
-            - inchi_key (str): InChI key string;
-            - cas_rn (str): CAS Registry Number;
-            - mol2D/mol3D (bool): availability of MOL-file with 2D/3D atomic coordinates;
-            - cXX (bool): availability of various physical chemical data, for definitions
-              execute the nistchempy.print_search_parameters function.
+        _pd.core.frame.DataFrame: dataframe containing pre-extracted compound info
     
     '''
     dt0 = {'mol_weight': 'float64'}
