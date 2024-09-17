@@ -4,196 +4,229 @@
 
 import re as _re
 
-import requests as _requests
 import urllib.parse as _uparse
 
-import bs4 as _bs4
+import dataclasses as _dcs
+import typing as _tp
 
+import nistchempy.requests as _ncpr
 import nistchempy.compound as _compound
-
-
-#%% Misc
-
-def print_search_parameters() -> None:
-    '''Prints available search parameters'''
-    info = {'Units': 'Units for thermodynamic data, "SI" or "CAL" for calorie-based',
-            'MatchIso': 'Exactly match the specified isotopes (formula search only)',
-            'AllowOther': 'Allow elements not specified in formula (formula search only)',
-            'AllowExtra': 'Allow more atoms of elements in formula than specified (formula search only)',
-            'NoIon': 'Exclude ions from the search (formula search only)',
-            'cTG': 'Contains gas-phase thermodynamic data',
-            'cTC': 'Contains condensed-phase thermodynamic data',
-            'cTP': 'Contains phase-change thermodynamic data',
-            'cTR': 'Contains reaction thermodynamic data',
-            'cIE': 'Contains ion energetics thermodynamic data',
-            'cIC': 'Contains ion cluster thermodynamic data',
-            'cIR': 'Contains IR data',
-            'cTZ': 'Contains THz IR data',
-            'cMS': 'Contains MS data',
-            'cUV': 'Contains UV/Vis data',
-            'cGC': 'Contains gas chromatography data',
-            'cES': 'Contains vibrational and electronic energy levels',
-            'cDI': 'Contains constants of diatomic molecules',
-            'cSO': 'Contains info on Henry\'s law'}
-    max_len = max([len(_) for _ in info])
-    spaces = [' '*(max_len - len(_) + 1) for _ in info]
-    for (key, val), space in zip(info.items(), spaces):
-        print(f'{key}{space}:   {val}')
 
 
 #%% Search
 
-class SearchParameters():
-    '''
-    Object containing parameters for compound search in NIST WebBook
-    To get the full description of available options please use
-    "print_search_parameters" function
-    '''
-    info = {'Units': 'SI',
-            'MatchIso': False, 'AllowOther': False, 'AllowExtra': False, 'NoIon': False,
-            'cTG': False, 'cTC': False, 'cTP': False, 'cTR': False, 'cIE': False, 'cIC': False,
-            'cIR': False, 'cTZ': False, 'cMS': False, 'cUV': False, 'cGC': False,
-            'cES': False, 'cDI': False, 'cSO': False}
+@_dcs.dataclass
+class NistSearchParameters():
+    '''GET parameters for compound search of NIST Chemistry WebBook
     
-    def get_request_parameters(self):
+    Attributes:
+        use_SI (bool): if True, returns results in SI units. otherwise calories are used
+        match_isotopes (bool): if True, exactly matches the specified isotopes (formula search only)
+        allow_other (bool): if True, allows elements not specified in formula (formula search only)
+        allow_extra (bool): if True, allows more atoms of elements in formula than specified (formula search only)
+        no_ion (bool): if True, excludes ions from the search (formula search only)
+        cTG (bool): if True, returns entries containing gas-phase thermodynamic data
+        cTC (bool): if True, returns entries containing condensed-phase thermodynamic data
+        cTP (bool): if True, returns entries containing phase-change thermodynamic data
+        cTR (bool): if True, returns entries containing reaction thermodynamic data
+        cIE (bool): if True, returns entries containing ion energetics thermodynamic data
+        cIC (bool): if True, returns entries containing ion cluster thermodynamic data
+        cIR (bool): if True, returns entries containing IR data
+        cTZ (bool): if True, returns entries containing THz IR data
+        cMS (bool): if True, returns entries containing MS data
+        cUV (bool): if True, returns entries containing UV/Vis data
+        cGC (bool): if True, returns entries containing gas chromatography data
+        cES (bool): if True, returns entries containing vibrational and electronic energy levels
+        cDI (bool): if True, returns entries containing constants of diatomic molecules
+        cSO (bool): if True, returns entries containing info on Henry\'s law
+    
+    '''
+    
+    use_SI: bool = True # Units = SI/CAL
+    match_isotopes: bool = False
+    allow_other: bool = False
+    allow_extra: bool = False
+    no_ion: bool = False
+    cTG: bool = False
+    cTC: bool = False
+    cTP: bool = False
+    cTR: bool = False
+    cIE: bool = False
+    cIC: bool = False
+    cIR: bool = False
+    cTZ: bool = False
+    cMS: bool = False
+    cUV: bool = False
+    cGC: bool = False
+    cES: bool = False
+    cDI: bool = False
+    cSO: bool = False
+    
+    
+    def __str__(self):
+        params = [f'{k}={v}' for k, v in self.__dict__.items() if v]
+        text = f'SearchParameters({", ".join(params)})'
+        
+        return text
+    
+    
+    def __repr__(self):
+        return self.__str__()
+    
+    
+    def get_request_parameters(self) -> dict:
+        '''Returns dictionary containing GET parameters
+        
+        Returns:
+            dict: dictionary of GET parameters relevant to the search
         '''
-        Returns dictionary with GET parameters
-        '''
-        params = {'Units': self.Units}
-        for key in self.info:
-            if key == 'Units':
+        params = {'Units': 'SI' if self.use_SI else 'CAL'}
+        for key, val in self.__dict__.items():
+            if key == 'Units' or not val:
                 continue
-            val = getattr(self, key)
-            if val:
-                params[key] = 'on'
+            params[key] = 'on'
         
         return params
-    
-    def __init__(self, **kwargs):
-        # set default
-        for key, val in self.info.items():
-            setattr(self, key, val)
-        # check kwargs
-        for key, val in kwargs.items():
-            if key not in self.info:
-                raise TypeError(f'"{key}" is an invalid keyword argument for SearchParameters')
-            if key == 'Units' and val not in ('SI', 'CAL'):
-                raise ValueError(f'Bad value for "Units" parameter: {val}')
-            if key != 'Units' and type(val) is not bool:
-                raise ValueError(f'Bad value for "{key}" parameter: {val}')
-            setattr(self, key, val)
-    
-    def __str__(self):
-        sep = ', ' # ',\n' + ' '*17
-        text = [f'SearchParameters(Units={self.Units}'] + \
-               [f'{key}={getattr(self, key)}' for key in self.info if key != 'Units' and getattr(self, key)]
-        text[-1] = text[-1] + ')'
-        
-        return sep.join(text)
-    
-    def __repr__(self):
-        sep = ', ' # ',\n' + ' '*17
-        text = [f'SearchParameters(Units={self.Units}'] + \
-               [f'{key}={getattr(self, key)}' for key in self.info if key != 'Units' and getattr(self, key)]
-        text[-1] = text[-1] + ')'
-        
-        return sep.join(text)
 
 
-class Search():
+
+@_dcs.dataclass(eq = False)
+class NistSearch():
+    '''Results of the compound search in NIST Chemistry WebBook
+    
+    Attributes:
+        nist_response (NistResponse): 
+        search_parameters (NistSearchParameters): 
+        compound_ids (_tp.List[str]): 
+        compounds (_tp.List[_compound.Compound]): 
+        success (bool): 
+        num_compounds (int): 
+        lost (bool): 
+    
     '''
-    Object for searching in NIST Chemistry WebBook
-    '''
     
-    # NIST URLs
-    _NIST_URL = 'https://webbook.nist.gov'
-    _COMP_ID = '/cgi/cbook.cgi'
+    nist_response: _ncpr.NistResponse = _dcs.field(repr = False)
+    search_parameters: NistSearchParameters = _dcs.field(repr = False)
+    compound_ids: _tp.List[str] = _dcs.field(repr = False)
+    compounds: _tp.List[_compound.Compound] = _dcs.field(init = False, repr = False)
+    success: bool
+    num_compounds: int = _dcs.field(init = False)
+    lost: bool
     
-    # parameters data
-    search_types = {'formula': 'Formula', 'name': 'Name', 'inchi': 'InChI', 'cas': 'ID'}
-    formula_only = ('MatchIso', 'AllowOther', 'AllowExtra', 'NoIon')
     
-    def __init__(self, **kwargs):
-        self.parameters = SearchParameters(**kwargs)
-        self.IDs = []
+    def __post_init__(self):
         self.compounds = []
-        self.lost = False
-        self.success = True
+        self.num_compounds = len(self.compound_ids)
     
-    def find_compounds(self, identifier, search_type, **kwargs):
-        '''
-        Search for species data by chemical name
-        
-        Arguments:
-            identifier (str): compound ID / formula / name
-            search_type (str): identifier type, available options are:
-                - 'formula'
-                - 'name'
-                - 'inchi'
-                - 'cas'
-            clear_found: clear all found compounds
-            raise_lost: raise exception if limit of 400 compounds per search
-                        was achieved
-        '''
-        if search_type not in self.search_types:
-            raise ValueError(f'Bad search_type value: {search_type}')
-        # prepare GET parameters
-        params = {self.search_types[search_type]: identifier}
-        params.update(self.parameters.get_request_parameters())
-        addend = SearchParameters(**kwargs)
-        params.update(addend.get_request_parameters())
-        # load webpage
-        r = _requests.get(self._NIST_URL + self._COMP_ID, params)
-        if not r.ok:
-            self.success = False
-            self.IDs = []
-            self.compounds = []
-            self.lost = False
-            return
-        soup = _bs4.BeautifulSoup(_re.sub('clss=', 'class=', r.text),
-                                  features = 'html.parser')
-        # check if no compounds
-        if search_type == 'inchi':
-            errs = ['information from the inchi', 'no matching species found']
-        else:
-            errs = ['not found']
-        err_flag = False
-        for err in errs:
-            if sum([err in _.text.lower() for _ in soup.findAll('h1')]):
-                err_flag = True
-                break
-        if err_flag:
-            self.success = True
-            self.IDs = []
-            self.compounds = []
-            self.lost = False
-            return
-        # check if one compound
-        flag = _compound.is_compound_page(soup)
-        if flag:
-            self.success = True
-            self.IDs = [flag]
-            self.compounds = []
-            self.lost = False
-            return
-        # extract IDs
-        refs = soup.find('ol').findChildren('a', href = _re.compile(self._COMP_ID))
-        IDs = [_uparse.parse_qs(_uparse.urlparse(a.attrs['href']).query)['ID'][0] for a in refs]
-        self.IDs = IDs
-        self.compounds = []
-        self.success = True
-        self.lost = 'Due to the large number of matching species' in soup.text
+    
+    def _save_response_page(self, path: str = 'nist_search.html') -> None:
+        '''Saves response page for testing purposes'''
+        with open(path, 'w') as outf:
+            outf.write(self.nist_response.text)
+    
     
     def load_found_compounds(self):
-        '''
-        Loads compounds
-        '''
-        self.compounds = [_compound.Compound(ID) for ID in self.IDs]
+        '''Loads found compounds'''
+        loaded = [cmp.ID for cmp in self.compounds]
+        for ID in self.compound_ids:
+            if ID in loaded:
+                continue
+            self.compounds.append(_compound.Compound(ID))
+
+
+
+def search(identifier: str, search_type: str,
+           search_parameters: _tp.Optional[NistSearchParameters] = None,
+           use_SI: bool = True, match_isotopes: bool = False,
+           allow_other: bool = False, allow_extra: bool = False,
+           no_ion: bool = False, cTG: bool = False, cTC: bool = False,
+           cTP: bool = False, cTR: bool = False, cIE: bool = False, 
+           cIC: bool = False, cIR: bool = False, cTZ: bool = False, 
+           cMS: bool = False, cUV: bool = False, cGC: bool = False, 
+           cES: bool = False, cDI: bool = False, cSO: bool = False,
+           **kwargs) -> NistSearch:
+    '''Searches compounds in NIST Chemistry WebBook
     
-    def __str__(self):
-        return f'Search(Success={self.success}, Lost={self.lost}, Found={len(self.IDs)})'
+    Arguments:
+        identifier (str): NIST compound ID / formula / name / inchi / CAS RN
+        search_type (str): identifier type, available options are:
+            - 'formula'
+            - 'name'
+            - 'inchi'
+            - 'cas'
+            - 'id'
+        search_parameters (_tp.Optional[NistSearchParameters]): search parameters; if provided, the following search parameter arguments are ignored
+        use_SI (bool): if True, returns results in SI units. otherwise calories are used
+        match_isotopes (bool): if True, exactly matches the specified isotopes (formula search only)
+        allow_other (bool): if True, allows elements not specified in formula (formula search only)
+        allow_extra (bool): if True, allows more atoms of elements in formula than specified (formula search only)
+        no_ion (bool): if True, excludes ions from the search (formula search only)
+        cTG (bool): if True, returns entries containing gas-phase thermodynamic data
+        cTC (bool): if True, returns entries containing condensed-phase thermodynamic data
+        cTP (bool): if True, returns entries containing phase-change thermodynamic data
+        cTR (bool): if True, returns entries containing reaction thermodynamic data
+        cIE (bool): if True, returns entries containing ion energetics thermodynamic data
+        cIC (bool): if True, returns entries containing ion cluster thermodynamic data
+        cIR (bool): if True, returns entries containing IR data
+        cTZ (bool): if True, returns entries containing THz IR data
+        cMS (bool): if True, returns entries containing MS data
+        cUV (bool): if True, returns entries containing UV/Vis data
+        cGC (bool): if True, returns entries containing gas chromatography data
+        cES (bool): if True, returns entries containing vibrational and electronic energy levels
+        cDI (bool): if True, returns entries containing constants of diatomic molecules
+        cSO (bool): if True, returns entries containing info on Henry\'s law
+        kwargs: requests.get parameters
     
-    def __repr__(self):
-        return f'Search(Success={self.success}, Lost={self.lost}, Found={len(self.IDs)})'
+    Returns:
+        NistSearch: search object containing info on found compounds
+    
+    '''
+    # parameters
+    search_types = {'formula': 'Formula', 'name': 'Name',
+                    'inchi': 'InChI', 'cas': 'ID', 'id': 'ID'}
+    if search_type not in search_types:
+        raise ValueError(f'Bad search_type value: {search_type}')
+    # prepare search parameters
+    if search_parameters is None:
+        search_parameters = NistSearchParameters(use_SI = use_SI,
+            match_isotopes = match_isotopes if search_type == 'formula' else False,
+            allow_other = allow_other if search_type == 'formula' else False,
+            allow_extra = allow_extra if search_type == 'formula' else False,
+            no_ion = no_ion if search_type == 'formula' else False,
+            cTG = cTG, cTC = cTC, cTP = cTP, cTR = cTR, cIE = cIE, cIC = cIC,
+            cIR = cIR, cTZ = cTZ, cMS = cMS, cUV = cUV, cGC = cGC, cES = cES,
+            cDI = cDI, cSO = cSO)
+    # prepare GET parameters
+    params = {search_types[search_type]: identifier,
+              **search_parameters.get_request_parameters()}
+    # load webpage
+    nr = _ncpr.make_nist_request(_ncpr.SEARCH_URL, params, **kwargs)
+    if not nr.ok:
+        return NistSearch(nist_response = nr, search_parameters = search_parameters,
+                          compound_ids = [], success = False, lost = False)
+    
+    # there are possible "search errors" which follows the <h1> tag:
+    #     1) 'information from the inchi' and 'no matching species found'
+    #         for inchi search
+    #     2) 'not found' for other searches
+    # possibly in the future we need to catch them explicitly
+    
+    # check if response is a compound page
+    flag = _compound.is_compound_page(nr.soup)
+    if flag:
+        return NistSearch(nist_response = nr, search_parameters = search_parameters,
+                          compound_ids = [flag], success = True, lost = False)
+    # extract IDs
+    try:
+        refs = nr.soup.find('ol').findChildren('a', href = _re.compile('/cgi/cbook.cgi'))
+        IDs = [_uparse.parse_qs(_uparse.urlparse(a.attrs['href']).query)['ID'][0] \
+                                                                 for a in refs]
+        lost = 'due to the large number of matching species' in nr.soup.text.lower()
+    except AttributeError: # no ol with compound refs
+        IDs = []
+        lost = False
+    
+    return NistSearch(nist_response = nr, search_parameters = search_parameters,
+                      compound_ids = IDs, success = True, lost = lost)
 
 

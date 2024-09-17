@@ -41,22 +41,22 @@ def fix_html(html: str) -> str:
 
 @_dcs.dataclass(eq = False)
 class NistResponse():
-    '''Describes response to the GET request to the NIST Chemistry WebBook'''
+    '''Describes response to the GET request to the NIST Chemistry WebBook
+    
+    Attributes:
+        response (_requests.models.Response): request's response
+        ok (bool): True if request's status code is less than 400
+        content_type (_tp.Optional[str]): content type of the response
+        text (_tp.Optional[str]): text of the response
+        soup (_tp.Optional[_bs4.BeautifulSoup]): BeautifulSoup object of the html response
+    
+    '''
     
     response: _requests.models.Response = _dcs.field(repr = False)
-    '''Request's response'''
-    
-    ok: _tp.Optional[str] = _dcs.field(init = False, repr = True)
-    '''True for request's status codes less than 400'''
-    
+    ok: bool = _dcs.field(init = False, repr = True)
     content_type: _tp.Optional[str] = _dcs.field(init = False, repr = True)
-    '''Content type of the response'''
-    
     text: _tp.Optional[str] = _dcs.field(init = False, repr = False)
-    '''Text of the response'''
-    
     soup: _tp.Optional[_bs4.BeautifulSoup] = _dcs.field(default = None, init = False, repr = False)
-    '''BeautifulSoup object of the html response'''
     
     def __post_init__(self):
         self.ok = self.response.ok
