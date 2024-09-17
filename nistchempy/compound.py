@@ -22,6 +22,7 @@ def is_compound_page(soup):
     
     Returns:
         str: NIST Compound ID
+    
     '''
     header = soup.findAll('h1', {'id': 'Top'})
     if not header:
