@@ -10,8 +10,8 @@ __license__ = 'MIT'
 
 
 from nistchempy.compound_list import get_all_data
-from nistchempy.compound import Compound
-from nistchempy.search import Search, SearchParameters
+from nistchempy.compound import get_compound
+from nistchempy.search import search, NistSearchParameters
 from nistchempy.search import print_search_parameters
 
 

@@ -2,18 +2,47 @@
 
 #%% Imports
 
-import re as _re
-
-import urllib.parse as _uparse
-
 import dataclasses as _dcs
 import typing as _tp
 
 import nistchempy.requests as _ncpr
 import nistchempy.compound as _compound
+import nistchempy.parsing as _parsing
 
 
-#%% Search
+#%% Search parameters helper
+
+def print_search_parameters() -> None:
+    '''
+    Prints available search parameters
+    '''
+    info = {'use_SI': 'Units for thermodynamic data, "SI" if True and "calories" if False',
+            'match_isotopes': 'Exactly match the specified isotopes (formula search only)',
+            'allow_other': 'Allow elements not specified in formula (formula search only)',
+            'allow_extra': 'Allow more atoms of elements in formula than specified (formula search only)',
+            'no_ion': 'Exclude ions from the search (formula search only)',
+            'cTG': 'Contains gas-phase thermodynamic data',
+            'cTC': 'Contains condensed-phase thermodynamic data',
+            'cTP': 'Contains phase-change thermodynamic data',
+            'cTR': 'Contains reaction thermodynamic data',
+            'cIE': 'Contains ion energetics thermodynamic data',
+            'cIC': 'Contains ion cluster thermodynamic data',
+            'cIR': 'Contains IR data',
+            'cTZ': 'Contains THz IR data',
+            'cMS': 'Contains MS data',
+            'cUV': 'Contains UV/Vis data',
+            'cGC': 'Contains gas chromatography data',
+            'cES': 'Contains vibrational and electronic energy levels',
+            'cDI': 'Contains constants of diatomic molecules',
+            'cSO': 'Contains info on Henry\'s law'}
+    max_len = max([len(_) for _ in info])
+    spaces = [' '*(max_len - len(_) + 1) for _ in info]
+    for (key, val), space in zip(info.items(), spaces):
+        print(f'{key}{space}:   {val}')
+
+
+
+#%% Classes
 
 @_dcs.dataclass
 class NistSearchParameters():
@@ -79,6 +108,7 @@ class NistSearchParameters():
         
         Returns:
             dict: dictionary of GET parameters relevant to the search
+        
         '''
         params = {'Units': 'SI' if self.use_SI else 'CAL'}
         for key, val in self.__dict__.items():
@@ -95,20 +125,20 @@ class NistSearch():
     '''Results of the compound search in NIST Chemistry WebBook
     
     Attributes:
-        nist_response (NistResponse): 
-        search_parameters (NistSearchParameters): 
-        compound_ids (_tp.List[str]): 
-        compounds (_tp.List[_compound.Compound]): 
-        success (bool): 
-        num_compounds (int): 
-        lost (bool): 
+        nist_response (NistResponse): NIST search response
+        search_parameters (NistSearchParameters): used search parameters
+        compound_ids (_tp.List[str]): NIST IDs of found compounds
+        compounds (_tp.List[_compound.NistCompound]): NistCompound objects of found compounds
+        success (bool): True if search request was successful
+        num_compounds (int): number of found compounds
+        lost (bool): True if search returns less compounds than there are in the database
     
     '''
     
     nist_response: _ncpr.NistResponse = _dcs.field(repr = False)
     search_parameters: NistSearchParameters = _dcs.field(repr = False)
     compound_ids: _tp.List[str] = _dcs.field(repr = False)
-    compounds: _tp.List[_compound.Compound] = _dcs.field(init = False, repr = False)
+    compounds: _tp.List[_compound.NistCompound] = _dcs.field(init = False, repr = False)
     success: bool
     num_compounds: int = _dcs.field(init = False)
     lost: bool
@@ -121,19 +151,26 @@ class NistSearch():
     
     def _save_response_page(self, path: str = 'nist_search.html') -> None:
         '''Saves response page for testing purposes'''
-        with open(path, 'w') as outf:
-            outf.write(self.nist_response.text)
+        self.nist_response._save_response(path)
     
     
-    def load_found_compounds(self):
-        '''Loads found compounds'''
+    def load_found_compounds(self, **kwargs) -> None:
+        '''Loads found compounds
+        
+        Arguments:
+            kwargs: requests.get kwargs parameters
+        
+        '''
         loaded = [cmp.ID for cmp in self.compounds]
         for ID in self.compound_ids:
             if ID in loaded:
                 continue
-            self.compounds.append(_compound.Compound(ID))
+            X = _compound.get_compound(ID, **kwargs)
+            self.compounds.append(X)
 
 
+
+#%% Search
 
 def search(identifier: str, search_type: str,
            search_parameters: _tp.Optional[NistSearchParameters] = None,
@@ -205,28 +242,23 @@ def search(identifier: str, search_type: str,
         return NistSearch(nist_response = nr, search_parameters = search_parameters,
                           compound_ids = [], success = False, lost = False)
     
-    # there are possible "search errors" which follows the <h1> tag:
+    # XXX: there are possible "search errors" which follows the <h1> tag:
     #     1) 'information from the inchi' and 'no matching species found'
     #         for inchi search
     #     2) 'not found' for other searches
     # possibly in the future we need to catch them explicitly
     
     # check if response is a compound page
-    flag = _compound.is_compound_page(nr.soup)
-    if flag:
-        return NistSearch(nist_response = nr, search_parameters = search_parameters,
-                          compound_ids = [flag], success = True, lost = False)
+    if _parsing.is_compound_page(nr.soup):
+        X = _compound.compound_from_response(nr)
+        nsearch = NistSearch(nist_response = nr, search_parameters = search_parameters,
+                             compound_ids = [X.ID], success = True, lost = False)
+        nsearch.compounds = [X]
+        return nsearch
     # extract IDs
-    try:
-        refs = nr.soup.find('ol').findChildren('a', href = _re.compile('/cgi/cbook.cgi'))
-        IDs = [_uparse.parse_qs(_uparse.urlparse(a.attrs['href']).query)['ID'][0] \
-                                                                 for a in refs]
-        lost = 'due to the large number of matching species' in nr.soup.text.lower()
-    except AttributeError: # no ol with compound refs
-        IDs = []
-        lost = False
+    info = _parsing.get_found_compounds(nr.soup)
     
     return NistSearch(nist_response = nr, search_parameters = search_parameters,
-                      compound_ids = IDs, success = True, lost = lost)
+                      compound_ids = info['IDs'], success = True, lost = info['lost'])
 
 
