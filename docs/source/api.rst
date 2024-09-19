@@ -11,17 +11,7 @@ nistchempy
    :undoc-members:
    :show-inheritance:
    :member-order: bysource
-
-
-nistchempy.data_structs
------------------------
-
-.. automodule:: nistchempy.data_structs
-   :imported-members:
-   :members:
-   :undoc-members:
-   :show-inheritance:
-   :member-order: bysource
+   :noindex:
 
 
 nistchempy.requests
@@ -33,17 +23,31 @@ nistchempy.requests
    :undoc-members:
    :show-inheritance:
    :member-order: bysource
+   :noindex:
 
 
-nistchempy.parsing
+nistchempy.compound
 -------------------
 
-.. automodule:: nistchempy.parsing
+.. automodule:: nistchempy.compound
    :imported-members:
    :members:
    :undoc-members:
    :show-inheritance:
    :member-order: bysource
+   :noindex:
+
+
+nistchempy.search
+-----------------------
+
+.. automodule:: nistchempy.search
+   :imported-members:
+   :members:
+   :undoc-members:
+   :show-inheritance:
+   :member-order: bysource
+   :noindex:
 
 
 nistchempy.compound_list
@@ -55,5 +59,6 @@ nistchempy.compound_list
    :undoc-members:
    :show-inheritance:
    :member-order: bysource
+   :noindex:
 
 

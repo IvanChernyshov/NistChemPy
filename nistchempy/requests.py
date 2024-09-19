@@ -20,6 +20,7 @@ import typing as _tp
 
 BASE_URL = 'https://webbook.nist.gov'
 SEARCH_URL = f'{BASE_URL}/cgi/cbook.cgi'
+INCHI_URL = f'{BASE_URL}/cgi/inchi'
 
 
 #%% Basic GET request
@@ -58,6 +59,7 @@ class NistResponse():
     text: _tp.Optional[str] = _dcs.field(init = False, repr = False)
     soup: _tp.Optional[_bs4.BeautifulSoup] = _dcs.field(default = None, init = False, repr = False)
     
+    
     def __post_init__(self):
         self.ok = self.response.ok
         self.text = self.response.text
@@ -65,9 +67,16 @@ class NistResponse():
         if 'html' in self.content_type.lower():
             self.text = fix_html(self.text)
             self.soup = _bs4.BeautifulSoup(self.text, features = 'html.parser')
+    
+    
+    def _save_response(self, path: str) -> None:
+        '''Saves response HTML page for testing purposes'''
+        with open(path, 'w') as outf:
+            outf.write(self.response.text)
 
 
-def make_nist_request(url: str, params: dict, **kwargs) -> NistResponse:
+
+def make_nist_request(url: str, params: dict = {}, **kwargs) -> NistResponse:
     '''Dummy request to the NIST Chemistry WebBook
     
     Arguments:
