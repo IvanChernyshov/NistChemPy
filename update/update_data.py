@@ -11,7 +11,7 @@ from tqdm import tqdm
 from urllib.robotparser import RobotFileParser
 from urllib.request import urlopen, urlretrieve
 from urllib.parse import unquote, urlparse, parse_qs
-from urllib.error import HTTPError
+from urllib.error import HTTPError, URLError
 
 from bs4 import BeautifulSoup
 
@@ -171,7 +171,7 @@ def download_compound_htmls(df: pd.core.frame.DataFrame,
                 urlretrieve(url, path_html)
                 time.sleep(crawl_delay)
                 break
-            except HTTPError:
+            except (HTTPError, URLError, TimeoutError):
                 n_errs += 1
                 time.sleep(10*crawl_delay)
     

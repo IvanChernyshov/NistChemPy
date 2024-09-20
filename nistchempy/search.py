@@ -161,10 +161,8 @@ class NistSearch():
             kwargs: requests.get kwargs parameters
         
         '''
-        loaded = [cmp.ID for cmp in self.compounds]
+        self.compounds = []
         for ID in self.compound_ids:
-            if ID in loaded:
-                continue
             X = _compound.get_compound(ID, **kwargs)
             self.compounds.append(X)
 
