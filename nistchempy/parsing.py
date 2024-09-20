@@ -220,10 +220,15 @@ def get_compound_mol_weight(soup: _bs4.BeautifulSoup) -> _tp.Optional[float]:
     hits = info.findChildren(string = _re.compile('Molecular weight'))
     if hits:
         text = hits[0].findParent('li').text.replace('Molecular weight:', '')
+        text = _re.sub('[^0-9\.]', ' ', text).strip().split()[0]
         try:
             mw = float(text)
         except ValueError:
-            pass
+            try:
+                text = _re.search('\d+\.\d+', text).group(0)
+                mw = float(text)
+            except ValueError:
+                pass
     
     return mw
 
