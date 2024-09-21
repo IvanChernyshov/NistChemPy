@@ -164,6 +164,7 @@ def download_compound_htmls(df: pd.core.frame.DataFrame,
     df = df.loc[~df.index.isin(loaded)]
     # download htmls
     for i, url in tqdm(zip(df.index, df.url), total = len(df)):
+        print(url)
         path_html = os.path.join(dir_html, f'{i}.html')
         n_errs = 0
         while n_errs < 3:
@@ -174,6 +175,9 @@ def download_compound_htmls(df: pd.core.frame.DataFrame,
             except (HTTPError, URLError, TimeoutError):
                 n_errs += 1
                 time.sleep(10*crawl_delay)
+        if n_errs >= 3:
+            print('Cannot download data, stopping execution ...')
+            sys.exit(0)
     
     return
 
@@ -203,7 +207,7 @@ if __name__ == '__main__':
     
     # parameters
     dir_data = 'D:/wd/NIST' # 'data/'
-    crawl_delay = 4
+    crawl_delay = 5
     
     # run update
     main(dir_data, crawl_delay)
