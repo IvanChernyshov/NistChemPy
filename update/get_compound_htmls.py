@@ -12,7 +12,7 @@ import pandas as pd
 import nistchempy as nist
 
 
-#%% Functions
+#%% Download functions
 
 def download_compound_html(url: str, path_html: str, path_err: str) -> None:
     '''Downloads HTML page of the NIST compound
@@ -118,14 +118,17 @@ def main() -> None:
     # prepare arguments
     args = get_arguments()
     check_arguments(args)
+    
     # get NIST compounds
     print('Loading compounds data ...')
     path_csv = os.path.join(args.dir_data, 'compounds.csv')
     df = pd.read_csv(path_csv)
+    
     # check html dir
     dir_html = os.path.join(args.dir_data, 'htmls')
     if not os.path.exists(dir_html):
         os.mkdir(dir_html)
+    
     # check errors file
     path_err = os.path.join(args.dir_data, 'download_htmls.err')
     err_urls = []
@@ -134,10 +137,12 @@ def main() -> None:
             lines = [l.strip() for l in inpf.readlines()]
             lines = [l for l in lines if l]
         err_urls = [re.search('url=(.+)', l).group(1).strip() for l in lines]
+    
     # filter downloaded systems
     loaded = [int(f.replace('.html', '')) for f in os.listdir(dir_html)]
     df = df.loc[~df.index.isin(loaded)]
     df = df.loc[~df.url.isin(err_urls)]
+    
     # download
     print('Downloading NIST compound webpages ...')
     download_compound_htmls(df, dir_html, path_err, args.crawl_delay)
