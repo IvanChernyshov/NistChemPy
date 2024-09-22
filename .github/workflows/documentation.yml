@@ -16,7 +16,7 @@ jobs:
           sudo apt-get install pandoc
           pip install -r ./docs/requirements.txt
       - name: Sphinx build
-        run: | # sphinx-build doc _build
+        run: |
           cd ./docs/
           make html
       - name: Deploy to GitHub Pages
@@ -25,5 +25,5 @@ jobs:
         with:
           publish_branch: gh-pages
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: docs/build/html # _build/
+          publish_dir: docs/build/html
           force_orphan: true\

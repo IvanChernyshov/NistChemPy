@@ -20,5 +20,5 @@ pip install nistchempy
 
 ## How To
 
-The primary features of NistChemPy, such as search capabilities and compound manipulations, are detailed in the [documentation](https://github.com/EPiCs-group/NistChemPy/blob/main/tutorial.ipynb).
+The primary features of NistChemPy, such as search capabilities and compound manipulations, are detailed in the [documentation](https://ivanchernyshov.github.io/NistChemPy/source/api.html).
 
