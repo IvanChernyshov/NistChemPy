@@ -145,12 +145,7 @@ def check_arguments(args: argparse.Namespace) -> None:
 
 
 def main() -> None:
-    '''Extracts info on NIST Chemistry WebBook compounds and saves to csv file
-    
-    Arguments:
-        dir_data (str): directory to store downloaded and extracted info
-    
-    '''
+    '''Extracts info on NIST Chemistry WebBook compounds and saves to csv file'''
     # prepare arguments
     args = get_arguments()
     check_arguments(args)
