@@ -16,7 +16,15 @@ import typing as _tp
 #%% Search
 
 def get_found_compounds(soup: _bs4.BeautifulSoup) -> dict:
-    ''' '''
+    '''Extracts IDs of found compounds for NIST Chemistry WebBook search
+    
+    Arguments:
+        soup (_bs4.BeautifulSoup): bs4-parsed web-page
+    
+    Returns:
+        dict: extracted NIST search parameters
+    
+    '''
     try:
         refs = soup.find('ol').findChildren('a', href = _re.compile('/cgi/cbook.cgi'))
         IDs = [_uparse.parse_qs(_uparse.urlparse(a.attrs['href']).query)['ID'][0] \
