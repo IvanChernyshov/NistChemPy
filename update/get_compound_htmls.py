@@ -66,7 +66,7 @@ def download_compound_htmls(df: pd.core.frame.DataFrame, dir_html: str,
 
 
 
-#%% Main function
+#%% Main functions
 
 def get_arguments() -> argparse.Namespace:
     '''CLI wrapper
@@ -109,12 +109,7 @@ def check_arguments(args: argparse.Namespace) -> None:
 
 
 def main() -> None:
-    '''Main function for updating the list of NIST compounds via downloaded HTML pages
-    
-    Arguments:
-        dir_data (str): directory for robots.txt and primary sitemap
-    
-    '''
+    '''Updates the list of NIST compounds via downloaded HTML pages'''
     # prepare arguments
     args = get_arguments()
     check_arguments(args)
