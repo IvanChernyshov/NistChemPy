@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Basic Search &mdash; NistChemPy 0.3.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=19f00094" />
+      <link rel="stylesheet" type="text/css" href="../_static/nbsphinx-code-cells.css?v=2aa19091" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../_static/documentation_options.js?v=e259d695"></script>
+        <script src="../_static/doctools.js?v=9a2dae69"></script>
+        <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+        <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+        <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Compound properties" href="compound_properties.html" />
+    <link rel="prev" title="Welcome to the NistChemPy’s documentation!" href="../index.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            NistChemPy
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Cookbook:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Basic Search</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#Basic-search">Basic search</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#Search-Parameters">Search Parameters</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#Limit-of-Found-Compounds">Limit of Found Compounds</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="compound_properties.html">Compound Properties</a></li>
+<li class="toctree-l1"><a class="reference internal" href="structure_search.html">Structure Search</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Package details:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="api.html">Package API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="changelog.html">Changelog</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">NistChemPy</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Basic Search</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/source/basic_search.ipynb.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="Basic-Search">
+<h1>Basic Search<a class="headerlink" href="#Basic-Search" title="Link to this heading"></a></h1>
+<section id="Basic-search">
+<h2>Basic search<a class="headerlink" href="#Basic-search" title="Link to this heading"></a></h2>
+<p>There are five available search types: - by <a class="reference external" href="https://webbook.nist.gov/chemistry/name-ser/">name</a> (<code class="docutils literal notranslate"><span class="pre">search_type</span> <span class="pre">=</span> <span class="pre">'name'</span></code>); - by <a class="reference external" href="https://webbook.nist.gov/chemistry/inchi-ser/">InChI</a> (<code class="docutils literal notranslate"><span class="pre">search_type</span> <span class="pre">=</span> <span class="pre">'inchi'</span></code>); - by <a class="reference external" href="https://webbook.nist.gov/chemistry/cas-ser/">CAS RN</a> (<code class="docutils literal notranslate"><span class="pre">search_type</span> <span class="pre">=</span> <span class="pre">'cas'</span></code>); - by <a class="reference external" href="https://webbook.nist.gov/chemistry/form-ser/">chemical formula</a> (<code class="docutils literal notranslate"><span class="pre">search_type</span> <span class="pre">=</span> <span class="pre">'formula'</span></code>); - and by NIST Compound ID (<code class="docutils literal notranslate"><span class="pre">search_type</span> <span class="pre">=</span> <span class="pre">'id'</span></code>):</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">nistchempy</span> <span class="k">as</span> <span class="nn">nist</span>
+
+<span class="n">s</span> <span class="o">=</span> <span class="n">nist</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">identifier</span> <span class="o">=</span> <span class="s1">&#39;1,2,3*-butane&#39;</span><span class="p">,</span> <span class="n">search_type</span> <span class="o">=</span> <span class="s1">&#39;name&#39;</span><span class="p">)</span>
+<span class="n">s</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+NistSearch(success=True, num_compounds=10, lost=False)
+</pre></div></div>
+</div>
+<p>List of found compounds is stored in the <code class="docutils literal notranslate"><span class="pre">compound_ids</span></code> attribute, and the compounds can be retrieved via the <code class="docutils literal notranslate"><span class="pre">load_found_compounds</span></code> method:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">s</span><span class="o">.</span><span class="n">compound_ids</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+[&#39;C1871585&#39;,
+ &#39;C18338404&#39;,
+ &#39;C298180&#39;,
+ &#39;C1529686&#39;,
+ &#39;C632053&#39;,
+ &#39;C13138517&#39;,
+ &#39;C62521691&#39;,
+ &#39;C76397234&#39;,
+ &#39;C101257798&#39;,
+ &#39;C1464535&#39;]
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">s</span><span class="o">.</span><span class="n">load_found_compounds</span><span class="p">()</span>
+<span class="n">s</span><span class="o">.</span><span class="n">compounds</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+[NistCompound(ID=C1871585),
+ NistCompound(ID=C18338404),
+ NistCompound(ID=C298180),
+ NistCompound(ID=C1529686),
+ NistCompound(ID=C632053),
+ NistCompound(ID=C13138517),
+ NistCompound(ID=C62521691),
+ NistCompound(ID=C76397234),
+ NistCompound(ID=C101257798),
+ NistCompound(ID=C1464535)]
+</pre></div></div>
+</div>
+</section>
+<section id="Search-Parameters">
+<h2>Search Parameters<a class="headerlink" href="#Search-Parameters" title="Link to this heading"></a></h2>
+<p>In addition to the main identifier, you can limit the search using several parameters, which can be using the <code class="docutils literal notranslate"><span class="pre">print_search_params</span></code> function:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">nist</span><span class="o">.</span><span class="n">print_search_parameters</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+use_SI         :   Units for thermodynamic data, &#34;SI&#34; if True and &#34;calories&#34; if False
+match_isotopes :   Exactly match the specified isotopes (formula search only)
+allow_other    :   Allow elements not specified in formula (formula search only)
+allow_extra    :   Allow more atoms of elements in formula than specified (formula search only)
+no_ion         :   Exclude ions from the search (formula search only)
+cTG            :   Contains gas-phase thermodynamic data
+cTC            :   Contains condensed-phase thermodynamic data
+cTP            :   Contains phase-change thermodynamic data
+cTR            :   Contains reaction thermodynamic data
+cIE            :   Contains ion energetics thermodynamic data
+cIC            :   Contains ion cluster thermodynamic data
+cIR            :   Contains IR data
+cTZ            :   Contains THz IR data
+cMS            :   Contains MS data
+cUV            :   Contains UV/Vis data
+cGC            :   Contains gas chromatography data
+cES            :   Contains vibrational and electronic energy levels
+cDI            :   Contains constants of diatomic molecules
+cSO            :   Contains info on Henry&#39;s law
+</pre></div></div>
+</div>
+<p>These options can be specified as arguments of the <code class="docutils literal notranslate"><span class="pre">nist.search</span></code> function or defined in <code class="docutils literal notranslate"><span class="pre">nist.NistSearchParameters</span></code> object:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># query</span>
+<span class="n">identifier</span> <span class="o">=</span> <span class="s1">&#39;C4H?Cl2&#39;</span>
+<span class="n">search_type</span> <span class="o">=</span> <span class="s1">&#39;formula&#39;</span>
+
+<span class="c1"># direct search (entries with IR spectra)</span>
+<span class="n">s1</span> <span class="o">=</span> <span class="n">nist</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">identifier</span><span class="p">,</span> <span class="n">search_type</span><span class="p">,</span> <span class="n">cIR</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span>
+
+<span class="c1"># search with NistSearchParameters</span>
+<span class="n">params</span> <span class="o">=</span> <span class="n">nist</span><span class="o">.</span><span class="n">NistSearchParameters</span><span class="p">(</span><span class="n">cIR</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span>
+<span class="n">s2</span> <span class="o">=</span> <span class="n">nist</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">identifier</span><span class="p">,</span> <span class="n">search_type</span><span class="p">,</span> <span class="n">params</span><span class="p">)</span>
+
+<span class="c1"># compare searches</span>
+<span class="nb">print</span><span class="p">(</span><span class="nb">sorted</span><span class="p">(</span><span class="n">s1</span><span class="o">.</span><span class="n">compound_ids</span><span class="p">))</span>
+<span class="nb">print</span><span class="p">(</span><span class="nb">sorted</span><span class="p">(</span><span class="n">s2</span><span class="o">.</span><span class="n">compound_ids</span><span class="p">))</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+[&#39;C110565&#39;, &#39;C110576&#39;, &#39;C1190223&#39;, &#39;C4028562&#39;, &#39;C4279225&#39;, &#39;C541333&#39;, &#39;C594376&#39;, &#39;C616217&#39;, &#39;C7581977&#39;, &#39;C760236&#39;, &#39;C764410&#39;, &#39;C821103&#39;, &#39;C926578&#39;]
+[&#39;C110565&#39;, &#39;C110576&#39;, &#39;C1190223&#39;, &#39;C4028562&#39;, &#39;C4279225&#39;, &#39;C541333&#39;, &#39;C594376&#39;, &#39;C616217&#39;, &#39;C7581977&#39;, &#39;C760236&#39;, &#39;C764410&#39;, &#39;C821103&#39;, &#39;C926578&#39;]
+</pre></div></div>
+</div>
+</section>
+<section id="Limit-of-Found-Compounds">
+<h2>Limit of Found Compounds<a class="headerlink" href="#Limit-of-Found-Compounds" title="Link to this heading"></a></h2>
+<p>NIST Chemistry WebBook limits the search results by 400 compounds. To check if that happened for your search, you need to check the <code class="docutils literal notranslate"><span class="pre">lost</span></code> property:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">params</span> <span class="o">=</span> <span class="n">nist</span><span class="o">.</span><span class="n">NistSearchParameters</span><span class="p">(</span><span class="n">no_ion</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="n">cMS</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span>
+<span class="n">s</span> <span class="o">=</span> <span class="n">nist</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="s1">&#39;C6H?O?&#39;</span><span class="p">,</span> <span class="s1">&#39;formula&#39;</span><span class="p">,</span> <span class="n">params</span><span class="p">)</span>
+<span class="n">s</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+NistSearch(success=True, num_compounds=400, lost=True)
+</pre></div></div>
+</div>
+<p>To overcome that when searching for a large number of substances, try to break the chemical formula into subsets:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">sub_searches</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">7</span><span class="p">):</span>
+    <span class="n">s</span> <span class="o">=</span> <span class="n">nist</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;C6H?O</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span> <span class="s1">&#39;formula&#39;</span><span class="p">,</span> <span class="n">params</span><span class="p">)</span>
+    <span class="n">sub_searches</span><span class="o">.</span><span class="n">append</span><span class="p">(</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">s</span><span class="o">.</span><span class="n">compound_ids</span><span class="p">),</span> <span class="n">s</span><span class="o">.</span><span class="n">lost</span><span class="p">)</span> <span class="p">)</span>
+<span class="n">sub_searches</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[7]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+[(170, False), (178, False), (80, False), (42, False), (7, False), (24, False)]
+</pre></div></div>
+</div>
+<p>The better way is to overcome this problem is to use the pre-prepared compound list. For more details see the <code class="docutils literal notranslate"><span class="pre">Structure</span> <span class="pre">Search</span></code> page of the CookBook.</p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="../index.html" class="btn btn-neutral float-left" title="Welcome to the NistChemPy’s documentation!" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="compound_properties.html" class="btn btn-neutral float-right" title="Compound properties" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, Ivan Yu. Chernyshov.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
