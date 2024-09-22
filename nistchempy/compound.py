@@ -333,6 +333,10 @@ def compound_from_response(nr: _ncpr.NistResponse) -> _tp.Optional[NistCompound]
         several compounds corresponding to the given ID
     
     '''
+    # check if it's compound page
+    if not _parsing.is_compound_page(nr.soup):
+        return None
+    # extract data
     info = {**_parsing.parse_compound_page(nr.soup),
             'nist_response': nr}
     nc = NistCompound(**info)
