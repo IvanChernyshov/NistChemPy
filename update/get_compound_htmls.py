@@ -58,9 +58,11 @@ def download_compound_htmls(df: pd.core.frame.DataFrame, dir_html: str,
             download_compound_html(url, path_html, path_err)
             n_errs = 0
             time.sleep(crawl_delay)
-        except TimeoutError:
+        except (KeyboardInterrupt, SystemError, SystemExit):
+            raise
+        except:
             n_errs += 1
-            time.sleep(max(30, 10*crawl_delay))
+            time.sleep(max(120, 10*crawl_delay))
     
     return
 
