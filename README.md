@@ -17,6 +17,10 @@ Install NistChemPy using [pip](https://pypi.org/project/NistChemPy/):
 pip install nistchempy
 ```
 
+> [!WARNING]
+> Please note that versions starting with 1.0.0 are not backward compatible with the older alpha versions due to significant changes in the code structure.
+> You may need to update your nistchempy-based code or use the older nistchempy versions.
+
 
 ## How To
 
