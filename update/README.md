@@ -6,6 +6,7 @@ This directory contains script those functionality is to update the pre-download
 ## Requirements
 
 All requirements are listed in [requirements.txt](requirements.txt).
+
 [tqdm](https://tqdm.github.io/) is the only addition to NistChemPy and its dependences.
 
 
