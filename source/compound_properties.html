@@ -156,9 +156,34 @@ NistCompound(ID=C632053)
 </section>
 <section id="Properties">
 <h2>Properties<a class="headerlink" href="#Properties" title="Link to this heading"></a></h2>
-<p>The <code class="docutils literal notranslate"><span class="pre">nist.compound.NistCompound</span></code> object contains information extracted from the NIST Chemistry WebBook’s compound web page. It can be divided into three groups: - <strong>Basic properties</strong> — properties which are already extracted from the compound web page: - <code class="docutils literal notranslate"><span class="pre">ID</span></code>: NIST Compound ID; - <code class="docutils literal notranslate"><span class="pre">name</span></code>: chemical name; - <code class="docutils literal notranslate"><span class="pre">synonyms</span></code>: synonyms; - <code class="docutils literal notranslate"><span class="pre">formula</span></code>: chemical formula; - <code class="docutils literal notranslate"><span class="pre">mol_weight</span></code>: molecular weigth; - <code class="docutils literal notranslate"><span class="pre">inchi</span></code> / <code class="docutils literal notranslate"><span class="pre">inchi_key</span></code>: InChI / InChIKey strings; - <code class="docutils literal notranslate"><span class="pre">cas_rn</span></code>: CAS Registry Number. -
-<strong>Reference properties</strong> — dictionaries {property name =&gt; URL}. There are four subgroups: - <code class="docutils literal notranslate"><span class="pre">mol_refs</span></code>: molecular properties, which are 2D and 3D MOL-files; - <code class="docutils literal notranslate"><span class="pre">data_refs</span></code>: WebBook properties, which are stored in NIST Chemistry WebBook; - <code class="docutils literal notranslate"><span class="pre">nist_public_refs</span></code>: other properties, which are stored in public NIST websites; - <code class="docutils literal notranslate"><span class="pre">nist_subscription_refs</span></code>: other properties, which are stored in paid NIST websites. - <strong>Extracted properties</strong> — properties extracted from the URLs provided by <strong>reference
-properties</strong>: - <code class="docutils literal notranslate"><span class="pre">mol2D</span></code> / <code class="docutils literal notranslate"><span class="pre">mol3D</span></code>: text blocks of 2D / 3D MOL-files; - <code class="docutils literal notranslate"><span class="pre">ir_specs</span></code> / <code class="docutils literal notranslate"><span class="pre">thz_specs</span></code> / <code class="docutils literal notranslate"><span class="pre">ms_specs</span></code> / <code class="docutils literal notranslate"><span class="pre">uv_specs</span></code>: JDX-formatted text blocks of IR / THz / MS / UV spectra.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">nist.compound.NistCompound</span></code> object contains information extracted from the NIST Chemistry WebBook’s compound web page. It can be divided into three groups:</p>
+<ul class="simple">
+<li><p><strong>Basic properties</strong> — properties which are already extracted from the compound web page:</p>
+<ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">ID</span></code>: NIST Compound ID;</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">name</span></code>: chemical name;</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">synonyms</span></code>: synonyms;</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">formula</span></code>: chemical formula;</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">mol_weight</span></code>: molecular weigth;</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">inchi</span></code> / <code class="docutils literal notranslate"><span class="pre">inchi_key</span></code>: InChI / InChIKey strings;</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">cas_rn</span></code>: CAS Registry Number.</p></li>
+</ul>
+</li>
+<li><p><strong>Reference properties</strong> — dictionaries {property name =&gt; URL}. There are four subgroups:</p>
+<ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">mol_refs</span></code>: molecular properties, which are 2D and 3D MOL-files;</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">data_refs</span></code>: WebBook properties, which are stored in NIST Chemistry WebBook;</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">nist_public_refs</span></code>: other properties, which are stored in public NIST websites;</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">nist_subscription_refs</span></code>: other properties, which are stored in paid NIST websites.</p></li>
+</ul>
+</li>
+<li><p><strong>Extracted properties</strong> — properties extracted from the URLs provided by <strong>reference properties</strong>:</p>
+<ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">mol2D</span></code> / <code class="docutils literal notranslate"><span class="pre">mol3D</span></code>: text blocks of 2D / 3D MOL-files;</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">ir_specs</span></code> / <code class="docutils literal notranslate"><span class="pre">thz_specs</span></code> / <code class="docutils literal notranslate"><span class="pre">ms_specs</span></code> / <code class="docutils literal notranslate"><span class="pre">uv_specs</span></code>: JDX-formatted text blocks of IR / THz / MS / UV spectra.</p></li>
+</ul>
+</li>
+</ul>
 <div class="nbinput docutils container">
 <div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
 </pre></div>
