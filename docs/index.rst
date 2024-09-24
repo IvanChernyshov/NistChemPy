@@ -9,7 +9,7 @@ Welcome to the NistChemPy's documentation!
    
    Basic Search <source/basic_search.ipynb>
    Compound Properties <source/compound_properties.ipynb>
-   Structure Search <source/structure_search.ipynb>
+   Advanced Search <source/advanced_search.ipynb>
 
 
 .. toctree::
