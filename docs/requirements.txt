@@ -1,0 +1,13 @@
+# nistchempy
+requests
+pandas
+bs4
+importlib_resources ; python_version < '3.9'
+
+# docs
+sphinx
+sphinx_gallery
+sphinx-rtd-theme
+notebook
+pandoc
+nbsphinx
