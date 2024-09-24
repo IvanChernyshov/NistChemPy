@@ -57,7 +57,7 @@
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="compound_properties.html">Compound Properties</a></li>
-<li class="toctree-l1"><a class="reference internal" href="structure_search.html">Structure Search</a></li>
+<li class="toctree-l1"><a class="reference internal" href="advanced_search.html">Advanced Search</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Package details:</span></p>
 <ul>
@@ -100,7 +100,7 @@
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">nistchempy</span> <span class="k">as</span> <span class="nn">nist</span>
 
-<span class="n">s</span> <span class="o">=</span> <span class="n">nist</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">identifier</span> <span class="o">=</span> <span class="s1">&#39;1,2,3*-butane&#39;</span><span class="p">,</span> <span class="n">search_type</span> <span class="o">=</span> <span class="s1">&#39;name&#39;</span><span class="p">)</span>
+<span class="n">s</span> <span class="o">=</span> <span class="n">nist</span><span class="o">.</span><span class="n">run_search</span><span class="p">(</span><span class="n">identifier</span> <span class="o">=</span> <span class="s1">&#39;1,2,3*-butane&#39;</span><span class="p">,</span> <span class="n">search_type</span> <span class="o">=</span> <span class="s1">&#39;name&#39;</span><span class="p">)</span>
 <span class="n">s</span>
 </pre></div>
 </div>
@@ -190,20 +190,20 @@ match_isotopes :   Exactly match the specified isotopes (formula search only)
 allow_other    :   Allow elements not specified in formula (formula search only)
 allow_extra    :   Allow more atoms of elements in formula than specified (formula search only)
 no_ion         :   Exclude ions from the search (formula search only)
-cTG            :   Contains gas-phase thermodynamic data
-cTC            :   Contains condensed-phase thermodynamic data
-cTP            :   Contains phase-change thermodynamic data
-cTR            :   Contains reaction thermodynamic data
-cIE            :   Contains ion energetics thermodynamic data
-cIC            :   Contains ion cluster thermodynamic data
-cIR            :   Contains IR data
-cTZ            :   Contains THz IR data
-cMS            :   Contains MS data
-cUV            :   Contains UV/Vis data
-cGC            :   Contains gas chromatography data
-cES            :   Contains vibrational and electronic energy levels
-cDI            :   Contains constants of diatomic molecules
-cSO            :   Contains info on Henry&#39;s law
+cTG            :   Gas phase thermochemistry data
+cTC            :   Condensed phase thermochemistry data
+cTP            :   Phase change data
+cTR            :   Reaction thermochemistry data
+cIE            :   Gas phase ion energetics data
+cIC            :   Ion clustering data
+cIR            :   IR Spectrum
+cTZ            :   THz IR spectrum
+cMS            :   Mass spectrum (electron ionization)
+cUV            :   UV/Visible spectrum
+cGC            :   Gas Chromatography
+cES            :   Vibrational and/or electronic energy levels
+cDI            :   Constants of diatomic molecules
+cSO            :   Henry&#39;s Law data
 </pre></div></div>
 </div>
 <p>These options can be specified as arguments of the <code class="docutils literal notranslate"><span class="pre">nist.search</span></code> function or defined in <code class="docutils literal notranslate"><span class="pre">nist.NistSearchParameters</span></code> object:</p>
@@ -216,11 +216,11 @@ cSO            :   Contains info on Henry&#39;s law
 <span class="n">search_type</span> <span class="o">=</span> <span class="s1">&#39;formula&#39;</span>
 
 <span class="c1"># direct search (entries with IR spectra)</span>
-<span class="n">s1</span> <span class="o">=</span> <span class="n">nist</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">identifier</span><span class="p">,</span> <span class="n">search_type</span><span class="p">,</span> <span class="n">cIR</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span>
+<span class="n">s1</span> <span class="o">=</span> <span class="n">nist</span><span class="o">.</span><span class="n">run_search</span><span class="p">(</span><span class="n">identifier</span><span class="p">,</span> <span class="n">search_type</span><span class="p">,</span> <span class="n">cIR</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span>
 
 <span class="c1"># search with NistSearchParameters</span>
 <span class="n">params</span> <span class="o">=</span> <span class="n">nist</span><span class="o">.</span><span class="n">NistSearchParameters</span><span class="p">(</span><span class="n">cIR</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span>
-<span class="n">s2</span> <span class="o">=</span> <span class="n">nist</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">identifier</span><span class="p">,</span> <span class="n">search_type</span><span class="p">,</span> <span class="n">params</span><span class="p">)</span>
+<span class="n">s2</span> <span class="o">=</span> <span class="n">nist</span><span class="o">.</span><span class="n">run_search</span><span class="p">(</span><span class="n">identifier</span><span class="p">,</span> <span class="n">search_type</span><span class="p">,</span> <span class="n">params</span><span class="p">)</span>
 
 <span class="c1"># compare searches</span>
 <span class="nb">print</span><span class="p">(</span><span class="nb">sorted</span><span class="p">(</span><span class="n">s1</span><span class="o">.</span><span class="n">compound_ids</span><span class="p">))</span>
@@ -246,7 +246,7 @@ cSO            :   Contains info on Henry&#39;s law
 </pre></div>
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">params</span> <span class="o">=</span> <span class="n">nist</span><span class="o">.</span><span class="n">NistSearchParameters</span><span class="p">(</span><span class="n">no_ion</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="n">cMS</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span>
-<span class="n">s</span> <span class="o">=</span> <span class="n">nist</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="s1">&#39;C6H?O?&#39;</span><span class="p">,</span> <span class="s1">&#39;formula&#39;</span><span class="p">,</span> <span class="n">params</span><span class="p">)</span>
+<span class="n">s</span> <span class="o">=</span> <span class="n">nist</span><span class="o">.</span><span class="n">run_search</span><span class="p">(</span><span class="s1">&#39;C6H?O?&#39;</span><span class="p">,</span> <span class="s1">&#39;formula&#39;</span><span class="p">,</span> <span class="n">params</span><span class="p">)</span>
 <span class="n">s</span>
 </pre></div>
 </div>
@@ -267,7 +267,7 @@ NistSearch(success=True, num_compounds=400, lost=True)
 </div>
 <div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">sub_searches</span> <span class="o">=</span> <span class="p">[]</span>
 <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">7</span><span class="p">):</span>
-    <span class="n">s</span> <span class="o">=</span> <span class="n">nist</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;C6H?O</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span> <span class="s1">&#39;formula&#39;</span><span class="p">,</span> <span class="n">params</span><span class="p">)</span>
+    <span class="n">s</span> <span class="o">=</span> <span class="n">nist</span><span class="o">.</span><span class="n">run_search</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;C6H?O</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span> <span class="s1">&#39;formula&#39;</span><span class="p">,</span> <span class="n">params</span><span class="p">)</span>
     <span class="n">sub_searches</span><span class="o">.</span><span class="n">append</span><span class="p">(</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">s</span><span class="o">.</span><span class="n">compound_ids</span><span class="p">),</span> <span class="n">s</span><span class="o">.</span><span class="n">lost</span><span class="p">)</span> <span class="p">)</span>
 <span class="n">sub_searches</span>
 </pre></div>

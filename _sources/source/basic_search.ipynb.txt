@@ -43,7 +43,7 @@
    "source": [
     "import nistchempy as nist\n",
     "\n",
-    "s = nist.search(identifier = '1,2,3*-butane', search_type = 'name')\n",
+    "s = nist.run_search(identifier = '1,2,3*-butane', search_type = 'name')\n",
     "s"
    ]
   },
@@ -147,20 +147,20 @@
       "allow_other    :   Allow elements not specified in formula (formula search only)\n",
       "allow_extra    :   Allow more atoms of elements in formula than specified (formula search only)\n",
       "no_ion         :   Exclude ions from the search (formula search only)\n",
-      "cTG            :   Contains gas-phase thermodynamic data\n",
-      "cTC            :   Contains condensed-phase thermodynamic data\n",
-      "cTP            :   Contains phase-change thermodynamic data\n",
-      "cTR            :   Contains reaction thermodynamic data\n",
-      "cIE            :   Contains ion energetics thermodynamic data\n",
-      "cIC            :   Contains ion cluster thermodynamic data\n",
-      "cIR            :   Contains IR data\n",
-      "cTZ            :   Contains THz IR data\n",
-      "cMS            :   Contains MS data\n",
-      "cUV            :   Contains UV/Vis data\n",
-      "cGC            :   Contains gas chromatography data\n",
-      "cES            :   Contains vibrational and electronic energy levels\n",
-      "cDI            :   Contains constants of diatomic molecules\n",
-      "cSO            :   Contains info on Henry's law\n"
+      "cTG            :   Gas phase thermochemistry data\n",
+      "cTC            :   Condensed phase thermochemistry data\n",
+      "cTP            :   Phase change data\n",
+      "cTR            :   Reaction thermochemistry data\n",
+      "cIE            :   Gas phase ion energetics data\n",
+      "cIC            :   Ion clustering data\n",
+      "cIR            :   IR Spectrum\n",
+      "cTZ            :   THz IR spectrum\n",
+      "cMS            :   Mass spectrum (electron ionization)\n",
+      "cUV            :   UV/Visible spectrum\n",
+      "cGC            :   Gas Chromatography\n",
+      "cES            :   Vibrational and/or electronic energy levels\n",
+      "cDI            :   Constants of diatomic molecules\n",
+      "cSO            :   Henry's Law data\n"
      ]
     }
    ],
@@ -197,11 +197,11 @@
     "search_type = 'formula'\n",
     "\n",
     "# direct search (entries with IR spectra)\n",
-    "s1 = nist.search(identifier, search_type, cIR = True)\n",
+    "s1 = nist.run_search(identifier, search_type, cIR = True)\n",
     "\n",
     "# search with NistSearchParameters\n",
     "params = nist.NistSearchParameters(cIR = True)\n",
-    "s2 = nist.search(identifier, search_type, params)\n",
+    "s2 = nist.run_search(identifier, search_type, params)\n",
     "\n",
     "# compare searches\n",
     "print(sorted(s1.compound_ids))\n",
@@ -237,7 +237,7 @@
    ],
    "source": [
     "params = nist.NistSearchParameters(no_ion = True, cMS = True)\n",
-    "s = nist.search('C6H?O?', 'formula', params)\n",
+    "s = nist.run_search('C6H?O?', 'formula', params)\n",
     "s"
    ]
   },
@@ -269,7 +269,7 @@
    "source": [
     "sub_searches = []\n",
     "for i in range(1, 7):\n",
-    "    s = nist.search(f'C6H?O{i}', 'formula', params)\n",
+    "    s = nist.run_search(f'C6H?O{i}', 'formula', params)\n",
     "    sub_searches.append( (len(s.compound_ids), s.lost) )\n",
     "sub_searches"
    ]

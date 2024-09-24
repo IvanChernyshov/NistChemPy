@@ -1,0 +1,1180 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Advanced search &mdash; NistChemPy 0.3.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=19f00094" />
+      <link rel="stylesheet" type="text/css" href="../_static/nbsphinx-code-cells.css?v=2aa19091" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../_static/documentation_options.js?v=e259d695"></script>
+        <script src="../_static/doctools.js?v=9a2dae69"></script>
+        <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+        <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+        <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="NistChemPy API" href="api.html" />
+    <link rel="prev" title="Compound properties" href="compound_properties.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            NistChemPy
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Cookbook:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="basic_search.html">Basic Search</a></li>
+<li class="toctree-l1"><a class="reference internal" href="compound_properties.html">Compound Properties</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Advanced Search</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Package details:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="api.html">Package API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="changelog.html">Changelog</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">NistChemPy</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Advanced search</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/source/advanced_search.ipynb.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="Advanced-search">
+<h1>Advanced search<a class="headerlink" href="#Advanced-search" title="Link to this heading"></a></h1>
+<p>NIST Chemistry WebBook supports structure search, however to the best of our knowledge there is no straightforward way to implement it as a Python API. To overcome this problem, as well as WebBook’s limitation of found compounds, <strong>NistChemPy</strong> package contains dataframe with the main info on all NIST Chemistry WebBook compounds:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">nistchempy</span> <span class="k">as</span> <span class="nn">nist</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+
+<span class="n">pd</span><span class="o">.</span><span class="n">set_option</span><span class="p">(</span><span class="s1">&#39;display.max_columns&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+<span class="n">df</span> <span class="o">=</span> <span class="n">nist</span><span class="o">.</span><span class="n">get_all_data</span><span class="p">()</span>
+<span class="n">df</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
+</pre></div>
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>ID</th>
+      <th>name</th>
+      <th>synonyms</th>
+      <th>formula</th>
+      <th>mol_weight</th>
+      <th>inchi</th>
+      <th>inchi_key</th>
+      <th>cas_rn</th>
+      <th>mol2D</th>
+      <th>mol3D</th>
+      <th>Gas phase thermochemistry data</th>
+      <th>Condensed phase thermochemistry data</th>
+      <th>Phase change data</th>
+      <th>Reaction thermochemistry data</th>
+      <th>Gas phase ion energetics data</th>
+      <th>Ion clustering data</th>
+      <th>IR Spectrum</th>
+      <th>THz IR spectrum</th>
+      <th>Mass spectrum (electron ionization)</th>
+      <th>UV/Visible spectrum</th>
+      <th>Gas Chromatography</th>
+      <th>Vibrational and/or electronic energy levels</th>
+      <th>Constants of diatomic molecules</th>
+      <th>Henry's Law data</th>
+      <th>Fluid Properties</th>
+      <th>Computational Chemistry Comparison and Benchmark Database</th>
+      <th>Electron-Impact Ionization Cross Sections (on physics web site)</th>
+      <th>Gas Phase Kinetics Database</th>
+      <th>Microwave spectra (on physics lab web site)</th>
+      <th>NIST Atomic Spectra Database - Ground states and ionization energies (on physics web site)</th>
+      <th>NIST Atomic Spectra Database - Levels Holdings (on physics web site)</th>
+      <th>NIST Atomic Spectra Database - Lines Holdings (on physics web site)</th>
+      <th>NIST Polycyclic Aromatic Hydrocarbon Structure Index</th>
+      <th>Reference simulation</th>
+      <th>Reference simulation:  SPC/E Water</th>
+      <th>Reference simulation:  TraPPE Carbon Dioxide</th>
+      <th>X-ray Photoelectron Spectroscopy Database, version 5.0</th>
+      <th>NIST / TRC Web Thermo Tables, "lite" edition (thermophysical and thermochemical data)</th>
+      <th>NIST / TRC Web Thermo Tables, professional edition (thermophysical and thermochemical data)</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>B100</td>
+      <td>iron oxide anion</td>
+      <td>NaN</td>
+      <td>FeO-</td>
+      <td>71.8450</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>https://webbook.nist.gov/cgi/cbook.cgi?ID=B100...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>https://webbook.nist.gov/cgi/cbook.cgi?ID=B100...</td>
+      <td>https://webbook.nist.gov/cgi/cbook.cgi?ID=B100...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>B1000</td>
+      <td>AsF3..Cl anion</td>
+      <td>NaN</td>
+      <td>AsClF3-</td>
+      <td>167.3700</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>https://webbook.nist.gov/cgi/cbook.cgi?ID=B100...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>B1000000</td>
+      <td>AgH2-</td>
+      <td>NaN</td>
+      <td>AgH2-</td>
+      <td>109.8846</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>https://webbook.nist.gov/cgi/cbook.cgi?ID=B100...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>B1000001</td>
+      <td>HAg(H2)</td>
+      <td>NaN</td>
+      <td>AgH3</td>
+      <td>110.8920</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>https://webbook.nist.gov/cgi/cbook.cgi?ID=B100...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>B1000002</td>
+      <td>AgNO+</td>
+      <td>NaN</td>
+      <td>AgNO+</td>
+      <td>137.8738</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>https://webbook.nist.gov/cgi/cbook.cgi?ID=B100...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>...</th>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+    </tr>
+    <tr>
+      <th>129323</th>
+      <td>U99777</td>
+      <td>Methyl 3-hydroxycholest-5-en-26-oate, TMS deri...</td>
+      <td>Methyl (25RS)-3β-hydroxy-5-cholesten-26-oate, ...</td>
+      <td>C31 H54 O3 Si</td>
+      <td>502.8442</td>
+      <td>InChI=1S/C31H54O3Si/c1-21(10-9-11-22(2)29(32)3...</td>
+      <td>DNXGNXYNSBCWGX-QBUYVTDMSA-N</td>
+      <td>NaN</td>
+      <td>https://webbook.nist.gov/cgi/cbook.cgi?Str2Fil...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>https://webbook.nist.gov/cgi/cbook.cgi?ID=U997...</td>
+      <td>NaN</td>
+      <td>https://webbook.nist.gov/cgi/cbook.cgi?ID=U997...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>129324</th>
+      <td>U99830</td>
+      <td>2-Methyl-3-oxovaleric acid, O,O'-bis(trimethyl...</td>
+      <td>3-Oxopentanoic acid, 2-methyl, TMS\n2-Methyl-3...</td>
+      <td>C12 H26 O3 Si2</td>
+      <td>274.5040</td>
+      <td>InChI=1S/C12H26O3Si2/c1-9-11(14-16(3,4)5)10(2)...</td>
+      <td>LXAIQDVPXKOIGO-KHPPLWFESA-N</td>
+      <td>NaN</td>
+      <td>https://webbook.nist.gov/cgi/inchi?Str2File=U9...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>https://webbook.nist.gov/cgi/inchi?ID=U99830&amp;M...</td>
+      <td>NaN</td>
+      <td>https://webbook.nist.gov/cgi/inchi?ID=U99830&amp;M...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>129325</th>
+      <td>U99942</td>
+      <td>3-Hydroxy-3-(4'-hydroxy-3'-methoxyphenyl)propi...</td>
+      <td>Vanillylhydracrylic acid, tri-TMS\nVanillylhyd...</td>
+      <td>C19 H36 O5 Si3</td>
+      <td>428.7426</td>
+      <td>InChI=1S/C19H36O5Si3/c1-21-18-13-15(11-12-16(1...</td>
+      <td>QCMUGKOFXVYNCF-UHFFFAOYSA-N</td>
+      <td>NaN</td>
+      <td>https://webbook.nist.gov/cgi/inchi?Str2File=U9...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>https://webbook.nist.gov/cgi/inchi?ID=U99942&amp;M...</td>
+      <td>NaN</td>
+      <td>https://webbook.nist.gov/cgi/inchi?ID=U99942&amp;M...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>129326</th>
+      <td>U99947</td>
+      <td>2-Propylpentanoic acid, 2,3,4,6-tetra(trimethy...</td>
+      <td>Valproic acid, glucuronide, TMS</td>
+      <td>C26 H58 O7 Si4</td>
+      <td>595.0765</td>
+      <td>InChI=1S/C26H58O7Si4/c1-15-17-20(18-16-2)25(27...</td>
+      <td>OVXMRISJDUWFKB-UHFFFAOYSA-N</td>
+      <td>NaN</td>
+      <td>https://webbook.nist.gov/cgi/inchi?Str2File=U9...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>https://webbook.nist.gov/cgi/inchi?ID=U99947&amp;M...</td>
+      <td>NaN</td>
+      <td>https://webbook.nist.gov/cgi/inchi?ID=U99947&amp;M...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>129327</th>
+      <td>x</td>
+      <td>Y5O2 radical</td>
+      <td>NaN</td>
+      <td>O2 Y5</td>
+      <td>476.5281</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>https://webbook.nist.gov/cgi/cbook.cgi?ID=x&amp;Ma...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+  </tbody>
+</table>
+<p>129328 rows × 39 columns</p>
+</div></div>
+</div>
+<p>Its columns can be divided in 5 groups:</p>
+<ol class="arabic simple">
+<li><p>General properties</p></li>
+<li><p>Molecular files</p></li>
+<li><p>NIST Chemistry WebBook data</p></li>
+<li><p>NIST public data</p></li>
+<li><p>NIST subscription data</p></li>
+</ol>
+<p>All columns except for the first group contain URLs for the corresponding data, allowing one to parse the relevant pages without the need to preload the compounds themselves:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">col</span> <span class="o">=</span> <span class="s1">&#39;NIST Atomic Spectra Database - Ground states and ionization energies (on physics web site)&#39;</span>
+<span class="n">df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="o">~</span><span class="n">df</span><span class="p">[</span><span class="n">col</span><span class="p">]</span><span class="o">.</span><span class="n">isna</span><span class="p">(),</span> <span class="p">[</span><span class="s1">&#39;ID&#39;</span><span class="p">,</span> <span class="s1">&#39;inchi&#39;</span><span class="p">,</span> <span class="n">col</span><span class="p">]]</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
+</pre></div>
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>ID</th>
+      <th>inchi</th>
+      <th>NIST Atomic Spectra Database - Ground states and ionization energies (on physics web site)</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>11504</th>
+      <td>C10028145</td>
+      <td>InChI=1S/No</td>
+      <td>https://physics.nist.gov/cgi-bin/ASD/ie.pl?spe...</td>
+    </tr>
+    <tr>
+      <th>11587</th>
+      <td>C10043922</td>
+      <td>InChI=1S/Rn</td>
+      <td>https://physics.nist.gov/cgi-bin/ASD/ie.pl?spe...</td>
+    </tr>
+    <tr>
+      <th>11743</th>
+      <td>C10097322</td>
+      <td>InChI=1S/Br</td>
+      <td>https://physics.nist.gov/cgi-bin/ASD/ie.pl?spe...</td>
+    </tr>
+    <tr>
+      <th>16920</th>
+      <td>C12385136</td>
+      <td>InChI=1S/H</td>
+      <td>https://physics.nist.gov/cgi-bin/ASD/ie.pl?spe...</td>
+    </tr>
+    <tr>
+      <th>18616</th>
+      <td>C13494809</td>
+      <td>InChI=1S/Te</td>
+      <td>https://physics.nist.gov/cgi-bin/ASD/ie.pl?spe...</td>
+    </tr>
+    <tr>
+      <th>...</th>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+    </tr>
+    <tr>
+      <th>59684</th>
+      <td>C7440735</td>
+      <td>InChI=1S/Fr</td>
+      <td>https://physics.nist.gov/cgi-bin/ASD/ie.pl?spe...</td>
+    </tr>
+    <tr>
+      <th>59685</th>
+      <td>C7440746</td>
+      <td>InChI=1S/In</td>
+      <td>https://physics.nist.gov/cgi-bin/ASD/ie.pl?spe...</td>
+    </tr>
+    <tr>
+      <th>60897</th>
+      <td>C7704349</td>
+      <td>InChI=1S/S</td>
+      <td>https://physics.nist.gov/cgi-bin/ASD/ie.pl?spe...</td>
+    </tr>
+    <tr>
+      <th>60995</th>
+      <td>C7723140</td>
+      <td>InChI=1S/P</td>
+      <td>https://physics.nist.gov/cgi-bin/ASD/ie.pl?spe...</td>
+    </tr>
+    <tr>
+      <th>61257</th>
+      <td>C7782492</td>
+      <td>InChI=1S/Se</td>
+      <td>https://physics.nist.gov/cgi-bin/ASD/ie.pl?spe...</td>
+    </tr>
+  </tbody>
+</table>
+<p>101 rows × 3 columns</p>
+</div></div>
+</div>
+<p>This dataframe can be used to limit all entries to those ones with desired properties. To use short names for NIST Chemistry WebBook properties, one can use the <code class="docutils literal notranslate"><span class="pre">nist.get_search_parameters</span></code> function:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">ps</span> <span class="o">=</span> <span class="n">nist</span><span class="o">.</span><span class="n">get_search_parameters</span><span class="p">()</span>
+<span class="n">ps</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+{&#39;use_SI&#39;: &#39;Units for thermodynamic data, &#34;SI&#34; if True and &#34;calories&#34; if False&#39;,
+ &#39;match_isotopes&#39;: &#39;Exactly match the specified isotopes (formula search only)&#39;,
+ &#39;allow_other&#39;: &#39;Allow elements not specified in formula (formula search only)&#39;,
+ &#39;allow_extra&#39;: &#39;Allow more atoms of elements in formula than specified (formula search only)&#39;,
+ &#39;no_ion&#39;: &#39;Exclude ions from the search (formula search only)&#39;,
+ &#39;cTG&#39;: &#39;Gas phase thermochemistry data&#39;,
+ &#39;cTC&#39;: &#39;Condensed phase thermochemistry data&#39;,
+ &#39;cTP&#39;: &#39;Phase change data&#39;,
+ &#39;cTR&#39;: &#39;Reaction thermochemistry data&#39;,
+ &#39;cIE&#39;: &#39;Gas phase ion energetics data&#39;,
+ &#39;cIC&#39;: &#39;Ion clustering data&#39;,
+ &#39;cIR&#39;: &#39;IR Spectrum&#39;,
+ &#39;cTZ&#39;: &#39;THz IR spectrum&#39;,
+ &#39;cMS&#39;: &#39;Mass spectrum (electron ionization)&#39;,
+ &#39;cUV&#39;: &#39;UV/Visible spectrum&#39;,
+ &#39;cGC&#39;: &#39;Gas Chromatography&#39;,
+ &#39;cES&#39;: &#39;Vibrational and/or electronic energy levels&#39;,
+ &#39;cDI&#39;: &#39;Constants of diatomic molecules&#39;,
+ &#39;cSO&#39;: &#34;Henry&#39;s Law data&#34;}
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">pd</span><span class="o">.</span><span class="n">set_option</span><span class="p">(</span><span class="s1">&#39;display.max_columns&#39;</span><span class="p">,</span> <span class="mi">20</span><span class="p">)</span>
+<span class="n">sub</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="o">~</span><span class="n">df</span><span class="o">.</span><span class="n">inchi</span><span class="o">.</span><span class="n">isna</span><span class="p">()</span> <span class="o">&amp;</span> <span class="o">~</span><span class="n">df</span><span class="o">.</span><span class="n">mol2D</span><span class="o">.</span><span class="n">isna</span><span class="p">()</span> <span class="o">&amp;</span> <span class="o">~</span><span class="n">df</span><span class="p">[</span><span class="n">ps</span><span class="p">[</span><span class="s1">&#39;cMS&#39;</span><span class="p">]]</span><span class="o">.</span><span class="n">isna</span><span class="p">()</span> <span class="o">&amp;</span> <span class="o">~</span><span class="n">df</span><span class="p">[</span><span class="n">ps</span><span class="p">[</span><span class="s1">&#39;cUV&#39;</span><span class="p">]]</span><span class="o">.</span><span class="n">isna</span><span class="p">()]</span>
+<span class="n">sub</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
+</pre></div>
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>ID</th>
+      <th>name</th>
+      <th>synonyms</th>
+      <th>formula</th>
+      <th>mol_weight</th>
+      <th>inchi</th>
+      <th>inchi_key</th>
+      <th>cas_rn</th>
+      <th>mol2D</th>
+      <th>mol3D</th>
+      <th>...</th>
+      <th>NIST Atomic Spectra Database - Ground states and ionization energies (on physics web site)</th>
+      <th>NIST Atomic Spectra Database - Levels Holdings (on physics web site)</th>
+      <th>NIST Atomic Spectra Database - Lines Holdings (on physics web site)</th>
+      <th>NIST Polycyclic Aromatic Hydrocarbon Structure Index</th>
+      <th>Reference simulation</th>
+      <th>Reference simulation:  SPC/E Water</th>
+      <th>Reference simulation:  TraPPE Carbon Dioxide</th>
+      <th>X-ray Photoelectron Spectroscopy Database, version 5.0</th>
+      <th>NIST / TRC Web Thermo Tables, "lite" edition (thermophysical and thermochemical data)</th>
+      <th>NIST / TRC Web Thermo Tables, professional edition (thermophysical and thermochemical data)</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>11392</th>
+      <td>C100016</td>
+      <td>p-Nitroaniline</td>
+      <td>Benzenamine, 4-nitro-\nAniline, p-nitro-\np-Am...</td>
+      <td>C6 H6 N2 O2</td>
+      <td>138.1240</td>
+      <td>InChI=1S/C6H6N2O2/c7-5-1-3-6(4-2-5)8(9)10/h1-4...</td>
+      <td>TYMLOMAKGOJONV-UHFFFAOYSA-N</td>
+      <td>100-01-6</td>
+      <td>https://webbook.nist.gov/cgi/inchi?Str2File=C1...</td>
+      <td>https://webbook.nist.gov/cgi/inchi?Str3File=C1...</td>
+      <td>...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>https://srdata.nist.gov/xps/SpectralByCompdDd/...</td>
+      <td>NaN</td>
+      <td>https://wtt-pro.nist.gov/wtt-pro/index.html?cm...</td>
+    </tr>
+    <tr>
+      <th>11393</th>
+      <td>C100027</td>
+      <td>Phenol, 4-nitro-</td>
+      <td>Phenol, p-nitro-\np-Hydroxynitrobenzene\np-Nit...</td>
+      <td>C6 H5 NO3</td>
+      <td>139.1088</td>
+      <td>InChI=1S/C6H5NO3/c8-6-3-1-5(2-4-6)7(9)10/h1-4,8H</td>
+      <td>BTJIUGUIPKRLHP-UHFFFAOYSA-N</td>
+      <td>100-02-7</td>
+      <td>https://webbook.nist.gov/cgi/inchi?Str2File=C1...</td>
+      <td>https://webbook.nist.gov/cgi/inchi?Str3File=C1...</td>
+      <td>...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>https://wtt-pro.nist.gov/wtt-pro/index.html?cm...</td>
+    </tr>
+    <tr>
+      <th>11412</th>
+      <td>C100094</td>
+      <td>Benzoic acid, 4-methoxy-</td>
+      <td>p-Anisic acid\np-Methoxybenzoic acid\nDraconic...</td>
+      <td>C8 H8 O3</td>
+      <td>152.1473</td>
+      <td>InChI=1S/C8H8O3/c1-11-7-4-2-6(3-5-7)8(9)10/h2-...</td>
+      <td>ZEYHEAKUIGZSGI-UHFFFAOYSA-N</td>
+      <td>100-09-4</td>
+      <td>https://webbook.nist.gov/cgi/inchi?Str2File=C1...</td>
+      <td>https://webbook.nist.gov/cgi/inchi?Str3File=C1...</td>
+      <td>...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>https://wtt-pro.nist.gov/wtt-pro/index.html?cm...</td>
+    </tr>
+    <tr>
+      <th>11417</th>
+      <td>C100107</td>
+      <td>Benzaldehyde, 4-(dimethylamino)-</td>
+      <td>Benzaldehyde, p-(dimethylamino)-\np-(Dimethyla...</td>
+      <td>C9 H11 NO</td>
+      <td>149.1897</td>
+      <td>InChI=1S/C9H11NO/c1-10(2)9-5-3-8(7-11)4-6-9/h3...</td>
+      <td>BGNGWHSBYQYVRX-UHFFFAOYSA-N</td>
+      <td>100-10-7</td>
+      <td>https://webbook.nist.gov/cgi/inchi?Str2File=C1...</td>
+      <td>https://webbook.nist.gov/cgi/inchi?Str3File=C1...</td>
+      <td>...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>https://wtt-pro.nist.gov/wtt-pro/index.html?cm...</td>
+    </tr>
+    <tr>
+      <th>11422</th>
+      <td>C100129</td>
+      <td>Benzene, 1-ethyl-4-nitro-</td>
+      <td>p-Ethylnitrobenzene\np-Nitroethylbenzene\np-Ni...</td>
+      <td>C8 H9 NO2</td>
+      <td>151.1626</td>
+      <td>InChI=1S/C8H9NO2/c1-2-7-3-5-8(6-4-7)9(10)11/h3...</td>
+      <td>RESTWAHJFMZUIZ-UHFFFAOYSA-N</td>
+      <td>100-12-9</td>
+      <td>https://webbook.nist.gov/cgi/inchi?Str2File=C1...</td>
+      <td>https://webbook.nist.gov/cgi/inchi?Str3File=C1...</td>
+      <td>...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>https://wtt-pro.nist.gov/wtt-pro/index.html?cm...</td>
+    </tr>
+    <tr>
+      <th>...</th>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+      <td>...</td>
+    </tr>
+    <tr>
+      <th>66252</th>
+      <td>C99923</td>
+      <td>Acetophenone, 4'-amino-</td>
+      <td>Ethanone, 1-(4-aminophenyl)-\np-Acetylaniline\...</td>
+      <td>C8 H9 NO</td>
+      <td>135.1632</td>
+      <td>InChI=1S/C8H9NO/c1-6(10)7-2-4-8(9)5-3-7/h2-5H,...</td>
+      <td>GPRYKVSEZCQIHD-UHFFFAOYSA-N</td>
+      <td>99-92-3</td>
+      <td>https://webbook.nist.gov/cgi/inchi?Str2File=C9...</td>
+      <td>https://webbook.nist.gov/cgi/inchi?Str3File=C9...</td>
+      <td>...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>https://wtt-pro.nist.gov/wtt-pro/index.html?cm...</td>
+    </tr>
+    <tr>
+      <th>66254</th>
+      <td>C99934</td>
+      <td>Acetophenone, 4'-hydroxy-</td>
+      <td>Ethanone, 1-(4-hydroxyphenyl)-\np-Hydroxyaceto...</td>
+      <td>C8 H8 O2</td>
+      <td>136.1479</td>
+      <td>InChI=1S/C8H8O2/c1-6(9)7-2-4-8(10)5-3-7/h2-5,1...</td>
+      <td>TXFPEBPIARQUIG-UHFFFAOYSA-N</td>
+      <td>99-93-4</td>
+      <td>https://webbook.nist.gov/cgi/inchi?Str2File=C9...</td>
+      <td>https://webbook.nist.gov/cgi/inchi?Str3File=C9...</td>
+      <td>...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>https://wtt-pro.nist.gov/wtt-pro/index.html?cm...</td>
+    </tr>
+    <tr>
+      <th>66257</th>
+      <td>C99945</td>
+      <td>Benzoic acid, 4-methyl-</td>
+      <td>p-Toluic acid\np-Methylbenzoic acid\np-Toluyli...</td>
+      <td>C8 H8 O2</td>
+      <td>136.1479</td>
+      <td>InChI=1S/C8H8O2/c1-6-2-4-7(5-3-6)8(9)10/h2-5H,...</td>
+      <td>LPNBBFKOUUSUDB-UHFFFAOYSA-N</td>
+      <td>99-94-5</td>
+      <td>https://webbook.nist.gov/cgi/inchi?Str2File=C9...</td>
+      <td>https://webbook.nist.gov/cgi/inchi?Str3File=C9...</td>
+      <td>...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>https://wtt-pro.nist.gov/wtt-pro/index.html?cm...</td>
+    </tr>
+    <tr>
+      <th>66264</th>
+      <td>C99967</td>
+      <td>Benzoic acid, 4-hydroxy-</td>
+      <td>Benzoic acid, p-hydroxy-\np-Hydroxybenzoic aci...</td>
+      <td>C7 H6 O3</td>
+      <td>138.1207</td>
+      <td>InChI=1S/C7H6O3/c8-6-3-1-5(2-4-6)7(9)10/h1-4,8...</td>
+      <td>FJKROLUGYXJWQN-UHFFFAOYSA-N</td>
+      <td>99-96-7</td>
+      <td>https://webbook.nist.gov/cgi/inchi?Str2File=C9...</td>
+      <td>https://webbook.nist.gov/cgi/inchi?Str3File=C9...</td>
+      <td>...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>https://wtt-pro.nist.gov/wtt-pro/index.html?cm...</td>
+    </tr>
+    <tr>
+      <th>66269</th>
+      <td>C99978</td>
+      <td>Benzenamine, N,N,4-trimethyl-</td>
+      <td>p-Toluidine, N,N-dimethyl-\np-Methyl-N,N-dimet...</td>
+      <td>C9 H13 N</td>
+      <td>135.2062</td>
+      <td>InChI=1S/C9H13N/c1-8-4-6-9(7-5-8)10(2)3/h4-7H,...</td>
+      <td>GYVGXEWAOAAJEU-UHFFFAOYSA-N</td>
+      <td>99-97-8</td>
+      <td>https://webbook.nist.gov/cgi/inchi?Str2File=C9...</td>
+      <td>https://webbook.nist.gov/cgi/inchi?Str3File=C9...</td>
+      <td>...</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>https://wtt-pro.nist.gov/wtt-pro/index.html?cm...</td>
+    </tr>
+  </tbody>
+</table>
+<p>1469 rows × 39 columns</p>
+</div></div>
+</div>
+<p>Also one can run a substructure search, e.g. to get only non-aromatic compounds:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">rdkit</span> <span class="kn">import</span> <span class="n">Chem</span>
+
+<span class="c1"># supress rdkit warnings</span>
+<span class="kn">from</span> <span class="nn">rdkit</span> <span class="kn">import</span> <span class="n">RDLogger</span>
+<span class="n">RDLogger</span><span class="o">.</span><span class="n">DisableLog</span><span class="p">(</span><span class="s1">&#39;rdApp.*&#39;</span><span class="p">)</span>
+
+<span class="c1"># prepare molecules for search</span>
+<span class="n">mols</span> <span class="o">=</span> <span class="p">[(</span><span class="n">ID</span><span class="p">,</span> <span class="n">Chem</span><span class="o">.</span><span class="n">MolFromInchi</span><span class="p">(</span><span class="n">inchi</span><span class="p">))</span> <span class="k">for</span> <span class="n">ID</span><span class="p">,</span> <span class="n">inchi</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">sub</span><span class="o">.</span><span class="n">ID</span><span class="p">,</span> <span class="n">sub</span><span class="o">.</span><span class="n">inchi</span><span class="p">)]</span>
+<span class="n">mols</span> <span class="o">=</span> <span class="p">[(</span><span class="n">ID</span><span class="p">,</span> <span class="n">mol</span><span class="p">)</span> <span class="k">for</span> <span class="n">ID</span><span class="p">,</span> <span class="n">mol</span> <span class="ow">in</span> <span class="n">mols</span> <span class="k">if</span> <span class="n">mol</span><span class="p">]</span>
+
+<span class="c1"># search</span>
+<span class="n">pat</span> <span class="o">=</span> <span class="n">Chem</span><span class="o">.</span><span class="n">MolFromSmarts</span><span class="p">(</span><span class="s1">&#39;[a]&#39;</span><span class="p">)</span>
+<span class="n">hits</span> <span class="o">=</span> <span class="p">[</span><span class="n">ID</span> <span class="k">for</span> <span class="n">ID</span><span class="p">,</span> <span class="n">mol</span> <span class="ow">in</span> <span class="n">mols</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">mol</span><span class="o">.</span><span class="n">HasSubstructMatch</span><span class="p">(</span><span class="n">pat</span><span class="p">)]</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">hits</span><span class="p">)</span><span class="si">}</span><span class="s1"> of </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">sub</span><span class="p">)</span><span class="si">}</span><span class="s1"> compounds were selected&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+320 of 1469 compounds were selected
+</pre></div></div>
+</div>
+<p>Those compounds can be retrieved via <code class="docutils literal notranslate"><span class="pre">nist.get_compound</span></code> function.</p>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="compound_properties.html" class="btn btn-neutral float-left" title="Compound properties" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="api.html" class="btn btn-neutral float-right" title="NistChemPy API" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, Ivan Yu. Chernyshov.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
