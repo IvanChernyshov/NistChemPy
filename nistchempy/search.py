@@ -12,29 +12,41 @@ import nistchempy.parsing as _parsing
 
 #%% Search parameters helper
 
-def print_search_parameters() -> None:
-    '''
-    Prints available search parameters
+def get_search_parameters() -> _tp.Dict[str, str]:
+    '''Returns search parameters and the corresponding keys
+    
+    Returns:
+        _tp.Dict[str, str]: {short_key => search_parameter}
+    
     '''
     info = {'use_SI': 'Units for thermodynamic data, "SI" if True and "calories" if False',
             'match_isotopes': 'Exactly match the specified isotopes (formula search only)',
             'allow_other': 'Allow elements not specified in formula (formula search only)',
             'allow_extra': 'Allow more atoms of elements in formula than specified (formula search only)',
             'no_ion': 'Exclude ions from the search (formula search only)',
-            'cTG': 'Contains gas-phase thermodynamic data',
-            'cTC': 'Contains condensed-phase thermodynamic data',
-            'cTP': 'Contains phase-change thermodynamic data',
-            'cTR': 'Contains reaction thermodynamic data',
-            'cIE': 'Contains ion energetics thermodynamic data',
-            'cIC': 'Contains ion cluster thermodynamic data',
-            'cIR': 'Contains IR data',
-            'cTZ': 'Contains THz IR data',
-            'cMS': 'Contains MS data',
-            'cUV': 'Contains UV/Vis data',
-            'cGC': 'Contains gas chromatography data',
-            'cES': 'Contains vibrational and electronic energy levels',
-            'cDI': 'Contains constants of diatomic molecules',
-            'cSO': 'Contains info on Henry\'s law'}
+            'cTG': 'Gas phase thermochemistry data',
+            'cTC': 'Condensed phase thermochemistry data',
+            'cTP': 'Phase change data',
+            'cTR': 'Reaction thermochemistry data',
+            'cIE': 'Gas phase ion energetics data',
+            'cIC': 'Ion clustering data',
+            'cIR': 'IR Spectrum',
+            'cTZ': 'THz IR spectrum',
+            'cMS': 'Mass spectrum (electron ionization)',
+            'cUV': 'UV/Visible spectrum',
+            'cGC': 'Gas Chromatography',
+            'cES': 'Vibrational and/or electronic energy levels',
+            'cDI': 'Constants of diatomic molecules',
+            'cSO': 'Henry\'s Law data'}
+    
+    return info
+
+
+def print_search_parameters() -> None:
+    '''
+    Prints available search parameters
+    '''
+    info = get_search_parameters()
     max_len = max([len(_) for _ in info])
     spaces = [' '*(max_len - len(_) + 1) for _ in info]
     for (key, val), space in zip(info.items(), spaces):
@@ -170,16 +182,16 @@ class NistSearch():
 
 #%% Search
 
-def search(identifier: str, search_type: str,
-           search_parameters: _tp.Optional[NistSearchParameters] = None,
-           use_SI: bool = True, match_isotopes: bool = False,
-           allow_other: bool = False, allow_extra: bool = False,
-           no_ion: bool = False, cTG: bool = False, cTC: bool = False,
-           cTP: bool = False, cTR: bool = False, cIE: bool = False, 
-           cIC: bool = False, cIR: bool = False, cTZ: bool = False, 
-           cMS: bool = False, cUV: bool = False, cGC: bool = False, 
-           cES: bool = False, cDI: bool = False, cSO: bool = False,
-           **kwargs) -> NistSearch:
+def run_search(identifier: str, search_type: str,
+               search_parameters: _tp.Optional[NistSearchParameters] = None,
+               use_SI: bool = True, match_isotopes: bool = False,
+               allow_other: bool = False, allow_extra: bool = False,
+               no_ion: bool = False, cTG: bool = False, cTC: bool = False,
+               cTP: bool = False, cTR: bool = False, cIE: bool = False, 
+               cIC: bool = False, cIR: bool = False, cTZ: bool = False, 
+               cMS: bool = False, cUV: bool = False, cGC: bool = False, 
+               cES: bool = False, cDI: bool = False, cSO: bool = False,
+               **kwargs) -> NistSearch:
     '''Searches compounds in NIST Chemistry WebBook
     
     Arguments:
