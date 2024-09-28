@@ -204,8 +204,9 @@ def get_compound_formula(soup: _bs4.BeautifulSoup) -> _tp.Optional[str]:
     # find chemical formula
     hits = info.findChildren(string = _re.compile('Formula'))
     if hits:
-        text = hits[0].findParent('li').text.replace('Formula:', '')
-        formula = _re.sub(r'(\d)([a-zA-Z])', r'\1 \2', text.strip())
+        formula = hits[0].findParent('li').text.replace('Formula:', '').strip()
+        #formula = _re.sub(r'(\d)([a-zA-Z])', r'\1 \2', formula)
+        #formula = _re.sub(r'([a-zA-Z])([A-Z])', r'\1 \2', formula)
     
     return formula
 
