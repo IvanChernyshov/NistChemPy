@@ -66,7 +66,7 @@ def get_missing_stereoisomers(dir_html: str) -> List[str]:
         # get soup
         path = os.path.join(dir_html, f)
         with open(path, 'r') as inpf:
-            text = inpf.read()
+            text = nist.requests.fix_html(inpf.read())
         soup = BeautifulSoup(text, 'html.parser')
         # extract ID
         if nist.parsing.is_compound_page(soup):
@@ -193,7 +193,7 @@ def main() -> None:
     loaded = []
     for f in tqdm(os.listdir(dir_stereo)):
         with open(os.path.join(dir_stereo, f), 'r') as inpf:
-            text = inpf.read()
+            text = nist.requests.fix_html(inpf.read())
             soup = BeautifulSoup(text, 'html.parser')
         if nist.parsing.is_compound_page(soup):
             ID = f.replace('.html', '')

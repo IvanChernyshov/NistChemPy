@@ -31,4 +31,6 @@ Possible errors must be manually verified to fix bugs in NistChemPy code.
 
 6. [extract_info_from_htmls.py](extract_info_from_htmls.py): extracts info on compounds from prepared compound HTMLs and saves it as if final nist_data.csv final required for the package.
 
+7. [get_old_IDs.py](get_old_IDs.py): tries to download HTML-pages of compounds that are missing in current nist_data.csv file, but is available in old versions. If there are such entries, the previous script must be re-executed.
+
 
