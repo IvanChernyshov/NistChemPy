@@ -55,7 +55,7 @@ def get_unreadable_compounds(dir_html: str) -> List[str]:
         idx = int(f.replace('.html', ''))
         path = os.path.join(dir_html, f)
         with open(path, 'r') as inpf:
-            text = inpf.read()
+            text = nist.requests.fix_html(inpf.read())
         soup = BeautifulSoup(text, 'html.parser')
         # check
         flag = check_soup(soup)

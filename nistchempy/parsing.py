@@ -205,6 +205,8 @@ def get_compound_formula(soup: _bs4.BeautifulSoup) -> _tp.Optional[str]:
     hits = info.findChildren(string = _re.compile('Formula'))
     if hits:
         formula = hits[0].findParent('li').text.replace('Formula:', '').strip()
+        formula = _re.sub('Monomer', '', formula).strip()
+        formula = _re.sub(r'\s+', ' ', formula)
         #formula = _re.sub(r'(\d)([a-zA-Z])', r'\1 \2', formula)
         #formula = _re.sub(r'([a-zA-Z])([A-Z])', r'\1 \2', formula)
     
