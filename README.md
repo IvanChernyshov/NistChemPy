@@ -9,6 +9,15 @@ Currently, **NistChemPy** enables the extraction of basic compound properties as
 Additional properties are available via URLs that link to their respective web pages, with potential support for direct extraction in future updates.
 
 
+## Extracted data
+
+Before using **NistChemPy**, please check [NistChemData](https://github.com/IvanChernyshov/NistChemData).
+
+This repository contains information that has already been extracted from the WebBook using **NistChemPy** functionality.
+
+By doing so, you can bypass the web-scraping stage and proceed directly to data manipulation.
+
+
 ## Installation
 
 Install NistChemPy using [pip](https://pypi.org/project/NistChemPy/):
