@@ -90,8 +90,14 @@
 </div>
 <p><strong>NistChemPy</strong> is an unofficial API for the <a class="reference external" href="https://webbook.nist.gov/chemistry/">NIST Chemistry WebBook</a>.
 This package not only automates the search and data extraction processes but also bypasses the WebBook’s limitation of 400 compounds per search.
-Currently, NistChemPy enables the extraction of basic compound properties as well as IR, THz, MS, and UV-Vis spectra.
+Currently, <strong>NistChemPy</strong> enables the extraction of basic compound properties as well as IR, THz, MS, and UV-Vis spectra.
 Additional properties are available via URLs that link to their respective web pages, with potential support for direct extraction in future updates.</p>
+<section id="extracted-data">
+<h2>Extracted data<a class="headerlink" href="#extracted-data" title="Link to this heading"></a></h2>
+<p>Before using <strong>NistChemPy</strong>, please check <a class="reference external" href="https://github.com/IvanChernyshov/NistChemData">NistChemData</a>.
+This repository contains information that has already been extracted from the WebBook using <strong>NistChemPy</strong> functionality.
+By doing so, you can bypass the web-scraping stage and proceed directly to data manipulation.</p>
+</section>
 <section id="installation">
 <h2>Installation<a class="headerlink" href="#installation" title="Link to this heading"></a></h2>
 <p><strong>NistChemPy</strong> can be installed as a <a class="reference external" href="https://pypi.org/project/nistchempy/">PyPI package</a>:</p>
@@ -114,6 +120,7 @@ Additional properties are available via URLs that link to their respective web p
 <ol class="arabic simple">
 <li><p><a class="reference external" href="https://webbook.nist.gov/chemistry/">NIST Chemistry WebBook</a>: webapp accessing the NIST Chemistry WebBook database.</p></li>
 <li><p><a class="reference external" href="https://github.com/IvanChernyshov/NistChemPy">GitHub</a>: GitHub page of the package.</p></li>
+<li><p><a class="reference external" href="https://github.com/IvanChernyshov/NistChemData">NistChemData</a>: Repository containing already extracted WebBook’s data.</p></li>
 <li><p><a class="reference external" href="https://pypi.org/project/nistchempy/">PyPI package</a>: PyPI page of the package.</p></li>
 <li><p><a class="reference external" href="https://github.com/IvanChernyshov/NistChemPy/tree/main/update">Update tools</a>: script for semi-automatic update of structural information of new NIST Chemistry WebBook compounds.</p></li>
 </ol>

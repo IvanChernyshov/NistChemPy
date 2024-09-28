@@ -23,8 +23,16 @@ Welcome to the NistChemPy's documentation!
 
 **NistChemPy** is an unofficial API for the `NIST Chemistry WebBook`_.
 This package not only automates the search and data extraction processes but also bypasses the WebBook's limitation of 400 compounds per search.
-Currently, NistChemPy enables the extraction of basic compound properties as well as IR, THz, MS, and UV-Vis spectra.
+Currently, **NistChemPy** enables the extraction of basic compound properties as well as IR, THz, MS, and UV-Vis spectra.
 Additional properties are available via URLs that link to their respective web pages, with potential support for direct extraction in future updates.
+
+
+Extracted data
+==============
+
+Before using **NistChemPy**, please check `NistChemData`_.
+This repository contains information that has already been extracted from the WebBook using **NistChemPy** functionality.
+By doing so, you can bypass the web-scraping stage and proceed directly to data manipulation.
 
 
 Installation
@@ -56,8 +64,9 @@ Useful links
 
 1. `NIST Chemistry WebBook`_: webapp accessing the NIST Chemistry WebBook database.
 2. `GitHub`_: GitHub page of the package.
-3. `PyPI package`_: PyPI page of the package.
-4. `Update tools`_: script for semi-automatic update of structural information of new NIST Chemistry WebBook compounds.
+3. `NistChemData`_: Repository containing already extracted WebBook's data.
+4. `PyPI package`_: PyPI page of the package.
+5. `Update tools`_: script for semi-automatic update of structural information of new NIST Chemistry WebBook compounds.
 
 
 Indices and tables
@@ -68,6 +77,7 @@ Indices and tables
 
 
 
+.. _NistChemData: https://github.com/IvanChernyshov/NistChemData
 .. _NIST Chemistry WebBook: https://webbook.nist.gov/chemistry/
 .. _GitHub: https://github.com/IvanChernyshov/NistChemPy
 .. _PyPI package: https://pypi.org/project/nistchempy/
