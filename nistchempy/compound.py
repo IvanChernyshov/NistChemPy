@@ -287,7 +287,9 @@ class NistCompound():
         if not _os.path.isdir(path_dir):
             raise ValueError(f'"{path_dir}" must be a directory')
         # save
-        for spec in getattr(self, spec_type):
+        key = 'thz' if spec_type == 'TZ' else spec_type.lower()
+        key = f'{key}_specs'
+        for spec in getattr(self, key):
             spec.save(f'{self.ID}_{spec_type}_{spec.spec_idx}.jdx', path_dir)
     
     
