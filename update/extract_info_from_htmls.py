@@ -26,8 +26,11 @@ def get_compounds_info(dir_data: str) -> None:
     
     # get list of htmls
     fs = []
-    for d in ('htmls', 'htmls_stereo'):
-        for f in os.listdir(os.path.join(dir_data, d)):
+    for d in ('htmls', 'htmls_stereo', 'htmls_old', 'htmls_manual'):
+        dpath = os.path.join(dir_data, d)
+        if not os.path.exists(dpath):
+            continue
+        for f in os.listdir(dpath):
             path = os.path.join(dir_data, d, f)
             fs.append(path)
     
@@ -35,10 +38,12 @@ def get_compounds_info(dir_data: str) -> None:
     data = []
     for f in tqdm(fs):
         with open(f, 'r') as inpf:
-            soup = BeautifulSoup(inpf.read(), 'html.parser')
+            text = nist.requests.fix_html(inpf.read())
+            soup = BeautifulSoup(text, 'html.parser')
         if not nist.parsing.is_compound_page(soup):
             continue
         info = nist.parsing.parse_compound_page(soup)
+        info = {'path': f, **info}
         data.append(info)
     
     # save data
@@ -60,7 +65,7 @@ def get_columns(data: list) -> dict:
         list: column names
     
     '''
-    cols = [k for k in data[0].keys() if '_refs' not in k]
+    cols = [k for k in data[0].keys() if '_refs' not in k and k != 'path']
     # get unique ref keys
     keys = {k: set() for k in data[0].keys() if '_refs' in k}
     for item in data:
@@ -82,7 +87,7 @@ def get_columns(data: list) -> dict:
 
 
 def prepare_dataset(dir_data: str) -> None:
-    '''Transforms extracted data to nist_data.csv and nist_data_full.csv
+    '''Transforms extracted data to nist_data.csv
     
     Arguments:
         dir_data (str): root data dump directory
@@ -114,6 +119,7 @@ def prepare_dataset(dir_data: str) -> None:
     df = df.rename(columns = ps)
     df = df.sort_values('ID', ignore_index = True)
     df = df[cols]
+    df = df.drop_duplicates().sort_values('ID', ignore_index = True)
     
     # save
     path_out = os.path.join(dir_data, 'nist_data.csv')
