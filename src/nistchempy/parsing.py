@@ -121,7 +121,21 @@ def get_compound_id_from_data_refs(soup: _bs4.BeautifulSoup) -> _tp.Optional[str
         _tp.Optional[str]: NIST compound ID, None if not detected
     
     '''
-    # TODO: implement
+    # get info block
+    header = soup.findAll('h1', {'id': 'Top'})[0]
+    info = header.findNext('ul')
+    others = info.findNext(string = _re.compile('Other data available'))
+    if not others:
+        return None
+    others = others.findNext('ul')
+    if not others:
+        return None
+    # extract ID
+    refs = others.findChildren(name = 'a', attrs = {'href': _re.compile('/cgi/cbook.cgi\?ID=')})
+    for ref in refs:
+        match = _re.search('/cgi/.*\?ID=(.*)&', str(ref))
+        if match:
+            return match.group(1)
     
     return None
 
