@@ -319,6 +319,13 @@ class NistCompound():
         self.save_tz_spectra(path_dir)
         self.save_ms_spectra(path_dir)
         self.save_uv_spectra(path_dir)
+    
+    
+##### Loading gas chromatography ##############################################
+    
+    def get_gas_chromatography(self):
+        '''Loads info on gas chromatography'''
+        pass
 
 
 
