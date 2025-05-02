@@ -1,4 +1,4 @@
-'''The module contains parsing-related functionality'''
+'''The module contains functionality to parse basic compound properties'''
 
 #%% Imports
 
