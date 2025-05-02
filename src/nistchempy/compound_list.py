@@ -22,12 +22,11 @@ def get_all_data() -> _pd.core.frame.DataFrame:
     
     '''
     pkg = _importlib_resources.files('nistchempy')
-    data_file = pkg / 'nist_data.zip'
+    data_file = pkg / 'data' / 'nist_data.zip'
     with _importlib_resources.as_file(data_file) as path:
-        zf = _zipfile.ZipFile(path) 
-        df = _pd.read_csv(zf.open('nist_data.csv'), dtype = 'str')
-        df['mol_weight'] = df['mol_weight'].astype(float)
-        zf.close()
+        with _zipfile.ZipFile(path) as zf:
+            df = _pd.read_csv(zf.open('nist_data.csv'), dtype = 'str')
+            df['mol_weight'] = df['mol_weight'].astype(float)
     
     return df
 

@@ -4,8 +4,8 @@ automatic retrievement of the stored physico-chemical data
 
 '''
 
-__version__ = '1.0.2'
-__updated__ = 'September 29, 2024'
+__version__ = '1.0.3'
+__updated__ = 'May 03, 2025'
 __license__ = 'MIT'
 
 
