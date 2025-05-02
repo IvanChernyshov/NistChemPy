@@ -1,6 +1,42 @@
 [build-system]
-requires = [
-    "setuptools>=42",
-    "wheel"
-]
+requires = ["setuptools>=42", "wheel"]
 build-backend = "setuptools.build_meta"
+
+[project]
+name = "nistchempy"
+authors = [
+    {name = "Ivan Yu. Chernyshov", email = "ivan.chernyshoff@gmail.com"}
+]
+maintainers = [
+    {name = "Ivan Yu. Chernyshov", email = "ivan.chernyshoff@gmail.com"}
+]
+description = "A simple Python wrapper around the NIST Chemistry WebBook"
+readme = {file = "README.md", content-type = "text/markdown"}
+license = {file = "LICENSE.md"}
+keywords = ["nist", "chemistry webbook", "api", "chemoinformatics"]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3 :: Only",
+    "Operating System :: OS Independent",
+    "Intended Audience :: Science/Research",
+    "Topic :: Scientific/Engineering",
+    "Topic :: Scientific/Engineering :: Chemistry",
+]
+dependencies = [
+  "importlib-resources>=1.1.0; python_version<'3.9'",
+  "requests",
+  "pandas"
+]
+requires-python = ">= 3.7"
+dynamic = ["version"]
+
+[project.urls]
+documentation = "https://ivanchernyshov.github.io/NistChemPy/"
+repository = "https://github.com/IvanChernyshov/NistChemPy.git"
+issues = "https://github.com/IvanChernyshov/NistChemPy/issues"
+
+[tool.setuptools.dynamic]
+version = {attr = "nistchempy.__version__"}
+
+
