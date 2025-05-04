@@ -3,6 +3,7 @@
 Attributes:
     BASE_URL   (str): base URL of the NIST Chemistry WebBook database
     SEARCH_URL (str): relative URL for the search API
+    INCHI_URL  (str): relative URL for obtaining NIST compounds via InChI
 
 '''
 
