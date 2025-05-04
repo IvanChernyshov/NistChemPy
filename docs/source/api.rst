@@ -14,18 +14,6 @@ nistchempy
    :noindex:
 
 
-nistchempy.requests
--------------------
-
-.. automodule:: nistchempy.requests
-   :imported-members:
-   :members:
-   :undoc-members:
-   :show-inheritance:
-   :member-order: bysource
-   :noindex:
-
-
 nistchempy.compound
 -------------------
 
@@ -54,6 +42,54 @@ nistchempy.compound_list
 ------------------------
 
 .. automodule:: nistchempy.compound_list
+   :imported-members:
+   :members:
+   :undoc-members:
+   :show-inheritance:
+   :member-order: bysource
+   :noindex:
+
+
+nistchempy.requests
+-------------------
+
+.. automodule:: nistchempy.requests
+   :imported-members:
+   :members:
+   :undoc-members:
+   :show-inheritance:
+   :member-order: bysource
+   :noindex:
+
+
+nistchempy.parsing
+------------------
+
+.. automodule:: nistchempy.parsing
+   :imported-members:
+   :members:
+   :undoc-members:
+   :show-inheritance:
+   :member-order: bysource
+   :noindex:
+
+
+nistchempy.parsing.compound
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. automodule:: nistchempy.parsing.compound
+   :imported-members:
+   :members:
+   :undoc-members:
+   :show-inheritance:
+   :member-order: bysource
+   :noindex:
+
+
+nistchempy.parsing.gas_chromatography
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. automodule:: nistchempy.parsing.gas_chromatography
    :imported-members:
    :members:
    :undoc-members:
