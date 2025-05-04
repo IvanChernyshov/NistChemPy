@@ -15,6 +15,8 @@ import os as _os
 
 from urllib.parse import urlparse, parse_qs
 
+import pandas as _pd
+
 import nistchempy.requests as _ncpr
 import nistchempy.parsing as _parsing
 
@@ -59,15 +61,66 @@ class Spectrum():
         return self.__str__()
     
     
-    def save(self, name = None, path_dir = None):
-        '''
-        Saves spectrum in JDX format
+    def save(self, name: str = None, path_dir: str = None) -> None:
+        '''Saves spectrum in JDX format
+        
+        Attributes:
+            name (str): custom filename (default name is formed from compound ID,
+                spectrum type and index)
+            path_dir (str): directory where output file will be saved
+        
         '''
         path = name if name else f'{self.compound.ID}_{self.spec_type}_{self.spec_idx}.jdx'
         if path_dir:
             path = _os.path.join(path_dir, path)
         with open(path, 'w') as outf:
             outf.write(self.jdx_text)
+
+
+
+@_dcs.dataclass(eq = False, repr = False)
+class Chromatogram():
+    '''Wrapper chromatography data extracted from NIST Chemistry WebBook
+    
+    Attributes:
+        compound (NistCompound): parent NistCompound object
+        ri_type (str): type of retention index: Kovatz, van den Dool & Kratz, etc.
+        column_type (str): polar / non-polar
+        temp_regime (str): temperature regime: isothermal / ramp / custom
+        data (_pd.core.frame.DataFrame): experimental data
+    
+    '''
+    
+    compound: NistCompound
+    ri_type: str
+    column_type: str
+    temp_regime: str
+    data: _pd.core.frame.DataFrame
+    
+    
+    def __str__(self):
+        info = f'{self.compound.ID}, {self.ri_type}, {self.column_type}, {self.temp_regime}'
+        return f'Chromatogram({info}: {len(self.data)} data points)'
+    
+    
+    def __repr__(self):
+        return self.__str__()
+    
+    
+    def save(self, name: str = None, path_dir: str = None, **kwargs) -> None:
+        '''Saves chromatograms in CSV format
+        
+        Attributes:
+            name (str): custom filename (default name is formed from compound ID,
+                spectrum type and index)
+            path_dir (str): directory where output file will be saved
+            kwargs: parameters for pandas DataFrame to_csv method
+        
+        '''
+        path = name if name else f'{self.compound.ID}_{self.ri_type}_{self.column_type}_{self.temp_regime}.csv'
+        if path_dir:
+            path = _os.path.join(path_dir, path)
+        self.data.to_csv(path, **kwargs)
 
 
 
@@ -120,6 +173,7 @@ class NistCompound():
     thz_specs: _tp.List[Spectrum] = _dcs.field(init = False)
     ms_specs: _tp.List[Spectrum] = _dcs.field(init = False)
     uv_specs: _tp.List[Spectrum] = _dcs.field(init = False)
+    gas_chromat: _tp.List[_tp.Tuple[str, str]] = _dcs.field(init = False)
     
     
     def __post_init__(self):
@@ -129,6 +183,7 @@ class NistCompound():
         self.thz_specs = []
         self.ms_specs = []
         self.uv_specs = []
+        self.gas_chromat = []
     
     
     def __str__(self):
@@ -239,33 +294,34 @@ class NistCompound():
         idxs = sorted(list(set(idxs)))
         # load spectra
         key = ('thz' if spec_type == 'TZ' else spec_type.lower()) + '_specs'
-        setattr(self, key, [])
+        spectra = []
         for idx in idxs:
             X = self.get_spectrum(spec_type, idx)
-            if X: getattr(self, key).append(X)
+            if X: spectra.append(X)
+        setattr(self, key, spectra)
     
     
-    def get_ir_spectra(self):
+    def get_ir_spectra(self) -> None:
         '''Loads all available IR spectra'''
         self.get_spectra('IR')
     
     
-    def get_thz_spectra(self):
+    def get_thz_spectra(self) -> None:
         '''Loads all available THz spectra'''
         self.get_spectra('TZ')
     
     
-    def get_ms_spectra(self):
+    def get_ms_spectra(self) -> None:
         '''Loads all available MS spectra'''
         self.get_spectra('MS')
     
     
-    def get_uv_spectra(self):
+    def get_uv_spectra(self) -> None:
         '''Loads all available UV-Vis spectra'''
         self.get_spectra('UV')
     
     
-    def get_all_spectra(self):
+    def get_all_spectra(self) -> None:
         '''Loads all available spectra'''
         self.get_ir_spectra()
         self.get_thz_spectra()
@@ -273,7 +329,7 @@ class NistCompound():
         self.get_uv_spectra()
     
     
-    def save_spectra(self, spec_type, path_dir = './') -> None:
+    def save_spectra(self, spec_type: str, path_dir: str = './') -> None:
         '''Saves all spectra of given type to the specified folder
         
         Arguments:
@@ -293,39 +349,92 @@ class NistCompound():
             spec.save(f'{self.ID}_{spec_type}_{spec.spec_idx}.jdx', path_dir)
     
     
-    def save_ir_spectra(self, path_dir = './') -> None:
-        '''Saves IR spectra to the specified folder'''
+    def save_ir_spectra(self, path_dir: str = './') -> None:
+        '''Saves IR spectra to the specified folder
+        
+        Arguments:
+            path_dir (str): directory to save spectra
+        
+        '''
         self.save_spectra('IR', path_dir)
     
     
-    def save_thz_spectra(self, path_dir = './') -> None:
-        '''Saves IR spectra to the specified folder'''
+    def save_thz_spectra(self, path_dir: str = './') -> None:
+        '''Saves IR spectra to the specified folder
+        
+        Arguments:
+            path_dir (str): directory to save spectra
+        
+        '''
         self.save_spectra('TZ', path_dir)
     
     
-    def save_ms_spectra(self, path_dir = './') -> None:
-        '''Saves mass spectra to the specified folder'''
+    def save_ms_spectra(self, path_dir: str = './') -> None:
+        '''Saves mass spectra to the specified folder
+        
+        Arguments:
+            path_dir (str): directory to save spectra
+        
+        '''
         self.save_spectra('MS', path_dir)
     
     
-    def save_uv_spectra(self, path_dir = './') -> None:
-        '''Saves all UV-Vis spectra to the specified folder'''
+    def save_uv_spectra(self, path_dir: str = './') -> None:
+        '''Saves all UV-Vis spectra to the specified folder
+        
+        Arguments:
+            path_dir (str): directory to save spectra
+        
+        '''
         self.save_spectra('UV', path_dir)
     
     
-    def save_all_spectra(self, path_dir = './') -> None:
-        '''Saves all UV-Vis spectra to the specified folder'''
+    def save_all_spectra(self, path_dir: str = './') -> None:
+        '''Saves all UV-Vis spectra to the specified folder
+        
+        Arguments:
+            path_dir (str): directory to save spectra
+        
+        '''
         self.save_ir_spectra(path_dir)
         self.save_tz_spectra(path_dir)
         self.save_ms_spectra(path_dir)
         self.save_uv_spectra(path_dir)
     
     
-##### Loading gas chromatography ##############################################
+##### Gas chromatography ######################################################
     
-    def get_gas_chromatography(self):
+    def get_gas_chromatography(self) -> None:
         '''Loads info on gas chromatography'''
-        pass
+        ref = self.data_refs.get('cGC', None)
+        if not ref:
+            return
+        # request
+        nr = _ncpr.make_nist_request(ref)
+        if not nr.ok:
+            return None
+        # get distinct tables
+        refs = _parsing.get_chromatography_table_refs(nr.soup)
+        for ref in refs:
+            # request table
+            nrx = _ncpr.make_nist_request(ref)
+            if not nrx.ok:
+                return None
+            # get Chromatogram
+            info = _parsing.parse_chromatography_table(nrx.soup)
+            X = Chromatogram(self, **info)
+            self.gas_chromat.append(X)
+    
+    
+    def save_gas_chromatography(self, path_dir: str = './', **kwargs) -> None:
+        '''Saves all tables with data on gas chromatohraphy experiments
+        
+        Arguments:
+            path_dir (str): directory to save spectra
+        
+        '''
+        for chromat in self.gas_chromat:
+            chromat.save(path_dir = path_dir, **kwargs)
 
 
 
