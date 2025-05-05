@@ -196,12 +196,11 @@ class NistCompound():
     
 ##### Loading MOL-files #######################################################
     
-    def get_molfile(self, dim: int, **kwargs) -> None:
+    def get_molfile(self, dim: int) -> None:
         '''Loads text block of 2D / 3D molfile
         
         Arguments:
             dim (int): dimensionality of molfile (2D / 3D)
-            kwargs: requests.get kwargs parameters
         
         '''
         if dim not in (2, 3):
@@ -209,40 +208,25 @@ class NistCompound():
         key = f'mol{dim}D'
         if key not in self.mol_refs:
             return
-        nr = _ncpr.make_nist_request(self.mol_refs[key], **kwargs)
+        nr = _ncpr.make_nist_request(self.mol_refs[key])
         if nr.ok:
             setattr(self, key, nr.text)
     
     
-    def get_mol2D(self, **kwargs) -> None:
-        '''Loads text block of 2D molfile
-        
-        Arguments:
-            kwargs: requests.get kwargs parameters
-        
-        '''
-        self.get_molfile(2, **kwargs)
+    def get_mol2D(self) -> None:
+        '''Loads text block of 2D molfile'''
+        self.get_molfile(2)
     
     
-    def get_mol3D(self, **kwargs) -> None:
-        '''Loads text block of 2D molfile
-        
-        Arguments:
-            kwargs: requests.get kwargs parameters
-        
-        '''
-        self.get_molfile(3, **kwargs)
+    def get_mol3D(self) -> None:
+        '''Loads text block of 2D molfile'''
+        self.get_molfile(3)
     
     
-    def get_molfiles(self, **kwargs) -> None:
-        '''Loads text block of all available molfiles
-        
-        Arguments:
-            kwargs: requests.get kwargs parameters
-        
-        '''
-        self.get_mol2D(**kwargs)
-        self.get_mol3D(**kwargs)
+    def get_molfiles(self) -> None:
+        '''Loads text block of all available molfiles'''
+        self.get_mol2D()
+        self.get_mol3D()
     
     
 ##### Loading spectra #########################################################
@@ -462,12 +446,11 @@ def compound_from_response(nr: _ncpr.NistResponse) -> _tp.Optional[NistCompound]
     return nc
 
 
-def get_compound(ID: str, **kwargs) -> _tp.Optional[NistCompound]:
+def get_compound(ID: str) -> _tp.Optional[NistCompound]:
     '''Loads the main info on the given NIST compound
     
     Arguments:
         ID (str): NIST compound ID, CAS RN or InChI
-        kwargs: requests.get kwargs parameters
     
     Returns:
         _tp.Optional[NistCompound]: NistCompound object, and None if there are
@@ -480,7 +463,7 @@ def get_compound(ID: str, **kwargs) -> _tp.Optional[NistCompound]:
     else:
         url = _ncpr.SEARCH_URL
         params = {'ID': ID}
-    nr = _ncpr.make_nist_request(url, params, **kwargs)
+    nr = _ncpr.make_nist_request(url, params)
     X = compound_from_response(nr)
     
     return X

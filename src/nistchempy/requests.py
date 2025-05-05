@@ -4,10 +4,14 @@ Attributes:
     BASE_URL   (str): base URL of the NIST Chemistry WebBook database
     SEARCH_URL (str): relative URL for the search API
     INCHI_URL  (str): relative URL for obtaining NIST compounds via InChI
+    REQUEST_DELAY (float): delay in seconds after getting response from NIST
+    REQUEST_KWARGS (dict): dictionary containing kwargs for make_nist_request
 
 '''
 
 #%% Imports
+
+import time as _time
 
 import requests as _requests
 
@@ -22,6 +26,8 @@ import typing as _tp
 BASE_URL = 'https://webbook.nist.gov'
 SEARCH_URL = f'{BASE_URL}/cgi/cbook.cgi'
 INCHI_URL = f'{BASE_URL}/cgi/inchi'
+REQUEST_DELAY = 0.0
+REQUEST_KWARGS = {}
 
 
 #%% Basic GET request
@@ -36,7 +42,7 @@ def fix_html(html: str) -> str:
         str: fixed html-file
     
     '''
-    fixed = html.replace('clss=', 'class=')
+    fixed = html.replace('clss=', 'class=').replace('\xa0', ' ')
     
     return fixed
 
@@ -77,20 +83,27 @@ class NistResponse():
 
 
 
-def make_nist_request(url: str, params: dict = {}, **kwargs) -> NistResponse:
+def make_nist_request(url: str, params: dict = {}) -> NistResponse:
     '''Dummy request to the NIST Chemistry WebBook
     
     Arguments:
         url (str): URL of the NIST webpage
         params (str): GET request parameters
-        kwargs: requests.get kwargs parameters
     
     Returns:
         NistResponse: wrapper for the request's response
     
     '''
-    r = _requests.get(url, params, **kwargs)
+    from nistchempy.requests import REQUEST_KWARGS, REQUEST_DELAY
+    # prepare get kwargs
+    disallowed = ['params']
+    kw = {k: w for k, w in REQUEST_KWARGS.items() if k not in disallowed}
+    # get response
+    r = _requests.get(url, params, **kw)
     nr = NistResponse(r)
+    # delay
+    if REQUEST_DELAY > 0:
+        _time.sleep(REQUEST_DELAY)
     
     return nr
 
