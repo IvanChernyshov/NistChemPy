@@ -3,6 +3,7 @@
 #%% Imports
 
 import re as _re
+from copy import deepcopy as _deepcopy
 
 import bs4 as _bs4
 
@@ -45,9 +46,13 @@ def get_literature_references(soup: _bs4.BeautifulSoup) -> _tp.Dict[str, str]:
     refs = {}
     for entry in soup.findChildren('span', attrs = {'id': _re.compile('ref-\d+')}):
         idx = entry['id']
-        p = entry.findParent()
-        text = p.text.split('\n\n')[1].replace('[all data]', '').strip()
-        text = text.replace('\n', ' ').strip(' .')
+        p = _deepcopy(entry.findParent())
+        for child in p.select('span'):
+            child.extract()
+        for child in p.findChildren(string = _re.compile('all data')):
+            child.extract()
+        text = p.text.replace('\n', ' ').strip(' .[]')
+        text = _re.sub(' +', ' ', text)
         refs[idx] = text
     
     return refs
@@ -84,14 +89,13 @@ def parse_chromatography_table(soup: _bs4.BeautifulSoup) -> dict:
                 values = []
                 for elem in row.findChildren('td'):
                     if not elem.findChild('a'):
-                        val = elem.text.replace('\xa0', ' ').strip()
+                        val = elem.text.strip()
                     else:
                         href = elem.findChild('a')['href']
                         val = refs[href.replace('#', '')]
                     values.append(val)
             else:
-                values = [elem.text for elem in row.findChildren('td')]
-                values = [val.replace('\xa0', ' ').strip() for val in values]
+                values = [elem.text.strip() for elem in row.findChildren('td')]
             if colname not in data:
                 data[colname] = values
             else:
