@@ -129,6 +129,8 @@ class NistCompound():
     '''Stores info on NIST Chemistry WebBook compound
     
     Attributes:
+        _request_config (_ncpr.RequestConfig): additional requests.get parameters
+        _nist_response (_ncpr.NistResponse): response to the GET request
         ID (_tp.Optional[str]): NIST compound ID
         name (_tp.Optional[str]): chemical name
         synonyms (_tp.List[str]): synonyms of the chemical name
@@ -144,16 +146,18 @@ class NistCompound():
             public NIST databases containing data for the given compound
         nist_subscription_refs (_tp.Dict[str, str]): references to webpages of
             subscription NIST databases containing data for the given compound
-        nist_response (NistResponse): response to the GET request
         mol2D (_tp.Optional[str]): text block of a MOL-file containing 2D atomic coordinates
         mol3D (_tp.Optional[str]): text block of a MOL-file containing 3D atomic coordinates 
         ir_specs (_tp.List[Spectrum]): list pf IR Spectrum objects
         thz_specs (_tp.List[Spectrum]): list pf THz Spectrum objects
         ms_specs (_tp.List[Spectrum]): list pf MS Spectrum objects
         uv_specs (_tp.List[Spectrum]): list pf UV-Vis Spectrum objects
+        gas_chromat (_tp.List[Chromatogram]): list of Chromatogram objects
     
     '''
     
+    _request_config: _ncpr.RequestConfig
+    _nist_response: _ncpr.NistResponse
     ID: _tp.Optional[str]
     name: _tp.Optional[str]
     synonyms: _tp.List[str]
@@ -166,14 +170,13 @@ class NistCompound():
     data_refs: _tp.Dict[str, str]
     nist_public_refs: _tp.Dict[str, str]
     nist_subscription_refs: _tp.Dict[str, str]
-    nist_response: _ncpr.NistResponse
     mol2D: _tp.Optional[str] = _dcs.field(init = False)
     mol3D: _tp.Optional[str] = _dcs.field(init = False)
     ir_specs: _tp.List[Spectrum] = _dcs.field(init = False)
     thz_specs: _tp.List[Spectrum] = _dcs.field(init = False)
     ms_specs: _tp.List[Spectrum] = _dcs.field(init = False)
     uv_specs: _tp.List[Spectrum] = _dcs.field(init = False)
-    gas_chromat: _tp.List[_tp.Tuple[str, str]] = _dcs.field(init = False)
+    gas_chromat: _tp.List[Chromatogram] = _dcs.field(init = False)
     
     
     def __post_init__(self):
@@ -208,7 +211,7 @@ class NistCompound():
         key = f'mol{dim}D'
         if key not in self.mol_refs:
             return
-        nr = _ncpr.make_nist_request(self.mol_refs[key])
+        nr = _ncpr.make_nist_request(self.mol_refs[key], config = self._request_config)
         if nr.ok:
             setattr(self, key, nr.text)
     
@@ -248,7 +251,7 @@ class NistCompound():
         params = {'JCAMP': self.ID, 'Index': spec_idx,
                   'Type': SPEC_TYPES[spec_type]}
         # request
-        nr = _ncpr.make_nist_request(_ncpr.SEARCH_URL, params)
+        nr = _ncpr.make_nist_request(_ncpr.SEARCH_URL, params, config = self._request_config)
         spec = Spectrum(self, spec_type, spec_idx, nr.text) if nr.ok else None
         
         return spec
@@ -268,7 +271,7 @@ class NistCompound():
         if key not in self.data_refs:
             return None
         # request
-        nr = _ncpr.make_nist_request(self.data_refs[key])
+        nr = _ncpr.make_nist_request(self.data_refs[key], config = self._request_config)
         if not nr.ok:
             return None
         # extract spectra indexes
@@ -394,14 +397,14 @@ class NistCompound():
         if not ref:
             return
         # request
-        nr = _ncpr.make_nist_request(ref)
+        nr = _ncpr.make_nist_request(ref, config = self._request_config)
         if not nr.ok:
             return None
         # get distinct tables
         refs = _parsing.get_chromatography_table_refs(nr.soup)
         for ref in refs:
             # request table
-            nrx = _ncpr.make_nist_request(ref)
+            nrx = _ncpr.make_nist_request(ref, config = self._request_config)
             if not nrx.ok:
                 return None
             # get Chromatogram
@@ -424,7 +427,10 @@ class NistCompound():
 
 #%% Initialization
 
-def compound_from_response(nr: _ncpr.NistResponse) -> _tp.Optional[NistCompound]:
+def compound_from_response(
+        nr: _ncpr.NistResponse,
+        request_config: _tp.Optional[_ncpr.RequestConfig()] = None
+    ) -> _tp.Optional[NistCompound]:
     '''Initializes NistCompound object from the corresponding response
     
     Arguments:
@@ -439,32 +445,41 @@ def compound_from_response(nr: _ncpr.NistResponse) -> _tp.Optional[NistCompound]
     if not _parsing.is_compound_page(nr.soup):
         return None
     # extract data
-    info = {**_parsing.parse_compound_page(nr.soup),
-            'nist_response': nr}
+    request_config = request_config or _ncpr.RequestConfig()
+    info = {
+        '_request_config': request_config,
+        '_nist_response': nr,
+        **_parsing.parse_compound_page(nr.soup)
+    }
     nc = NistCompound(**info)
     
     return nc
 
 
-def get_compound(ID: str) -> _tp.Optional[NistCompound]:
+def get_compound(
+        ID: str,
+        request_config: _tp.Optional[_ncpr.RequestConfig()] = None
+    ) -> _tp.Optional[NistCompound]:
     '''Loads the main info on the given NIST compound
     
     Arguments:
         ID (str): NIST compound ID, CAS RN or InChI
+        request_config (_tp.Optional[_ncpr.RequestConfig()]): additional requests.get parameters
     
     Returns:
         _tp.Optional[NistCompound]: NistCompound object, and None if there are
         several compounds corresponding to the given ID
     
     '''
+    request_config = request_config or _ncpr.RequestConfig()
     if ID[:6] == 'InChI=':
         url = f'{_ncpr.INCHI_URL}/{ID}'
         params = {}
     else:
         url = _ncpr.SEARCH_URL
         params = {'ID': ID}
-    nr = _ncpr.make_nist_request(url, params)
-    X = compound_from_response(nr)
+    nr = _ncpr.make_nist_request(url, params, config = request_config)
+    X = compound_from_response(nr, request_config)
     
     return X
 

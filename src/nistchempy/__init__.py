@@ -9,6 +9,7 @@ __updated__ = 'May 03, 2025'
 __license__ = 'MIT'
 
 
+from nistchempy.requests import RequestConfig
 from nistchempy.compound_list import get_all_data
 from nistchempy.compound import get_compound
 from nistchempy.search import run_search, NistSearchParameters

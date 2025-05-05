@@ -4,8 +4,6 @@ Attributes:
     BASE_URL   (str): base URL of the NIST Chemistry WebBook database
     SEARCH_URL (str): relative URL for the search API
     INCHI_URL  (str): relative URL for obtaining NIST compounds via InChI
-    REQUEST_DELAY (float): delay in seconds after getting response from NIST
-    REQUEST_KWARGS (dict): dictionary containing kwargs for make_nist_request
 
 '''
 
@@ -26,8 +24,29 @@ import typing as _tp
 BASE_URL = 'https://webbook.nist.gov'
 SEARCH_URL = f'{BASE_URL}/cgi/cbook.cgi'
 INCHI_URL = f'{BASE_URL}/cgi/inchi'
-REQUEST_DELAY = 0.0
-REQUEST_KWARGS = {}
+
+
+#%% Request kwargs
+
+@_dcs.dataclass
+class RequestConfig():
+    '''Contains parameters used by make_nist_request function, including
+    time delay after getting response and requests.get kwargs
+    
+    Attrubutes:
+        delay (float): time delay in seconds after getting response from NIST
+        kwargs (dict): kwargs for requests.get inside of make_nist_request
+    
+    '''
+    delay: float = 0.0
+    kwargs: dict = _dcs.field(default_factory = dict)
+    
+    def __post_init__(self):
+        if self.delay < 0:
+            raise ValueError(f'Time delay must be non-negative: {self.delay}')
+        if 'params' in self.kwargs:
+            self.kwargs.pop('params')
+
 
 
 #%% Basic GET request
@@ -83,27 +102,26 @@ class NistResponse():
 
 
 
-def make_nist_request(url: str, params: dict = {}) -> NistResponse:
+def make_nist_request(url: str, params: dict = {},
+                      config: _tp.Optional[RequestConfig] = None) -> NistResponse:
     '''Dummy request to the NIST Chemistry WebBook
     
     Arguments:
         url (str): URL of the NIST webpage
         params (str): GET request parameters
+        config (_tp.Optional[RequestConfig]): additional requests.get parameters
     
     Returns:
         NistResponse: wrapper for the request's response
     
     '''
-    from nistchempy.requests import REQUEST_KWARGS, REQUEST_DELAY
-    # prepare get kwargs
-    disallowed = ['params']
-    kw = {k: w for k, w in REQUEST_KWARGS.items() if k not in disallowed}
+    # get config
+    config = config or RequestConfig()
     # get response
-    r = _requests.get(url, params, **kw)
+    r = _requests.get(url, params, **config.kwargs)
     nr = NistResponse(r)
     # delay
-    if REQUEST_DELAY > 0:
-        _time.sleep(REQUEST_DELAY)
+    _time.sleep(config.delay)
     
     return nr
 
