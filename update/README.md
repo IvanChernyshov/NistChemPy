@@ -7,7 +7,7 @@ This directory contains script those functionality is to update the pre-download
 
 All requirements are listed in [requirements.txt](requirements.txt).
 
-[tqdm](https://tqdm.github.io/) is the only addition to NistChemPy and its dependences.
+[tqdm](https://tqdm.github.io/) is the only addition to NistChemPy and its dependencies.
 
 
 ## How to use
@@ -18,19 +18,21 @@ All scripts require a root directory to store all interim data which is the firs
 
 The data update pipeline consists of the following steps:
 
-1. [get_nist_compounds.py](get_nist_compounds.py): downloads sitemaps, extracts and saves compound URLs.
+1. [1_get_nist_compounds.py](1_get_nist_compounds.py): downloads sitemaps, extracts and saves compound URLs.
 
-2. [get_compound_htmls.py](get_compound_htmls.py): downloads HTML-pages of found compounds.
+2. [2_get_compound_htmls.py](2_get_compound_htmls.py): downloads HTML-pages of found compounds.
 
-3. [check_compound_initialization.py](check_compound_initialization.py): initializes Compound object from downloaded HTML-files.
+3. [3_check_compound_initialization.py](3_check_compound_initialization.py): initializes Compound object from downloaded HTML-files.
 Possible errors must be manually verified to fix bugs in NistChemPy code.
 
-4. [process_nonload_errors.py](process_nonload_errors.py): processes errors related to broken links in sitemaps.
+4. [4_process_nonload_errors.py](4_process_nonload_errors.py): processes errors related to broken links in sitemaps.
 
-5. [get_missing_stereoisomers.py](get_missing_stereoisomers.py): extracts info on stereoisomers for each pre-downloaded compounds. This fixes almost all errors with broken compound URLs.
+5. [5_get_missing_stereoisomers.py](5_get_missing_stereoisomers.py): extracts info on stereoisomers for each pre-downloaded compounds.
+This fixes almost all errors with broken compound URLs.
 
-6. [extract_info_from_htmls.py](extract_info_from_htmls.py): extracts info on compounds from prepared compound HTMLs and saves it as if final nist_data.csv final required for the package.
+6. [6_extract_info_from_htmls.py](6_extract_info_from_htmls.py): extracts info on compounds from prepared compound HTMLs and saves it as if final nist_data.csv final required for the package.
 
-7. [get_old_IDs.py](get_old_IDs.py): tries to download HTML-pages of compounds that are missing in current nist_data.csv file, but is available in old versions. If there are such entries, the previous script must be re-executed.
+7. [7_get_old_IDs.py](7_get_old_IDs.py): tries to download HTML-pages of compounds that are missing in current nist_data.csv file, but is available in old versions.
+If there are such entries, the previous script must be re-executed.
 
 
