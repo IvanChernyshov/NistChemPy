@@ -106,7 +106,7 @@ class NistSearchParameters():
     
     def __str__(self):
         params = [f'{k}={v}' for k, v in self.__dict__.items() if v]
-        text = f'SearchParameters({", ".join(params)})'
+        text = f'NistSearchParameters({", ".join(params)})'
         
         return text
     
@@ -122,10 +122,15 @@ class NistSearchParameters():
             dict: dictionary of GET parameters relevant to the search
         
         '''
+        # map attributes to get parameter keys
+        substs = {'match_isotopes': 'MatchIso', 'allow_other': 'AllowOther',
+                  'allow_extra': 'AllowExtra', 'no_ion': 'NoIon'}
+        # get params
         params = {'Units': 'SI' if self.use_SI else 'CAL'}
         for key, val in self.__dict__.items():
             if key == 'Units' or not val:
                 continue
+            key = substs.get(key, key)
             params[key] = 'on'
         
         return params

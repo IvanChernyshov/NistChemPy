@@ -1,5 +1,6 @@
 # project-specific
 update/data/*
+research/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
