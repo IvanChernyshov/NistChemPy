@@ -4,7 +4,7 @@
 
 This package not only automates the search and data extraction processes but also bypasses the WebBook's limitation of 400 compounds per search.
 
-Currently, **NistChemPy** enables the extraction of basic compound properties as well as IR, THz, MS, and UV-Vis spectra.
+Currently, **NistChemPy** enables the extraction of basic compound properties as well as IR, THz, MS, and UV-Vis spectra and gas chromatography data.
 
 Additional properties are available via URLs that link to their respective web pages, with potential support for direct extraction in future updates.
 
