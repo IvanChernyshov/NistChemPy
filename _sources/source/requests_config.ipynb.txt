@@ -83,6 +83,36 @@
   },
   {
    "cell_type": "markdown",
+   "id": "b1d8beb6-763e-4dd0-9c5a-10054a47f516",
+   "metadata": {},
+   "source": [
+    "A delay of 1 second is generally acceptable for most applications, but it's advisable to retrieve this information from the `robots.txt` file:"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 3,
+   "id": "50b5764d-3c09-4540-85c1-b3180029828d",
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "5"
+      ]
+     },
+     "execution_count": 3,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "delay = nist.get_crawl_delay()\n",
+    "delay"
+   ]
+  },
+  {
+   "cell_type": "markdown",
    "id": "bd06b8d4-f0a0-4381-a45d-26acc688cafa",
    "metadata": {},
    "source": [
@@ -99,7 +129,7 @@
   },
   {
    "cell_type": "code",
-   "execution_count": 3,
+   "execution_count": 4,
    "id": "4669389f-d01a-47d7-bf48-30555d3da969",
    "metadata": {},
    "outputs": [
@@ -130,7 +160,7 @@
   },
   {
    "cell_type": "code",
-   "execution_count": 4,
+   "execution_count": 5,
    "id": "f232dfc1-696b-4872-a866-dfceb9d25946",
    "metadata": {},
    "outputs": [
@@ -140,7 +170,7 @@
        "RequestConfig(delay=1.0, kwargs={'timeout': 30.0})"
       ]
      },
-     "execution_count": 4,
+     "execution_count": 5,
      "metadata": {},
      "output_type": "execute_result"
     }
@@ -153,7 +183,7 @@
   },
   {
    "cell_type": "code",
-   "execution_count": 5,
+   "execution_count": 6,
    "id": "053b1483-20a5-43cc-bdfa-ea0454c342ca",
    "metadata": {},
    "outputs": [
@@ -163,7 +193,7 @@
        "[NistCompound(ID=C590192), NistCompound(ID=C806713), NistCompound(ID=C1573586)]"
       ]
      },
-     "execution_count": 5,
+     "execution_count": 6,
      "metadata": {},
      "output_type": "execute_result"
     }
@@ -175,7 +205,7 @@
   },
   {
    "cell_type": "code",
-   "execution_count": 6,
+   "execution_count": 7,
    "id": "fc83eafd-099c-47ee-84ad-60044bda307f",
    "metadata": {},
    "outputs": [
@@ -185,7 +215,7 @@
        "RequestConfig(delay=1.0, kwargs={'timeout': 30.0})"
       ]
      },
-     "execution_count": 6,
+     "execution_count": 7,
      "metadata": {},
      "output_type": "execute_result"
     }
