@@ -1,6 +1,12 @@
 Changelog
 =========
 
+1.0.4 (under development)
+-------------------------
+
+* Adds :py:func:`nistchempy.utils.get_crawl_delay` function.
+
+
 1.0.3
 -----
 
