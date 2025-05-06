@@ -1,6 +1,18 @@
 Changelog
 =========
 
+1.0.3
+-----
+
+* Adds functionality to extract gas chromatogaraphy data via :py:meth:`nistchempy.compound.Compound.get_gas_chromatography`.
+
+* Adds functionality to set up requests kwargs via :py:class:`nistchempy.requests.RequestConfig`.
+
+* Switches to `src`-layout and `pyproject.toml`.
+
+* Fixes small bugs.
+
+
 1.0.2
 -----
 
