@@ -41,5 +41,11 @@ class TestPropertyExtraction:
         self.X.get_ms_spectra()
         assert self.X.ms_specs
         assert self.X.ms_specs[0].jdx_text is not None
+    
+    def test_gas_chromat(self):
+        assert not self.X.gas_chromat
+        self.X.get_gas_chromatography()
+        assert self.X.gas_chromat
+        assert len(self.X.gas_chromat[0].data) > 0
 
 
