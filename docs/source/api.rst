@@ -98,3 +98,15 @@ nistchempy.parsing.gas_chromatography
    :noindex:
 
 
+nistchempy.utils
+----------------
+
+.. automodule:: nistchempy.utils
+   :imported-members:
+   :members:
+   :undoc-members:
+   :show-inheritance:
+   :member-order: bysource
+   :noindex:
+
+
