@@ -1,0 +1,245 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Requests Configuration &mdash; NistChemPy 1.0.3 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../_static/nbsphinx-code-cells.css?v=2aa19091" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=baaebd52"></script>
+      <script src="../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+      <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+      <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="NistChemPy API" href="api.html" />
+    <link rel="prev" title="Advanced search" href="advanced_search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            NistChemPy
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Cookbook:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="basic_search.html">Basic Search</a></li>
+<li class="toctree-l1"><a class="reference internal" href="compound_properties.html">Compound Properties</a></li>
+<li class="toctree-l1"><a class="reference internal" href="advanced_search.html">Advanced Search</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Requests Configuration</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Package details:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="api.html">Package API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="changelog.html">Changelog</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">NistChemPy</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Requests Configuration</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/source/requests_config.ipynb.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="Requests-Configuration">
+<h1>Requests Configuration<a class="headerlink" href="#Requests-Configuration" title="Link to this heading"></a></h1>
+<p>If a user intends to download a large amount of information, they may want to utilize additional features of the <code class="docutils literal notranslate"><span class="pre">requests.get</span></code> function, which is employed within the <code class="docutils literal notranslate"><span class="pre">nistchempy</span></code> package. These features include setting HTTP headers, configuring proxies, specifying timeouts for webpage loading, and introducing a delay between requests to the NIST Chemistry WebBook website. In this case, the user can utilize the <code class="docutils literal notranslate"><span class="pre">nistchempy.RequestConfig</span></code> object.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">RequestConfig</span></code> object includes two attributes:</p>
+<ul class="simple">
+<li><p><strong>delay</strong>: Specifies the time delay (in seconds) between requests to the website.</p></li>
+<li><p><strong>kwargs</strong>: A dictionary of keyword arguments for the <code class="docutils literal notranslate"><span class="pre">requests.get</span></code> function, excluding <code class="docutils literal notranslate"><span class="pre">params</span></code>.</p></li>
+</ul>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">nistchempy</span> <span class="k">as</span> <span class="nn">nist</span>
+
+<span class="n">cfg</span> <span class="o">=</span> <span class="n">nist</span><span class="o">.</span><span class="n">RequestConfig</span><span class="p">(</span><span class="n">delay</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">kwargs</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;timeout&#39;</span><span class="p">:</span> <span class="mf">30.0</span><span class="p">})</span>
+<span class="n">cfg</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+RequestConfig(delay=1.0, kwargs={&#39;timeout&#39;: 30.0})
+</pre></div></div>
+</div>
+<p>The default values are as follows: a <code class="docutils literal notranslate"><span class="pre">delay</span></code> of 0.0 seconds and an empty dictionary for <code class="docutils literal notranslate"><span class="pre">kwargs</span></code>. These defaults are utilized by all relevant functions and objects:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">nist</span><span class="o">.</span><span class="n">RequestConfig</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+RequestConfig(delay=0.0, kwargs={})
+</pre></div></div>
+</div>
+<p>If one uses <code class="docutils literal notranslate"><span class="pre">nistchempy.RequestConfig</span></code> to initalize <code class="docutils literal notranslate"><span class="pre">nistchempy.compound.Compound</span></code>, all methods of the latter one will use the same config to download relevant data, including spectra, MOL-files, gas chromatography data, etc. Also, configuration can be altered post factum. We can show it with Exception raised with low timeout value:</p>
+<p>When using <code class="docutils literal notranslate"><span class="pre">nistchempy.RequestConfig</span></code> to initialize <code class="docutils literal notranslate"><span class="pre">nistchempy.compound.Compound</span></code>, all methods of the <code class="docutils literal notranslate"><span class="pre">Compound</span></code> class will utilize the same configuration to download relevant data, such as spectra, MOL files, gas chromatography data, and more. Additionally, the configuration can be modified after initialization. This can be demonstrated by raising an exception when a low timeout value is set:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">X</span> <span class="o">=</span> <span class="n">nist</span><span class="o">.</span><span class="n">get_compound</span><span class="p">(</span><span class="s1">&#39;C1871585&#39;</span><span class="p">,</span> <span class="n">cfg</span><span class="p">)</span>
+<span class="n">X</span><span class="o">.</span><span class="n">_request_config</span><span class="o">.</span><span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;timeout&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.01</span>
+<span class="k">try</span><span class="p">:</span>
+    <span class="n">X</span><span class="o">.</span><span class="n">get_gas_chromatography</span><span class="p">()</span>
+<span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt empty docutils container">
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+HTTPSConnectionPool(host=&#39;webbook.nist.gov&#39;, port=443): Read timed out. (read timeout=0.01)
+</pre></div></div>
+</div>
+<p>The same applies to the <code class="docutils literal notranslate"><span class="pre">nistchempy.run_search</span></code> function:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">cfg</span> <span class="o">=</span> <span class="n">nist</span><span class="o">.</span><span class="n">RequestConfig</span><span class="p">(</span><span class="n">delay</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">kwargs</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;timeout&#39;</span><span class="p">:</span> <span class="mf">30.0</span><span class="p">})</span>
+<span class="n">s</span> <span class="o">=</span> <span class="n">nist</span><span class="o">.</span><span class="n">run_search</span><span class="p">(</span><span class="s1">&#39;1,2*butadiene&#39;</span><span class="p">,</span> <span class="s1">&#39;name&#39;</span><span class="p">,</span> <span class="n">request_config</span><span class="o">=</span><span class="n">cfg</span><span class="p">)</span>
+<span class="n">s</span><span class="o">.</span><span class="n">_request_config</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+RequestConfig(delay=1.0, kwargs={&#39;timeout&#39;: 30.0})
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">s</span><span class="o">.</span><span class="n">load_found_compounds</span><span class="p">()</span>
+<span class="n">s</span><span class="o">.</span><span class="n">compounds</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[5]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+[NistCompound(ID=C590192), NistCompound(ID=C806713), NistCompound(ID=C1573586)]
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">X</span> <span class="o">=</span> <span class="n">s</span><span class="o">.</span><span class="n">compounds</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+<span class="n">X</span><span class="o">.</span><span class="n">_request_config</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[6]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+RequestConfig(delay=1.0, kwargs={&#39;timeout&#39;: 30.0})
+</pre></div></div>
+</div>
+<p>Please note that <code class="docutils literal notranslate"><span class="pre">RequestConfig</span></code> is safe for use in both multithreaded and multiprocess scenarios.</p>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="advanced_search.html" class="btn btn-neutral float-left" title="Advanced search" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="api.html" class="btn btn-neutral float-right" title="NistChemPy API" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, Ivan Yu. Chernyshov.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

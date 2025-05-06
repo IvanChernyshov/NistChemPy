@@ -141,7 +141,9 @@
     "\n",
     "      - `mol2D` / `mol3D`: text blocks of 2D / 3D MOL-files;\n",
     "\n",
-    "      - `ir_specs` / `thz_specs` / `ms_specs` / `uv_specs`: JDX-formatted text blocks of IR / THz / MS / UV spectra.\n"
+    "      - `ir_specs` / `thz_specs` / `ms_specs` / `uv_specs`: JDX-formatted text blocks of IR / THz / MS / UV spectra;\n",
+    "   \n",
+    "      - `gas_chromat`: gas chromatography data.\n"
    ]
   },
   {
@@ -153,7 +155,9 @@
     {
      "data": {
       "text/plain": [
-       "{'ID': 'C120127',\n",
+       "{'_request_config': RequestConfig(delay=0.0, kwargs={}),\n",
+       " '_nist_response': NistResponse(ok=True, content_type='text/html; charset=UTF-8'),\n",
+       " 'ID': 'C120127',\n",
        " 'name': 'Anthracene',\n",
        " 'synonyms': ['Anthracin',\n",
        "  'Green Oil',\n",
@@ -164,7 +168,7 @@
        "  'Anthracen',\n",
        "  'Coal tar pitch volatiles:anthracene',\n",
        "  'Sterilite hop defoliant'],\n",
-       " 'formula': 'C14 H10',\n",
+       " 'formula': 'C14H10',\n",
        " 'mol_weight': 178.2292,\n",
        " 'inchi': 'InChI=1S/C14H10/c1-2-6-12-10-14-8-4-3-7-13(14)9-11(12)5-1/h1-10H',\n",
        " 'inchi_key': 'MWPLVEDNUUSJAV-UHFFFAOYSA-N',\n",
@@ -187,13 +191,13 @@
        "  'NIST Polycyclic Aromatic Hydrocarbon Structure Index': 'https://pah.nist.gov/?q=pah015'},\n",
        " 'nist_subscription_refs': {'NIST / TRC Web Thermo Tables, \"lite\" edition (thermophysical and thermochemical data)': 'https://wtt-lite.nist.gov/wtt-lite/index.html?cmp=anthracene',\n",
        "  'NIST / TRC Web Thermo Tables, professional edition (thermophysical and thermochemical data)': 'https://wtt-pro.nist.gov/wtt-pro/index.html?cmp=anthracene'},\n",
-       " 'nist_response': NistResponse(ok=True, content_type='text/html; charset=UTF-8'),\n",
        " 'mol2D': None,\n",
        " 'mol3D': None,\n",
        " 'ir_specs': [],\n",
        " 'thz_specs': [],\n",
        " 'ms_specs': [],\n",
-       " 'uv_specs': []}"
+       " 'uv_specs': [],\n",
+       " 'gas_chromat': []}"
       ]
      },
      "execution_count": 4,
@@ -250,7 +254,7 @@
      "data": {
       "image/png": "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coSEhJSXl9+6devIkSMajeb8+fPbtm2bnJyUOy5F2bBhw+XLl7/55pv4+Piurq66ujq5I+KHpjT63XffxcXFvfvuu3IHQqK4uLivv/66s7OzpqaG600CYomIiKisrLx9+7bRaDx8+LBarZY7IqVRqVRvvvmmw+F47733TCaT3OHwEyZ3AEBMubm5ubm5ckehWGgHKncUShYVFXX06FG5o+CNptUoAAAQCNIoAABggTQKAABYII0CAAAWSKMAAIAF0igAAGCBNAoAAFggjQIAABZIowAAgAXSKAAAYIE0CgAAWCCNAgAAFkijAACABdIoAABggTQKAABYII0CAAAWSKMAAIAF0igAAGCBNAoAAFggjQIAABZIowAAgAXSKAAAYIE0CgAAWCCNAgAAFkijAACABdIoAABggTQKAABYII0CAAAWSKMAAIAF0igAAGCBNAoAAFggjQIAABZIowAAgAXSKAAAYIE0CgAAWCCNAgAAFkijAACABdIoAABggTQKAABYII0CAAAWSKMAAIAF0igAAGCBNAoAAFggjQIAABZIowAAgAXSKAAAYIE0CgAAWCCNAgAAFkijAACABdIoAABggTQKAABYII0qyrVr1z744AO5o1Asl8tVUVHx+eefyx2IYj1+/LiysnJ4eFjuQPgJkzsAHvR6/euvv/7CCy/IHQiJ/vzzz0OHDp08edLr9ebn52/dulXuiBRlenq6trb2448/fvToUUxMzDvvvKNWq+UOSlG8Xu+pU6cOHTo0Ojo6Ojp6+vRpuSPigaY0GhERERERIXcUxJmdnT158uThw4fHxsbCw8P37du3YcMGuYNSDpZlf/jhh+rq6t9//51hmMLCws8++wxyqLjsdvv+/fs7OjoYhtHpdPv27ZM7In7ISqP379/n/gv8ceHCBaPReOPGDYZhCgoKamtrX3zxRbmDUo7Ozs6DBw9euXKFYZiMjIwjR46UlZXJHZSiuFyujz76qK6uzuv1JiUlffLJJ3q9PiQk5FmvJzRFsCTR6XQMw5SUlMgdCAUGBwe5N1xaWlpDQ4M/o7RaLcMw/f39gQ6Pdk6ns7y8HD3epKSk+vr62dnZ547q7+9nGEar1UoQIe3cbrfZbI6KimIYJjw83Gg0jo+PP3dUSUkJwzA6nU6CCP1H1moU+GNmZubLL798//33JyYm1Gp1ZWVldXU1HBmL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",
       "text/plain": [
-       "<rdkit.Chem.rdchem.Mol at 0x1a3fe19d000>"
+       "<rdkit.Chem.rdchem.Mol at 0x27062d1f370>"
       ]
      },
      "execution_count": 6,
@@ -393,6 +397,256 @@
    "metadata": {},
    "source": [
     "Spectra of the given compound can be saved to the given directory via `save_ir_spectra`, `save_ir_spectra`, `save_ir_spectra`, `save_ir_spectra`, `save_all_spectra` methods of the `nist.compound.NistCompound` object. To save the specific spectrum, one can use the `save` method of the `nist.compound.Spectrum` object."
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "bf5a1c68-ff84-4ad3-8d2d-625442969666",
+   "metadata": {},
+   "source": [
+    "## Gas Chromatography\n",
+    "\n",
+    "To load gas chromatography data, use the `get_gas_chromatography` method:"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 10,
+   "id": "0459fd5a-6193-4467-9bdf-3f90c50c64d4",
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "[]"
+      ]
+     },
+     "execution_count": 10,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "X.gas_chromat"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 11,
+   "id": "6347a920-b320-41db-b56d-76166fdd1950",
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "[Chromatogram(C120127, Kovats' RI, non-polar column, isothermal: 5 data points),\n",
+       " Chromatogram(C120127, Kovats' RI, polar column, isothermal: 1 data points),\n",
+       " Chromatogram(C120127, Van Den Dool and Kratz RI, non-polar column, temperature ramp: 41 data points),\n",
+       " Chromatogram(C120127, Van Den Dool and Kratz RI, non-polar column, custom temperature program: 7 data points),\n",
+       " Chromatogram(C120127, Normal alkane RI, non-polar column, isothermal: 2 data points),\n",
+       " Chromatogram(C120127, Normal alkane RI, non-polar column, temperature ramp: 20 data points),\n",
+       " Chromatogram(C120127, Normal alkane RI, non-polar column, custom temperature program: 12 data points),\n",
+       " Chromatogram(C120127, Normal alkane RI, polar column, temperature ramp: 1 data points),\n",
+       " Chromatogram(C120127, Normal alkane RI, polar column, custom temperature program: 3 data points),\n",
+       " Chromatogram(C120127, Lee's RI, non-polar column, isothermal: 5 data points),\n",
+       " Chromatogram(C120127, Lee's RI, non-polar column, temperature ramp: 41 data points),\n",
+       " Chromatogram(C120127, Lee's RI, non-polar column, custom temperature program: 35 data points),\n",
+       " Chromatogram(C120127, Lee's RI, polar column, temperature ramp: 1 data points)]"
+      ]
+     },
+     "execution_count": 11,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "X.get_gas_chromatography()\n",
+    "X.gas_chromat"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "fdafccdd-0a6b-4538-9ece-e01383982399",
+   "metadata": {},
+   "source": [
+    "`Chromatogram` object contains `pandas` DataFrames with raw GC data:"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 12,
+   "id": "59abf017-1d10-43ab-a9fc-0b07f65282ec",
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "(NistCompound(ID=C120127), \"Kovats' RI\", 'non-polar column', 'isothermal')"
+      ]
+     },
+     "execution_count": 12,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "gc = X.gas_chromat[0]\n",
+    "gc.compound, gc.ri_type, gc.column_type, gc.temp_regime"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 13,
+   "id": "9a999133-b49f-4b64-879a-cebaabe4ba7f",
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "text/html": [
+       "<div>\n",
+       "<style scoped>\n",
+       "    .dataframe tbody tr th:only-of-type {\n",
+       "        vertical-align: middle;\n",
+       "    }\n",
+       "\n",
+       "    .dataframe tbody tr th {\n",
+       "        vertical-align: top;\n",
+       "    }\n",
+       "\n",
+       "    .dataframe thead th {\n",
+       "        text-align: right;\n",
+       "    }\n",
+       "</style>\n",
+       "<table border=\"1\" class=\"dataframe\">\n",
+       "  <thead>\n",
+       "    <tr style=\"text-align: right;\">\n",
+       "      <th></th>\n",
+       "      <th>Column type</th>\n",
+       "      <th>Active phase</th>\n",
+       "      <th>Column length (m)</th>\n",
+       "      <th>Carrier gas</th>\n",
+       "      <th>Substrate</th>\n",
+       "      <th>Column diameter (mm)</th>\n",
+       "      <th>Phase thickness (μm)</th>\n",
+       "      <th>Temperature (C)</th>\n",
+       "      <th>I</th>\n",
+       "      <th>Reference</th>\n",
+       "      <th>Comment</th>\n",
+       "    </tr>\n",
+       "  </thead>\n",
+       "  <tbody>\n",
+       "    <tr>\n",
+       "      <th>0</th>\n",
+       "      <td>Packed</td>\n",
+       "      <td>SE-30</td>\n",
+       "      <td>1.</td>\n",
+       "      <td></td>\n",
+       "      <td>Chromaton N-AW</td>\n",
+       "      <td></td>\n",
+       "      <td></td>\n",
+       "      <td>160.</td>\n",
+       "      <td>1804.</td>\n",
+       "      <td>Kurbatova, S.V.; Finkelstein, E.E.; Kolosova, ...</td>\n",
+       "      <td>MSDC-RI</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>1</th>\n",
+       "      <td>Capillary</td>\n",
+       "      <td>OV-1</td>\n",
+       "      <td>25.</td>\n",
+       "      <td>N2</td>\n",
+       "      <td></td>\n",
+       "      <td>0.2</td>\n",
+       "      <td>0.33</td>\n",
+       "      <td>150.</td>\n",
+       "      <td>1739.</td>\n",
+       "      <td>Zhang, M.; Chen, B.; Shen, S.; Chen, S., Compo...</td>\n",
+       "      <td>MSDC-RI</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>2</th>\n",
+       "      <td>Capillary</td>\n",
+       "      <td>OV-1</td>\n",
+       "      <td>25.</td>\n",
+       "      <td>N2</td>\n",
+       "      <td></td>\n",
+       "      <td>0.2</td>\n",
+       "      <td>0.33</td>\n",
+       "      <td>160.</td>\n",
+       "      <td>1752.</td>\n",
+       "      <td>Zhang, M.; Chen, B.; Shen, S.; Chen, S., Compo...</td>\n",
+       "      <td>MSDC-RI</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>3</th>\n",
+       "      <td>Capillary</td>\n",
+       "      <td>SE-30</td>\n",
+       "      <td>100.</td>\n",
+       "      <td></td>\n",
+       "      <td></td>\n",
+       "      <td>0.5</td>\n",
+       "      <td></td>\n",
+       "      <td>175.</td>\n",
+       "      <td>1769.</td>\n",
+       "      <td>Bredael, P., Retention indices of hydrocarbons...</td>\n",
+       "      <td>MSDC-RI</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>4</th>\n",
+       "      <td>Capillary</td>\n",
+       "      <td>OV-101</td>\n",
+       "      <td>50.</td>\n",
+       "      <td>N2</td>\n",
+       "      <td></td>\n",
+       "      <td>0.3</td>\n",
+       "      <td></td>\n",
+       "      <td>140.</td>\n",
+       "      <td>1729.0</td>\n",
+       "      <td>Gerasimenko, V.A.; Kirilenko, A.V.; Nabivach, ...</td>\n",
+       "      <td>MSDC-RI</td>\n",
+       "    </tr>\n",
+       "  </tbody>\n",
+       "</table>\n",
+       "</div>"
+      ],
+      "text/plain": [
+       "  Column type Active phase Column length (m) Carrier gas       Substrate  \\\n",
+       "0      Packed        SE-30                1.              Chromaton N-AW   \n",
+       "1   Capillary         OV-1               25.          N2                   \n",
+       "2   Capillary         OV-1               25.          N2                   \n",
+       "3   Capillary        SE-30              100.                               \n",
+       "4   Capillary       OV-101               50.          N2                   \n",
+       "\n",
+       "  Column diameter (mm) Phase thickness (μm) Temperature (C)       I  \\\n",
+       "0                                                      160.   1804.   \n",
+       "1                  0.2                 0.33            150.   1739.   \n",
+       "2                  0.2                 0.33            160.   1752.   \n",
+       "3                  0.5                                 175.   1769.   \n",
+       "4                  0.3                                 140.  1729.0   \n",
+       "\n",
+       "                                           Reference  Comment  \n",
+       "0  Kurbatova, S.V.; Finkelstein, E.E.; Kolosova, ...  MSDC-RI  \n",
+       "1  Zhang, M.; Chen, B.; Shen, S.; Chen, S., Compo...  MSDC-RI  \n",
+       "2  Zhang, M.; Chen, B.; Shen, S.; Chen, S., Compo...  MSDC-RI  \n",
+       "3  Bredael, P., Retention indices of hydrocarbons...  MSDC-RI  \n",
+       "4  Gerasimenko, V.A.; Kirilenko, A.V.; Nabivach, ...  MSDC-RI  "
+      ]
+     },
+     "execution_count": 13,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "gc.data"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "21dc7ef8-55e9-48e7-bb6b-f9b4cfabe688",
+   "metadata": {},
+   "source": [
+    "Gas chromatography data of the given compound can be saved to the given directory via the `save_gas_chromatography` method of the `nist.compound.NistCompound` object. To save the specific table, one can use the `save` method of the `nist.compound.Chromatogram` object."
    ]
   }
  ],

@@ -10,6 +10,7 @@ Welcome to the NistChemPy's documentation!
    Basic Search <source/basic_search.ipynb>
    Compound Properties <source/compound_properties.ipynb>
    Advanced Search <source/advanced_search.ipynb>
+   Requests Configuration <source/requests_config.ipynb>
 
 
 .. toctree::

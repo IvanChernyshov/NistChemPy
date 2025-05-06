@@ -54,9 +54,11 @@
 <li class="toctree-l2"><a class="reference internal" href="#Properties">Properties</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#MOL-files">MOL-files</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#Spectra">Spectra</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#Gas-Chromatography">Gas Chromatography</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="advanced_search.html">Advanced Search</a></li>
+<li class="toctree-l1"><a class="reference internal" href="requests_config.html">Requests Configuration</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Package details:</span></p>
 <ul>
@@ -178,7 +180,8 @@ NistCompound(ID=C632053)
 <li><p><strong>Extracted properties</strong> — properties extracted from the URLs provided by <strong>reference properties</strong>:</p>
 <ul>
 <li><p><code class="docutils literal notranslate"><span class="pre">mol2D</span></code> / <code class="docutils literal notranslate"><span class="pre">mol3D</span></code>: text blocks of 2D / 3D MOL-files;</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">ir_specs</span></code> / <code class="docutils literal notranslate"><span class="pre">thz_specs</span></code> / <code class="docutils literal notranslate"><span class="pre">ms_specs</span></code> / <code class="docutils literal notranslate"><span class="pre">uv_specs</span></code>: JDX-formatted text blocks of IR / THz / MS / UV spectra.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">ir_specs</span></code> / <code class="docutils literal notranslate"><span class="pre">thz_specs</span></code> / <code class="docutils literal notranslate"><span class="pre">ms_specs</span></code> / <code class="docutils literal notranslate"><span class="pre">uv_specs</span></code>: JDX-formatted text blocks of IR / THz / MS / UV spectra;</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">gas_chromat</span></code>: gas chromatography data.</p></li>
 </ul>
 </li>
 </ul>
@@ -199,7 +202,9 @@ NistCompound(ID=C632053)
 </div>
 <div class="output_area docutils container">
 <div class="highlight"><pre>
-{&#39;ID&#39;: &#39;C120127&#39;,
+{&#39;_request_config&#39;: RequestConfig(delay=0.0, kwargs={}),
+ &#39;_nist_response&#39;: NistResponse(ok=True, content_type=&#39;text/html; charset=UTF-8&#39;),
+ &#39;ID&#39;: &#39;C120127&#39;,
  &#39;name&#39;: &#39;Anthracene&#39;,
  &#39;synonyms&#39;: [&#39;Anthracin&#39;,
   &#39;Green Oil&#39;,
@@ -210,7 +215,7 @@ NistCompound(ID=C632053)
   &#39;Anthracen&#39;,
   &#39;Coal tar pitch volatiles:anthracene&#39;,
   &#39;Sterilite hop defoliant&#39;],
- &#39;formula&#39;: &#39;C14 H10&#39;,
+ &#39;formula&#39;: &#39;C14H10&#39;,
  &#39;mol_weight&#39;: 178.2292,
  &#39;inchi&#39;: &#39;InChI=1S/C14H10/c1-2-6-12-10-14-8-4-3-7-13(14)9-11(12)5-1/h1-10H&#39;,
  &#39;inchi_key&#39;: &#39;MWPLVEDNUUSJAV-UHFFFAOYSA-N&#39;,
@@ -233,13 +238,13 @@ NistCompound(ID=C632053)
   &#39;NIST Polycyclic Aromatic Hydrocarbon Structure Index&#39;: &#39;https://pah.nist.gov/?q=pah015&#39;},
  &#39;nist_subscription_refs&#39;: {&#39;NIST / TRC Web Thermo Tables, &#34;lite&#34; edition (thermophysical and thermochemical data)&#39;: &#39;https://wtt-lite.nist.gov/wtt-lite/index.html?cmp=anthracene&#39;,
   &#39;NIST / TRC Web Thermo Tables, professional edition (thermophysical and thermochemical data)&#39;: &#39;https://wtt-pro.nist.gov/wtt-pro/index.html?cmp=anthracene&#39;},
- &#39;nist_response&#39;: NistResponse(ok=True, content_type=&#39;text/html; charset=UTF-8&#39;),
  &#39;mol2D&#39;: None,
  &#39;mol3D&#39;: None,
  &#39;ir_specs&#39;: [],
  &#39;thz_specs&#39;: [],
  &#39;ms_specs&#39;: [],
- &#39;uv_specs&#39;: []}
+ &#39;uv_specs&#39;: [],
+ &#39;gas_chromat&#39;: []}
 </pre></div></div>
 </div>
 </section>
@@ -383,6 +388,196 @@ on behalf of the United States of America. All rights reserved.
 </pre></div></div>
 </div>
 <p>Spectra of the given compound can be saved to the given directory via <code class="docutils literal notranslate"><span class="pre">save_ir_spectra</span></code>, <code class="docutils literal notranslate"><span class="pre">save_ir_spectra</span></code>, <code class="docutils literal notranslate"><span class="pre">save_ir_spectra</span></code>, <code class="docutils literal notranslate"><span class="pre">save_ir_spectra</span></code>, <code class="docutils literal notranslate"><span class="pre">save_all_spectra</span></code> methods of the <code class="docutils literal notranslate"><span class="pre">nist.compound.NistCompound</span></code> object. To save the specific spectrum, one can use the <code class="docutils literal notranslate"><span class="pre">save</span></code> method of the <code class="docutils literal notranslate"><span class="pre">nist.compound.Spectrum</span></code> object.</p>
+</section>
+<section id="Gas-Chromatography">
+<h2>Gas Chromatography<a class="headerlink" href="#Gas-Chromatography" title="Link to this heading"></a></h2>
+<p>To load gas chromatography data, use the <code class="docutils literal notranslate"><span class="pre">get_gas_chromatography</span></code> method:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[10]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">X</span><span class="o">.</span><span class="n">gas_chromat</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[10]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+[]
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[11]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">X</span><span class="o">.</span><span class="n">get_gas_chromatography</span><span class="p">()</span>
+<span class="n">X</span><span class="o">.</span><span class="n">gas_chromat</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[11]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+[Chromatogram(C120127, Kovats&#39; RI, non-polar column, isothermal: 5 data points),
+ Chromatogram(C120127, Kovats&#39; RI, polar column, isothermal: 1 data points),
+ Chromatogram(C120127, Van Den Dool and Kratz RI, non-polar column, temperature ramp: 41 data points),
+ Chromatogram(C120127, Van Den Dool and Kratz RI, non-polar column, custom temperature program: 7 data points),
+ Chromatogram(C120127, Normal alkane RI, non-polar column, isothermal: 2 data points),
+ Chromatogram(C120127, Normal alkane RI, non-polar column, temperature ramp: 20 data points),
+ Chromatogram(C120127, Normal alkane RI, non-polar column, custom temperature program: 12 data points),
+ Chromatogram(C120127, Normal alkane RI, polar column, temperature ramp: 1 data points),
+ Chromatogram(C120127, Normal alkane RI, polar column, custom temperature program: 3 data points),
+ Chromatogram(C120127, Lee&#39;s RI, non-polar column, isothermal: 5 data points),
+ Chromatogram(C120127, Lee&#39;s RI, non-polar column, temperature ramp: 41 data points),
+ Chromatogram(C120127, Lee&#39;s RI, non-polar column, custom temperature program: 35 data points),
+ Chromatogram(C120127, Lee&#39;s RI, polar column, temperature ramp: 1 data points)]
+</pre></div></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">Chromatogram</span></code> object contains <code class="docutils literal notranslate"><span class="pre">pandas</span></code> DataFrames with raw GC data:</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[12]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">gc</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">gas_chromat</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+<span class="n">gc</span><span class="o">.</span><span class="n">compound</span><span class="p">,</span> <span class="n">gc</span><span class="o">.</span><span class="n">ri_type</span><span class="p">,</span> <span class="n">gc</span><span class="o">.</span><span class="n">column_type</span><span class="p">,</span> <span class="n">gc</span><span class="o">.</span><span class="n">temp_regime</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[12]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+(NistCompound(ID=C120127), &#34;Kovats&#39; RI&#34;, &#39;non-polar column&#39;, &#39;isothermal&#39;)
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[13]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">gc</span><span class="o">.</span><span class="n">data</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[13]:
+</pre></div>
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>Column type</th>
+      <th>Active phase</th>
+      <th>Column length (m)</th>
+      <th>Carrier gas</th>
+      <th>Substrate</th>
+      <th>Column diameter (mm)</th>
+      <th>Phase thickness (μm)</th>
+      <th>Temperature (C)</th>
+      <th>I</th>
+      <th>Reference</th>
+      <th>Comment</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>Packed</td>
+      <td>SE-30</td>
+      <td>1.</td>
+      <td></td>
+      <td>Chromaton N-AW</td>
+      <td></td>
+      <td></td>
+      <td>160.</td>
+      <td>1804.</td>
+      <td>Kurbatova, S.V.; Finkelstein, E.E.; Kolosova, ...</td>
+      <td>MSDC-RI</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>Capillary</td>
+      <td>OV-1</td>
+      <td>25.</td>
+      <td>N2</td>
+      <td></td>
+      <td>0.2</td>
+      <td>0.33</td>
+      <td>150.</td>
+      <td>1739.</td>
+      <td>Zhang, M.; Chen, B.; Shen, S.; Chen, S., Compo...</td>
+      <td>MSDC-RI</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>Capillary</td>
+      <td>OV-1</td>
+      <td>25.</td>
+      <td>N2</td>
+      <td></td>
+      <td>0.2</td>
+      <td>0.33</td>
+      <td>160.</td>
+      <td>1752.</td>
+      <td>Zhang, M.; Chen, B.; Shen, S.; Chen, S., Compo...</td>
+      <td>MSDC-RI</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>Capillary</td>
+      <td>SE-30</td>
+      <td>100.</td>
+      <td></td>
+      <td></td>
+      <td>0.5</td>
+      <td></td>
+      <td>175.</td>
+      <td>1769.</td>
+      <td>Bredael, P., Retention indices of hydrocarbons...</td>
+      <td>MSDC-RI</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>Capillary</td>
+      <td>OV-101</td>
+      <td>50.</td>
+      <td>N2</td>
+      <td></td>
+      <td>0.3</td>
+      <td></td>
+      <td>140.</td>
+      <td>1729.0</td>
+      <td>Gerasimenko, V.A.; Kirilenko, A.V.; Nabivach, ...</td>
+      <td>MSDC-RI</td>
+    </tr>
+  </tbody>
+</table>
+</div></div>
+</div>
+<p>Gas chromatography data of the given compound can be saved to the given directory via the <code class="docutils literal notranslate"><span class="pre">save_gas_chromatography</span></code> method of the <code class="docutils literal notranslate"><span class="pre">nist.compound.NistCompound</span></code> object. To save the specific table, one can use the <code class="docutils literal notranslate"><span class="pre">save</span></code> method of the <code class="docutils literal notranslate"><span class="pre">nist.compound.Chromatogram</span></code> object.</p>
 </section>
 </section>
 
