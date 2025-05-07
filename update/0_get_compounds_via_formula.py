@@ -28,6 +28,23 @@ ELEMS = [
 
 #%% Functions
 
+def run_search(formula, params, config, max_errors=3):
+    '''Wrapper for NIST formula search'''
+    err = 0
+    while err < max_errors:
+        try:
+            res = nist.run_search(formula, 'formula', params, config)
+            return res
+        except (KeyboardInterrupt, SystemExit):
+            raise
+        except Exception:
+            print('error')
+            err += 1
+            continue
+    
+    raise None
+
+
 def scan_formulas(nC: int, IDs: set, crawl_delay: float = 5.0,
                   timeout: float = 30.0) -> None:
     '''Updates compound IDs with loaded chemical formulas
@@ -43,53 +60,50 @@ def scan_formulas(nC: int, IDs: set, crawl_delay: float = 5.0,
     config = nist.RequestConfig(delay=crawl_delay, kwargs={'timeout': timeout})
     params = nist.NistSearchParameters(allow_other=True, no_ion=True)
     # direct check
-    try:
-        res = nist.run_search(f'C{nC}', 'formula', params, config)
-        IDs.update(res.compound_ids)
-    except (KeyboardInterrupt, SystemExit):
-        raise
-    except Exception:
-        pass
-    if not res.lost:
+    res = run_search(f'C{nC}', params, config)
+    if res is None:
+        print(f'C{nC} :(')
         return
+    else:
+        IDs.update(res.compound_ids)
+        print(f'C{nC}')
+        if not res.lost:
+            return
     # check via other elements
-    for nH in range(100):
+    for nH in range(150):
         # direct formula
-        try:
-            res = nist.run_search(f'C{nC}H{nH}', 'formula', params, config)
+        res = run_search(f'C{nC}H{nH}', params, config)
+        if res is None:
+            print(f'C{nC}H{nH} :(')
+            continue
+        else:
             IDs.update(res.compound_ids)
             print(f'C{nC}H{nH}')
-        except (KeyboardInterrupt, SystemExit):
-            raise
-        except Exception:
-            print(f'C{nC}H{nH} :(')
-        if not res.lost:
-            continue
+            if not res.lost:
+                continue
         # add other elems
         for elem in ELEMS:
             # direct formula
-            try:
-                res = nist.run_search(f'C{nC}H{nH}{elem}?', 'formula', params, config)
+            res = run_search(f'C{nC}H{nH}{elem}?', params, config)
+            if res is None:
+                print(f'C{nC}H{nH}{elem}? :(')
+                continue
+            else:
                 IDs.update(res.compound_ids)
                 print(f'C{nC}H{nH}{elem}?')
-            except (KeyboardInterrupt, SystemExit):
-                raise
-            except Exception:
-                print(f'C{nC}H{nH}{elem}? :(')
-            if not res.lost:
-                continue
+                if not res.lost:
+                    continue
             # counts
             for nX in range(1, 51):
-                try:
-                    res = nist.run_search(f'C{nC}H{nH}{elem}{nX}', 'formula', params, config)
+                res = run_search(f'C{nC}H{nH}{elem}{nX}', params, config)
+                if res is None:
+                    print(f'C{nC}H{nH}{elem}{nX} :(')
+                    continue
+                else:
                     IDs.update(res.compound_ids)
                     print(f'C{nC}H{nH}{elem}{nX}')
-                except (KeyboardInterrupt, SystemExit):
-                    raise
-                except Exception:
-                    print(f'C{nC}H{nH}{elem}{nX} :(')
-                if res.lost:
-                    print('Lost :(')
+                    if res.lost:
+                        print('Lost :(')
     
     return
 
@@ -107,8 +121,10 @@ def get_arguments() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description = 'Searches for carbon-containing compounds of NIST Chemistry WebBook')
     parser.add_argument('path_compounds',
                         help = 'text file containing list of found compounds')
-    parser.add_argument('carbon_count', type = int,
-                        help = 'number of carbon atoms in chemical formula')
+    parser.add_argument('start_count', type = int,
+                        help = 'start number of carbon atoms in chemical formula')
+    parser.add_argument('end_count', type = int,
+                        help = 'end number of carbon atoms in chemical formula')
     parser.add_argument('--crawl-delay', type = float, default = 1.0,
                         help = 'pause between HTTP requests, seconds')
     parser.add_argument('--timeout', type = float, default = 30.0,
@@ -131,9 +147,11 @@ def check_arguments(args: argparse.Namespace) -> None:
         with open(args.path_compounds, 'w') as outf:
             outf.write('')
     
-    # check old compounds.csv
-    if args.carbon_count < 0:
-        raise ValueError(f'carbon_count must be positive integer: {args.carbon_count}')
+    # check carbon counts
+    if args.start_count < 0:
+        raise ValueError(f'start_count must be positive integer: {args.start_count}')
+    if args.end_count < 0:
+        raise ValueError(f'end_count must be positive integer: {args.end_count}')
     
     # crawl delay
     if args.crawl_delay < 0:
@@ -159,14 +177,13 @@ def main() -> None:
     
     # scan formulas
     try:
-        scan_formulas(args.carbon_count, IDs, args.crawl_delay, args.timeout)
+        for nC in range(args.start_count, args.end_count + 1):
+            scan_formulas(nC, IDs, args.crawl_delay, args.timeout)
+            # save updated IDs
+            with open(args.path_compounds, 'w') as outf:
+                outf.write('\n'.join(sorted(list(IDs))) + '\n')
     except Exception:
         pass
-    
-    # save updated IDs
-    IDs = sorted(list(IDs))
-    with open(args.path_compounds, 'w') as outf:
-        outf.write('\n'.join(IDs) + '\n')
     
     return
 
