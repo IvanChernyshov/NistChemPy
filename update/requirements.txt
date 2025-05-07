@@ -1,2 +1,2 @@
-nistchempy >= 1.0.0
+nistchempy >= 1.0.4
 tqdm
