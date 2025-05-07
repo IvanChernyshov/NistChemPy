@@ -35,4 +35,7 @@ This fixes almost all errors with broken compound URLs.
 7. [7_get_old_IDs.py](7_get_old_IDs.py): tries to download HTML-pages of compounds that are missing in current nist_data.csv file, but is available in old versions.
 If there are such entries, the previous script must be re-executed.
 
+8. [8_get_compounds_via_formula.py](8_get_compounds_via_formula.py): searches for compound IDs via scanning chemical formulas.
+Alternative to the sitemap-based approach.
+
 
