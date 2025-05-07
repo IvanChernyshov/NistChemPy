@@ -6,6 +6,10 @@ Changelog
 
 * Adds :py:func:`nistchempy.utils.get_crawl_delay` function.
 
+* Adds :py:meth:`nistchempy.requests.RequestConfig.max_attempts` attribute to doften impact from potential server response errors.
+
+* Updates update scripts.
+
 
 1.0.3
 -----
