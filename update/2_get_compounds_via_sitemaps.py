@@ -6,8 +6,9 @@ import os, shutil, gzip
 import argparse
 
 from urllib.robotparser import RobotFileParser
-from urllib.request import urlopen, urlretrieve
 from urllib.parse import unquote, urlparse, parse_qs
+
+import requests
 
 from bs4 import BeautifulSoup
 
@@ -17,6 +18,19 @@ import nistchempy as nist
 
 
 #%% Functions
+
+def download_file(url, path):
+    '''Downloads file via requests'''
+    r = requests.get(url, stream=True)
+    r.raise_for_status()
+    
+    # save
+    with open(path, 'wb') as outf:
+        for chunk in r.iter_content(chunk_size=8192):
+            outf.write(chunk)
+    
+    return
+
 
 def donwload_nist_sitemaps(dir_data: str) -> None:
     '''Downloads sitemaps from NIST Chemistry WebBook
@@ -32,15 +46,17 @@ def donwload_nist_sitemaps(dir_data: str) -> None:
             os.mkdir(path)
     # save robots.txt
     ROBOTS_URL = nist.requests.BASE_URL + '/robots.txt'
-    with open(os.path.join(dir_data, 'robots.txt'), 'w') as outf:
-        text = urlopen(ROBOTS_URL).read().decode('utf-8')
+    path_robots = os.path.join(dir_data, 'robots.txt')
+    with open(path_robots, 'w') as outf:
+        text = requests.get(ROBOTS_URL).text
         outf.write(text)
     # save initial sitemap
-    robots = RobotFileParser(nist.requests.BASE_URL + '/robots.txt')
-    robots.read()
+    robots = RobotFileParser()
+    with open(path_robots, 'r') as inpf:
+        robots.parse(inpf.readlines())
     url = robots.site_maps()[0]
     fname = urlparse(url).path.split('/')[-1]
-    text = urlopen(url).read().decode('utf-8')
+    text = requests.get(url).text
     with open(os.path.join(dir_data, fname), 'w') as outf:
         outf.write(text)
     # download actual sitemaps
@@ -48,7 +64,7 @@ def donwload_nist_sitemaps(dir_data: str) -> None:
     for item in xml.findAll('sitemap'):
         url = item.loc.text
         fname = urlparse(url).path.split('/')[-1]
-        urlretrieve(url, os.path.join(dir_xmls, fname))
+        download_file(url, os.path.join(dir_xmls, fname))
     # unzip archives
     for f in os.listdir(dir_xmls):
         f = os.path.join(dir_xmls, f)
@@ -92,7 +108,7 @@ def get_nist_compounds_list(dir_data: str) -> None:
     
     '''
     dir_xmls = os.path.join(dir_data, 'sitemaps')
-    path_csv = os.path.join(dir_data, 'compounds.csv')
+    path_csv = os.path.join(dir_data, 'compounds_sitemaps.csv')
     # get compound urls
     urls = []
     for f in os.listdir(dir_xmls):
@@ -149,7 +165,7 @@ def main() -> None:
     # prepare arguments
     args = get_arguments()
     check_arguments(args)
-    path_csv = os.path.join(args.dir_data, 'compounds.csv')
+    path_csv = os.path.join(args.dir_data, 'compounds_sitemaps.csv')
     # get list of compounds
     if not os.path.exists(path_csv):
         print('Downloading NIST Chemistry WebBook sitemaps ...')
