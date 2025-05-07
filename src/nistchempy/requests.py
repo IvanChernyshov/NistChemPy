@@ -30,22 +30,33 @@ INCHI_URL = f'{BASE_URL}/cgi/inchi'
 
 @_dcs.dataclass
 class RequestConfig():
-    '''Contains parameters used by make_nist_request function, including
-    time delay after getting response and requests.get kwargs
+    '''Contains parameters used by make_nist_request function
     
     Attrubutes:
         delay (float): time delay in seconds after getting response from NIST
+        max_attempts (_tp.Optional[int]): if > 1, enables reattempting of getting response
+            in case of request errors or non-OK response
         kwargs (dict): kwargs for requests.get inside of make_nist_request
     
     '''
     delay: float = 0.0
+    max_attempts: _tp.Optional[int] = 1
     kwargs: dict = _dcs.field(default_factory = dict)
     
+    
     def __post_init__(self):
+        
         if self.delay < 0:
             raise ValueError(f'Time delay must be non-negative: {self.delay}')
+        
+        if self.max_attempts < 1 or int(self.max_attempts) != self.max_attempts:
+            raise ValueError(f'max_attempts must be a positive integer: {self.max_attempts}')
+        self.max_attempts = int(self.max_attempts)
+        
         if 'params' in self.kwargs:
             self.kwargs.pop('params')
+        if 'timeout' not in self.kwargs:
+            self.kwargs['timeout'] = 30.0
 
 
 
@@ -118,11 +129,24 @@ def make_nist_request(url: str, params: dict = {},
     # get config
     config = config or RequestConfig()
     # get response
-    r = _requests.get(url, params, **config.kwargs)
-    nr = NistResponse(r)
-    # delay
-    _time.sleep(config.delay)
-    
-    return nr
+    n_err = 0
+    while True:
+        # catch error
+        try:
+            r = _requests.get(url, params, **config.kwargs)
+        except (KeyboardInterrupt, SystemExit):
+            raise
+        except Exception as e:
+            n_err += 1
+            if n_err == config.max_attempts:
+                raise e
+            _time.sleep(config.delay)
+            continue
+        # check response
+        nr = NistResponse(r)
+        n_err += not nr.ok
+        _time.sleep(config.delay)
+        if nr.ok or n_err == config.max_attempts:
+            return nr
 
 
