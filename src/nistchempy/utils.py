@@ -4,12 +4,17 @@
 
 from urllib.robotparser import RobotFileParser as _RobotFileParser
 
-from nistchempy.requests import BASE_URL as _BASE_URL
+import nistchempy.requests as _requests
+
+import typing as _tp
 
 
 #%% Functions
 
-def get_crawl_delay(useragent: str = '*') -> float:
+def get_crawl_delay(
+        useragent: str = '*',
+        config: _tp.Optional[_requests.RequestConfig] = None
+    ) -> float:
     '''Returns NIST Chemistry Webbook's crawl delay for the given user agent
     
     Attributes:
@@ -19,8 +24,15 @@ def get_crawl_delay(useragent: str = '*') -> float:
         float: crawl delay in seconds
     
     '''
-    parser = _RobotFileParser(f'{_BASE_URL}/robots.txt')
-    parser.read()
+    # get response
+    config = config or _requests.RequestConfig()
+    ROBOTS_URL = _requests.BASE_URL + '/robots.txt'
+    nr = _requests.make_nist_request(ROBOTS_URL, config=config)
+    if not nr.ok:
+        raise ConnectionError(f'Bad server response: {nr.text}')
+    # parse robots.txt
+    parser = _RobotFileParser()
+    parser.parse(nr.text.split('\n'))
     
     return parser.crawl_delay(useragent)
 
