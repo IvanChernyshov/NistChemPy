@@ -21,7 +21,17 @@ The data update pipeline consists of the following steps:
 1. [1_get_compounds_via_formula.py](1_get_compounds_via_formula.py): searches for compound IDs via scanning chemical formulas.
 Alternative to the sitemap-based approach.
 
-2. [2_get_nist_compounds.py](2_get_nist_compounds.py): downloads sitemaps, extracts and saves compound URLs.
+> [!NOTE]
+> The recommended script parameters are:
+>
+> `> python 1_get_compounds_via_formula.py path/to/root/compounds_formula.csv 0 200`
+>
+> In this case the 3rd script won't need additional actions.
+
+2. [2_get_compounds_via_sitemaps.py](2_get_compounds_via_sitemaps.py): downloads sitemaps, extracts and saves compound URLs.
+
+> [!TIP]
+> Since WebBook's sitemaps were last updated in 2018, one can safely ignore this script.
 
 3. [3_get_compound_htmls.py](3_get_compound_htmls.py): downloads HTML-pages of found compounds.
 
