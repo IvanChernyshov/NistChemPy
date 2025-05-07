@@ -5,6 +5,8 @@ available compounds, including those ones missing in the sitemaps'''
 
 import os, argparse
 
+import pandas as pd
+
 import nistchempy as nist
 
 
@@ -46,22 +48,24 @@ def run_search(formula, params, config, max_errors=3):
 
 
 def scan_formulas(nC: int, IDs: set, crawl_delay: float = 5.0,
-                  timeout: float = 30.0) -> None:
+                  max_attempts: int = 3, timeout: float = 30.0) -> None:
     '''Updates compound IDs with loaded chemical formulas
     
     Arguments:
         nC (int): number of carbons in formula
         IDs (set): set of found compound IDs
         crawl_delay (float): interval between HTTP requests, seconds
+        max_attempts (int): number of max attempts to get server response
         timeout (float): max allowed server response time, seconds
     
     '''
     # search settings
-    config = nist.RequestConfig(delay=crawl_delay, kwargs={'timeout': timeout})
+    config = nist.RequestConfig(delay=crawl_delay, max_attempts=max_attempts,
+                                kwargs={'timeout': timeout})
     params = nist.NistSearchParameters(allow_other=True, no_ion=True)
     # direct check
-    res = run_search(f'C{nC}', params, config)
-    if res is None:
+    res = nist.run_search(f'C{nC}', 'formula', params, config)
+    if not res.success:
         print(f'C{nC} :(')
         return
     else:
@@ -72,8 +76,8 @@ def scan_formulas(nC: int, IDs: set, crawl_delay: float = 5.0,
     # check via other elements
     for nH in range(150):
         # direct formula
-        res = run_search(f'C{nC}H{nH}', params, config)
-        if res is None:
+        res = nist.run_search(f'C{nC}H{nH}', 'formula', params, config)
+        if not res.success:
             print(f'C{nC}H{nH} :(')
             continue
         else:
@@ -84,8 +88,8 @@ def scan_formulas(nC: int, IDs: set, crawl_delay: float = 5.0,
         # add other elems
         for elem in ELEMS:
             # direct formula
-            res = run_search(f'C{nC}H{nH}{elem}?', params, config)
-            if res is None:
+            res = nist.run_search(f'C{nC}H{nH}{elem}?', 'formula', params, config)
+            if not res.success:
                 print(f'C{nC}H{nH}{elem}? :(')
                 continue
             else:
@@ -95,8 +99,9 @@ def scan_formulas(nC: int, IDs: set, crawl_delay: float = 5.0,
                     continue
             # counts
             for nX in range(1, 51):
-                res = run_search(f'C{nC}H{nH}{elem}{nX}', params, config)
-                if res is None:
+                res = nist.run_search(f'C{nC}H{nH}{elem}{nX}', 'formula',
+                                      params, config)
+                if not res.success:
                     print(f'C{nC}H{nH}{elem}{nX} :(')
                     continue
                 else:
@@ -127,6 +132,8 @@ def get_arguments() -> argparse.Namespace:
                         help = 'end number of carbon atoms in chemical formula')
     parser.add_argument('--crawl-delay', type = float, default = 1.0,
                         help = 'pause between HTTP requests, seconds')
+    parser.add_argument('--max-attempts', type = int, default = 3,
+                        help = 'max timeout for server response, seconds')
     parser.add_argument('--timeout', type = float, default = 30.0,
                         help = 'max timeout for server response, seconds')
     args = parser.parse_args()
@@ -144,8 +151,8 @@ def check_arguments(args: argparse.Namespace) -> None:
     
     # check compound list file
     if not os.path.exists(args.path_compounds):
-        with open(args.path_compounds, 'w') as outf:
-            outf.write('')
+        df = pd.DataFrame({'id': [], 'url': []})
+        df.to_csv(args.path_compounds, index=None)
     
     # check carbon counts
     if args.start_count < 0:
@@ -156,6 +163,10 @@ def check_arguments(args: argparse.Namespace) -> None:
     # crawl delay
     if args.crawl_delay < 0:
         raise ValueError(f'--crawl-delay must be positive: {args.crawl_delay}')
+    
+    # max_attempts
+    if args.max_attempts < 1:
+        raise ValueError(f'--max-attempts must be a positive integer: {args.max_attempts}')
     
     # timeout
     if args.timeout <= 0:
@@ -172,18 +183,19 @@ def main() -> None:
     check_arguments(args)
     
     # load compounds
-    with open(args.path_compounds, 'r') as inpf:
-        IDs = set([l.strip() for l in inpf.readlines() if l.strip()])
+    df = pd.read_csv(args.path_compounds)
+    IDs = set(df['id'])
     
     # scan formulas
-    try:
-        for nC in range(args.start_count, args.end_count + 1):
-            scan_formulas(nC, IDs, args.crawl_delay, args.timeout)
-            # save updated IDs
-            with open(args.path_compounds, 'w') as outf:
-                outf.write('\n'.join(sorted(list(IDs))) + '\n')
-    except Exception:
-        pass
+    for nC in range(args.start_count, args.end_count + 1):
+        scan_formulas(nC, IDs, args.crawl_delay, args.timeout)
+        # save updated IDs
+        idxs = sorted(list(IDs))
+        df = pd.DataFrame({
+            'id': idxs,
+            'url': [f'{nist.requests.SEARCH_URL}?ID={idx}' for idx in idxs]
+        })
+        df.to_csv(args.path_compounds, index=None)
     
     return
 
