@@ -8,7 +8,9 @@ Changelog
 
 * Adds :py:meth:`nistchempy.requests.RequestConfig.max_attempts` attribute to doften impact from potential server response errors.
 
-* Updates update scripts.
+* Adds update script scrawling compounds vis formula search.
+
+* Refactors all update scripts.
 
 
 1.0.3
