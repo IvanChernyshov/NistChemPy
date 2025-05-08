@@ -1,6 +1,12 @@
 Changelog
 =========
 
+1.0.5 (under development)
+-------------------------
+
+* TODO: update internal compound list :py:func:`nistchempy.compound_list.get_all_data`.
+
+
 1.0.4
 -----
 
@@ -8,7 +14,7 @@ Changelog
 
 * Adds :py:func:`nistchempy.utils.get_crawl_delay` function.
 
-* Adds :py:meth:`nistchempy.requests.RequestConfig.max_attempts` attribute to doften impact from potential server response errors.
+* Adds :py:meth:`nistchempy.requests.RequestConfig.max_attempts` attribute to soften impact from potential server response errors.
 
 * Adds update script scrawling compounds vis formula search.
 
