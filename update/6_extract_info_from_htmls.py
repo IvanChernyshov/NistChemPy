@@ -13,26 +13,19 @@ from tqdm import tqdm
 import nistchempy as nist
 
 
-
 #%% Functions
 
-def get_compounds_info(dir_data: str) -> None:
+def get_compounds_info(dir_root: str) -> None:
     '''Extracts compound info from HTML-files
     
     Arguments:
-        dir_data (str): root data dump directory
+        dir_root (str): root data dump directory
     
     '''
     
     # get list of htmls
-    fs = []
-    for d in ('htmls', 'htmls_stereo', 'htmls_old', 'htmls_manual'):
-        dpath = os.path.join(dir_data, d)
-        if not os.path.exists(dpath):
-            continue
-        for f in os.listdir(dpath):
-            path = os.path.join(dir_data, d, f)
-            fs.append(path)
+    dir_html = os.path.join(dir_root, 'htmls')
+    fs = [os.path.join(dir_html, f) for f in os.listdir(dir_html)]
     
     # run extraction
     data = []
@@ -47,7 +40,7 @@ def get_compounds_info(dir_data: str) -> None:
         data.append(info)
     
     # save data
-    path_out = os.path.join(dir_data, 'compounds_data.json')
+    path_out = os.path.join(dir_root, 'compounds_data.json')
     with open(path_out, 'w') as outf:
         json.dump(data, outf, indent = 2)
     
@@ -86,16 +79,16 @@ def get_columns(data: list) -> dict:
 
 
 
-def prepare_dataset(dir_data: str) -> None:
+def prepare_dataset(dir_root: str) -> None:
     '''Transforms extracted data to nist_data.csv
     
     Arguments:
-        dir_data (str): root data dump directory
+        dir_root (str): root data dump directory
     
     '''
     
     # load data
-    path_json = os.path.join(dir_data, 'compounds_data.json')
+    path_json = os.path.join(dir_root, 'compounds_data.json')
     with open(path_json, 'r') as inpf:
         data = json.load(inpf)
     
@@ -118,11 +111,14 @@ def prepare_dataset(dir_data: str) -> None:
     df = pd.DataFrame(df)
     df = df.rename(columns = ps)
     df = df.sort_values('ID', ignore_index = True)
+    for col in cols:
+        if col not in df.columns:
+            df[col] = None
     df = df[cols]
     df = df.drop_duplicates().sort_values('ID', ignore_index = True)
     
     # save
-    path_out = os.path.join(dir_data, 'nist_data.csv')
+    path_out = os.path.join(dir_root, 'nist_data.csv')
     df.to_csv(path_out, index = None)
     
     return
@@ -139,7 +135,7 @@ def get_arguments() -> argparse.Namespace:
     
     '''
     parser = argparse.ArgumentParser(description = 'Downloads HTML-pages of NIST Chemistry WebBook compounds')
-    parser.add_argument('dir_data',
+    parser.add_argument('dir_root',
                         help = 'directory containing compound.csv file created by get_nist_compounds.py script')
     args = parser.parse_args()
     
@@ -147,23 +143,23 @@ def get_arguments() -> argparse.Namespace:
 
 
 def check_arguments(args: argparse.Namespace) -> None:
-    '''Tries to create dir_data if it does not exist and raizes error if dir_data is a file
+    '''Tries to create dir_root if it does not exist and raizes error if dir_root is a file
     
     Arguments:
         args (argparse.Namespace): input parameters
     
     '''
     # check root dir
-    if not os.path.exists(args.dir_data):
-        raise ValueError(f'Given dir_data argument does not exist: {args.dir_data}')
-    if not os.path.isdir(args.dir_data):
-        raise ValueError(f'Given dir_data argument is not a directory: {args.dir_data}')
+    if not os.path.exists(args.dir_root):
+        raise ValueError(f'Given dir_root argument does not exist: {args.dir_root}')
+    if not os.path.isdir(args.dir_root):
+        raise ValueError(f'Given dir_root argument is not a directory: {args.dir_root}')
     # check htmls dir
-    dir_html = os.path.join(args.dir_data, 'htmls')
+    dir_html = os.path.join(args.dir_root, 'htmls')
     if not os.path.exists(dir_html):
-        raise ValueError('Given dir_data directory does not contain htmls/ folder')
+        raise ValueError('Given dir_root directory does not contain htmls/ folder')
     # check stereo dir
-    dir_stereo = os.path.join(args.dir_data, 'htmls_stereo')
+    dir_stereo = os.path.join(args.dir_root, 'htmls_stereo')
     if not os.path.exists(dir_stereo):
         os.mkdir(dir_stereo)
     
@@ -179,13 +175,13 @@ def main() -> None:
     
     # extract info
     print('\nExtracting info from HTML-files ...')
-    path_json = os.path.join(args.dir_data, 'compounds_data.json')
+    path_json = os.path.join(args.dir_root, 'compounds_data.json')
     if not os.path.exists(path_json):
-        get_compounds_info(args.dir_data)
+        get_compounds_info(args.dir_root)
     
     # transform to dataframes
     print('\nTransforming to dataframe ...')
-    prepare_dataset(args.dir_data)
+    prepare_dataset(args.dir_root)
     print()
     
     return

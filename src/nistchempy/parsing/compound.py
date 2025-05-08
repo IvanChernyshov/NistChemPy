@@ -131,7 +131,7 @@ def get_compound_id_from_data_refs(soup: _bs4.BeautifulSoup) -> _tp.Optional[str
     if not others:
         return None
     # extract ID
-    refs = others.findChildren(name = 'a', attrs = {'href': _re.compile('/cgi/cbook.cgi\?ID=')})
+    refs = others.findChildren(name = 'a', attrs = {'href': _re.compile('/cgi/.*\?ID=')})
     for ref in refs:
         match = _re.search('/cgi/.*\?ID=(.*)&', str(ref))
         if match:

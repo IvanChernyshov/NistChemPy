@@ -429,12 +429,13 @@ class NistCompound():
 
 def compound_from_response(
         nr: _ncpr.NistResponse,
-        request_config: _tp.Optional[_ncpr.RequestConfig()] = None
+        request_config: _tp.Optional[_ncpr.RequestConfig] = None
     ) -> _tp.Optional[NistCompound]:
     '''Initializes NistCompound object from the corresponding response
     
     Arguments:
         nr (_ncpr.NistResponse): response to the GET request for a compound
+        request_config (_tp.Optional[_ncpr.RequestConfig]): additional requests.get parameters
     
     Returns:
         _tp.Optional[NistCompound]: NistCompound object, and None if there are
@@ -458,13 +459,13 @@ def compound_from_response(
 
 def get_compound(
         ID: str,
-        request_config: _tp.Optional[_ncpr.RequestConfig()] = None
+        request_config: _tp.Optional[_ncpr.RequestConfig] = None
     ) -> _tp.Optional[NistCompound]:
     '''Loads the main info on the given NIST compound
     
     Arguments:
         ID (str): NIST compound ID, CAS RN or InChI
-        request_config (_tp.Optional[_ncpr.RequestConfig()]): additional requests.get parameters
+        request_config (_tp.Optional[_ncpr.RequestConfig]): additional requests.get parameters
     
     Returns:
         _tp.Optional[NistCompound]: NistCompound object, and None if there are

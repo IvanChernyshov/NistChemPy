@@ -34,18 +34,14 @@ Alternative to the sitemap-based approach.
 > Since WebBook's sitemaps were last updated in 2018, one can safely ignore this script.
 
 3. [3_get_compound_htmls.py](3_get_compound_htmls.py): downloads HTML-pages of found compounds.
+Compound list is generated from results of the 1st (`compounds_formula.csv`) and the 2nd (`compounds_sitemaps.csv`) scripts along with already stored in the `nistchempy.get_all_data` function.
+Those sources are combined and saved to the `compounds_combined.csv`.
 
 4. [4_check_compound_initialization.py](4_check_compound_initialization.py): initializes Compound object from downloaded HTML-files.
 Possible errors must be manually verified to fix bugs in NistChemPy code.
 
-5. [5_process_nonload_errors.py](5_process_nonload_errors.py): processes errors related to broken links in sitemaps.
+5. [5_get_compounds_from_refs.py](5_get_compounds_from_refs.py): extracts info on stereoisomers for each pre-downloaded compounds.
 
-6. [6_get_missing_stereoisomers.py](6_get_missing_stereoisomers.py): extracts info on stereoisomers for each pre-downloaded compounds.
-This fixes almost all errors with broken compound URLs.
-
-7. [7_extract_info_from_htmls.py](7_extract_info_from_htmls.py): extracts info on compounds from prepared compound HTMLs and saves it as if final nist_data.csv final required for the package.
-
-8. [8_get_old_IDs.py](8_get_old_IDs.py): tries to download HTML-pages of compounds that are missing in current nist_data.csv file, but is available in old versions.
-If there are such entries, the previous script must be re-executed.
+6. [6_extract_info_from_htmls.py](6_extract_info_from_htmls.py): extracts info on compounds from prepared compound HTMLs and saves it as if final nist_data.csv final required for the package.
 
 
