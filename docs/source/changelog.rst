@@ -1,8 +1,10 @@
 Changelog
 =========
 
-1.0.4 (under development)
--------------------------
+1.0.4
+-----
+
+* Fixes bug with incorrect GET parameters within formula search.
 
 * Adds :py:func:`nistchempy.utils.get_crawl_delay` function.
 
