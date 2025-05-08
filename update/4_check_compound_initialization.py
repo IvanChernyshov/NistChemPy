@@ -30,8 +30,11 @@ def check_soup(soup: BeautifulSoup) -> bool:
     if not nist.parsing.is_compound_page(soup):
         return False
     # extract data
-    info = {**nist.parsing.parse_compound_page(soup),
-            'nist_response': None}
+    info = {
+        '_request_config': nist.RequestConfig(),
+        '_nist_response': None,
+        **nist.parsing.parse_compound_page(soup)
+    }
     X = nist.compound.NistCompound(**info)
     
     return X is not None
@@ -52,7 +55,7 @@ def get_unreadable_compounds(dir_html: str) -> List[str]:
     fs = os.listdir(dir_html)
     for f in tqdm(fs, total = len(fs)):
         # prepare
-        idx = int(f.replace('.html', ''))
+        idx = f.replace('.html', '')
         path = os.path.join(dir_html, f)
         with open(path, 'r') as inpf:
             text = nist.requests.fix_html(inpf.read())
@@ -76,7 +79,7 @@ def get_arguments() -> argparse.Namespace:
     
     '''
     parser = argparse.ArgumentParser(description = 'Runs compound initialization from pre-loaded HTML-pages')
-    parser.add_argument('dir_data',
+    parser.add_argument('dir_root',
                         help = 'directory containing compounds.csv and htmls/')
     args = parser.parse_args()
     
@@ -84,21 +87,24 @@ def get_arguments() -> argparse.Namespace:
 
 
 def check_arguments(args: argparse.Namespace) -> None:
-    '''Tries to create dir_data if it does not exist and raizes error if dir_data is a file
+    '''Tries to create dir_root if it does not exist and raizes error if dir_root is a file
     
     Arguments:
         args (argparse.Namespace): input parameters
     
     '''
     # check root dir
-    if not os.path.exists(args.dir_data):
-        raise ValueError(f'Given dir_data argument does not exist: {args.dir_data}')
-    if not os.path.isdir(args.dir_data):
-        raise ValueError(f'Given dir_data argument is not a directory: {args.dir_data}')
+    if not os.path.exists(args.dir_root):
+        raise ValueError(f'Given dir_root argument does not exist: {args.dir_root}')
+    if not os.path.isdir(args.dir_root):
+        raise ValueError(f'Given dir_root argument is not a directory: {args.dir_root}')
     # check compounds.csv
-    path_csv = os.path.join(args.dir_data, 'compounds.csv')
-    if not os.path.exists(path_csv):
-        raise ValueError('Given dir_data directory does not contain compounds.csv file')
+    path_csv1 = os.path.join(args.dir_root, 'compounds_combined.csv')
+    if not os.path.exists(path_csv1):
+        raise ValueError('Given dir_root directory does not contain compounds_combined.csv file')
+    path_csv2 = os.path.join(args.dir_root, 'compounds_combined_inchi.csv')
+    if not os.path.exists(path_csv2):
+        raise ValueError('Given dir_root directory does not contain compounds_combined_inchi.csv file')
     
     return
 
@@ -109,16 +115,30 @@ def main() -> None:
     # prepare arguments
     args = get_arguments()
     check_arguments(args)
-    dir_html = os.path.join(args.dir_data, 'htmls/')
-    path_csv = os.path.join(args.dir_data, 'compounds.csv')
+    
+    # inchi
+    print('Processing InChI-derived compounds ...')
+    dir_html = os.path.join(args.dir_root, 'htmls_inchi/')
+    path_csv = os.path.join(args.dir_root, 'compounds_combined_inchi.csv')
     df = pd.read_csv(path_csv)
     # process compounds
-    print('Running compound initialization ...')
     idxs = get_unreadable_compounds(dir_html)
+    idxs = [int(idx) for idx in idxs]
     sub = df.loc[df.index.isin(idxs)]
     # save
-    print('\nSaving data ...')
-    path_out = os.path.join(args.dir_data, 'unreadable.csv')
+    path_out = os.path.join(args.dir_root, 'unreadable_inchi.csv')
+    sub.to_csv(path_out)
+    
+    # ID
+    print('Processing ID-derived compounds ...')
+    dir_html = os.path.join(args.dir_root, 'htmls/')
+    path_csv = os.path.join(args.dir_root, 'compounds_combined.csv')
+    df = pd.read_csv(path_csv)
+    # process compounds
+    idxs = get_unreadable_compounds(dir_html)
+    sub = df.loc[df['id'].isin(idxs)]
+    # save
+    path_out = os.path.join(args.dir_root, 'unreadable.csv')
     sub.to_csv(path_out)
     
     return
