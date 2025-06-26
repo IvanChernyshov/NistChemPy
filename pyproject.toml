@@ -26,7 +26,8 @@ classifiers = [
 dependencies = [
   "importlib-resources>=1.1.0; python_version<'3.9'",
   "requests",
-  "pandas"
+  "pandas",
+  "bs4"
 ]
 requires-python = ">= 3.7"
 dynamic = ["version"]
