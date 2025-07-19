@@ -5,7 +5,7 @@ automatic retrievement of the stored physico-chemical data
 '''
 
 __version__ = '1.0.5'
-__updated__ = 'May 08, 2025'
+__updated__ = 'July 21, 2025'
 __license__ = 'MIT'
 
 
