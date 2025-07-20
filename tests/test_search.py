@@ -71,12 +71,17 @@ class TestStructuralSearch():
     
     def test_search_molblock(self):
         s = nist.run_structural_search(molblock=self.molblock,
-                                        search_type='struct')
+                                       search_type='struct')
         assert s.compound_ids
     
     def test_search_substructure(self):
         s = nist.run_structural_search(molblock=self.molblock,
-                                        search_type='sub')
+                                       search_type='sub')
         assert s.num_compounds > 100
+    
+    def test_incorrect_molblock(self):
+        s = nist.run_structural_search(molblock='qwe\nrty\n',
+                                       search_type='sub')
+        assert not s.num_compounds
 
 
