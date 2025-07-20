@@ -115,11 +115,11 @@ class NistResponse():
 
 def make_nist_request(url: str, params: dict = {},
                       config: _tp.Optional[RequestConfig] = None) -> NistResponse:
-    '''Dummy request to the NIST Chemistry WebBook
+    '''Dummy GET request to the NIST Chemistry WebBook
     
     Arguments:
         url (str): URL of the NIST webpage
-        params (str): GET request parameters
+        params (dict): GET request parameters
         config (_tp.Optional[RequestConfig]): additional requests.get parameters
     
     Returns:
@@ -134,6 +134,52 @@ def make_nist_request(url: str, params: dict = {},
         # catch error
         try:
             r = _requests.get(url, params, **config.kwargs)
+        except (KeyboardInterrupt, SystemExit):
+            raise
+        except Exception as e:
+            n_err += 1
+            if n_err == config.max_attempts:
+                raise e
+            _time.sleep(config.delay)
+            continue
+        # check response
+        nr = NistResponse(r)
+        n_err += not nr.ok
+        _time.sleep(config.delay)
+        if nr.ok or n_err == config.max_attempts:
+            return nr
+
+
+
+def make_nist_post_request(url: str, data: dict = {}, json: dict = {}, files: dict = {},
+                           config: _tp.Optional[RequestConfig] = None) -> NistResponse:
+    '''Dummy GET request to the NIST Chemistry WebBook
+    
+    Arguments:
+        url (str): URL of the NIST webpage
+        data (dict): POST data object to send in the body of the request
+        json (dict): JSON serializable object to send in the body of the request
+        files (dict): POST qwarg to send files in the body of the request
+        config (_tp.Optional[RequestConfig]): additional requests.post parameters
+    
+    Returns:
+        NistResponse: wrapper for the request's response
+    
+    '''
+    # get config
+    config = config or RequestConfig()
+    # get response
+    n_err = 0
+    while True:
+        # catch error
+        try:
+            params = {
+                'data': data if data else None,
+                'json': json if json else None
+            }
+            if files:
+                params['files'] = files
+            r = _requests.post(url, **params, **config.kwargs)
         except (KeyboardInterrupt, SystemExit):
             raise
         except Exception as e:
