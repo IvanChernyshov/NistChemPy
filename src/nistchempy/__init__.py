@@ -11,7 +11,8 @@ __license__ = 'MIT'
 
 from nistchempy.compound_list import get_all_data
 from nistchempy.compound import get_compound
-from nistchempy.search import run_search, NistSearchParameters
+from nistchempy.search import run_search, run_structural_search
+from nistchempy.search import NistSearchParameters
 from nistchempy.search import get_search_parameters, print_search_parameters
 from nistchempy.requests import RequestConfig
 from nistchempy.utils import get_crawl_delay

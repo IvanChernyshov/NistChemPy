@@ -2,6 +2,7 @@
 
 #%% Imports
 
+import io as _io
 import dataclasses as _dcs
 import typing as _tp
 
@@ -182,6 +183,54 @@ class NistSearch():
 
 
 
+def search_from_response(
+        nr: _ncpr.NistResponse,
+        search_parameters: NistSearchParameters,
+        config: _ncpr.RequestConfig
+    ) -> NistSearch:
+    '''
+    Transforms search requests to the NistSearch object
+    
+    Arguments:
+        nr (_ncpr.NistResponse): NIST response object
+        search_parameters (NistSearchParameters): search request parameters
+        config (_ncpr.RequestConfig): search request config
+    
+    Returns:
+        NistSearch: search results
+    
+    '''
+    if not nr.ok:
+        return NistSearch(_request_config = config, _nist_response = nr,
+                          search_parameters = search_parameters,
+                          compound_ids = [], success = False, lost = False)
+    
+    # XXX: there are possible "search errors" which follows the <h1> tag:
+    #     1) 'information from the inchi' and 'no matching species found'
+    #         for inchi search
+    #     2) 'not found' for other searches
+    # possibly in the future we need to catch them explicitly
+    
+    # check if response is a compound page
+    if _parsing.is_compound_page(nr.soup):
+        X = _compound.compound_from_response(nr)
+        nsearch = NistSearch(
+            _request_config = config, _nist_response = nr,
+            search_parameters = search_parameters,
+            compound_ids = [X.ID], success = True, lost = False
+        )
+        nsearch.compounds = [X]
+        return nsearch
+    # extract IDs
+    info = _parsing.get_found_compounds(nr.soup)
+    
+    return NistSearch(_request_config = config, _nist_response = nr,
+                      search_parameters = search_parameters,
+                      compound_ids = info['IDs'], success = True,
+                      lost = info['lost'])
+
+
+
 #%% Search
 
 def run_search(
@@ -253,33 +302,86 @@ def run_search(
     # load webpage
     config = request_config or _ncpr.RequestConfig()
     nr = _ncpr.make_nist_request(_ncpr.SEARCH_URL, params, config)
-    if not nr.ok:
-        return NistSearch(_request_config = config, _nist_response = nr,
-                          search_parameters = search_parameters,
-                          compound_ids = [], success = False, lost = False)
+    search = search_from_response(nr, search_parameters, config)
     
-    # XXX: there are possible "search errors" which follows the <h1> tag:
-    #     1) 'information from the inchi' and 'no matching species found'
-    #         for inchi search
-    #     2) 'not found' for other searches
-    # possibly in the future we need to catch them explicitly
+    return search
+
+
+
+def run_structural_search(
+        molfile: _tp.Optional[str] = None,
+        molblock: _tp.Optional[str] = None,
+        search_type: str = 'sub',
+        search_parameters: _tp.Optional[NistSearchParameters] = None,
+        request_config: _tp.Optional[_ncpr.RequestConfig] = None,
+        use_SI: bool = True, cTG: bool = False, cTC: bool = False,
+        cTP: bool = False, cTR: bool = False, cIE: bool = False, 
+        cIC: bool = False, cIR: bool = False, cTZ: bool = False, 
+        cMS: bool = False, cUV: bool = False, cGC: bool = False, 
+        cES: bool = False, cDI: bool = False, cSO: bool = False
+    ) -> NistSearch:
+    '''Runs (sub)structural search for compounds in NIST Chemistry WebBook
     
-    # check if response is a compound page
-    if _parsing.is_compound_page(nr.soup):
-        X = _compound.compound_from_response(nr)
-        nsearch = NistSearch(
-            _request_config = config, _nist_response = nr,
-            search_parameters = search_parameters,
-            compound_ids = [X.ID], success = True, lost = False
+    Arguments:
+        molfile (_tp.Optional[str]): path to the MOL-file of the structure to search; if specified, molblock is ignored
+        molblock (_tp.Optional[str]): text of the MOL-file of the structure to search
+        search_type (str): type of structural search, available options are:
+            - 'struct': exact match
+            - 'sub': substructure search (default) 
+        search_parameters (_tp.Optional[NistSearchParameters]): search parameters; if provided, the following search parameter arguments are ignored
+        request_config (_tp.Optional[_ncpr.RequestConfig]): additional requests.get parameters
+        use_SI (bool): if True, returns results in SI units. otherwise calories are used
+        cTG (bool): if True, returns entries containing gas-phase thermodynamic data
+        cTC (bool): if True, returns entries containing condensed-phase thermodynamic data
+        cTP (bool): if True, returns entries containing phase-change thermodynamic data
+        cTR (bool): if True, returns entries containing reaction thermodynamic data
+        cIE (bool): if True, returns entries containing ion energetics thermodynamic data
+        cIC (bool): if True, returns entries containing ion cluster thermodynamic data
+        cIR (bool): if True, returns entries containing IR data
+        cTZ (bool): if True, returns entries containing THz IR data
+        cMS (bool): if True, returns entries containing MS data
+        cUV (bool): if True, returns entries containing UV/Vis data
+        cGC (bool): if True, returns entries containing gas chromatography data
+        cES (bool): if True, returns entries containing vibrational and electronic energy levels
+        cDI (bool): if True, returns entries containing constants of diatomic molecules
+        cSO (bool): if True, returns entries containing info on Henry\'s law
+    
+    Returns:
+        NistSearch: search object containing info on found compounds
+    
+    '''
+    # check search_type
+    if search_type.lower() not in ('sub', 'struct'):
+        raise ValueError(f'search_type must be one of "sub" or "struct": {search_type}')
+    
+    # check molfile
+    if molfile:
+        with open(molfile, 'rb') as inpf:
+            fmol = _io.BytesIO(inpf.read())
+    elif molblock:
+        fmol = _io.BytesIO(molblock.encode('utf-8'))
+    else:
+        raise ValueError('Both molfile and molblock parameters are None')
+    files = {'MolFile': ('example.mol', fmol)}
+    
+    # prepare search parameters
+    if search_parameters is None:
+        search_parameters = NistSearchParameters(
+            use_SI = use_SI, match_isotopes = False, allow_other = False,
+            allow_extra = False, no_ion = False, cTG = cTG, cTC = cTC,
+            cTP = cTP, cTR = cTR, cIE = cIE, cIC = cIC, cIR = cIR, cTZ = cTZ,
+            cMS = cMS, cUV = cUV, cGC = cGC, cES = cES, cDI = cDI, cSO = cSO
         )
-        nsearch.compounds = [X]
-        return nsearch
-    # extract IDs
-    info = _parsing.get_found_compounds(nr.soup)
+    # prepare POST parameters
+    params = {'StrSave': 'File', 'Type': search_type.capitalize(),
+              **search_parameters.get_request_parameters()}
     
-    return NistSearch(_request_config = config, _nist_response = nr,
-                      search_parameters = search_parameters,
-                      compound_ids = info['IDs'], success = True,
-                      lost = info['lost'])
+    # load webpage
+    config = request_config or _ncpr.RequestConfig()
+    nr = _ncpr.make_nist_post_request(_ncpr.SEARCH_URL, data=params,
+                                      files=files, config=config)
+    search = search_from_response(nr, search_parameters, config)
+    
+    return search
 
 
