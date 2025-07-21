@@ -1,10 +1,14 @@
 Changelog
 =========
 
-1.0.5 (under development)
+1.0.5
 -------------------------
 
-* TODO: update internal compound list :py:func:`nistchempy.compound_list.get_all_data`.
+* Updates internal compound list returned by :py:func:`nistchempy.compound_list.get_all_data`.
+
+* Adds structural search via :py:func:`nistchempy.search.run_structural_search`.
+
+* Fixes missing BeautifulSoup dependence - thanks to [stanleyjs](https://github.com/stanleyjs)!
 
 
 1.0.4
