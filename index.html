@@ -91,6 +91,38 @@
 This package not only automates the search and data extraction processes but also bypasses the WebBook’s limitation of 400 compounds per search.
 Currently, <strong>NistChemPy</strong> enables the extraction of basic compound properties as well as IR, THz, MS, UV-Vis spectra and gas chromatography data.
 Additional properties are available via URLs that link to their respective web pages, with potential support for direct extraction in future updates.</p>
+<section id="main-features">
+<h2>Main features<a class="headerlink" href="#main-features" title="Link to this heading"></a></h2>
+<ol class="arabic">
+<li><p>Search:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>Search by <a class="reference external" href="https://webbook.nist.gov/chemistry/name-ser/">name</a>, <a class="reference external" href="https://webbook.nist.gov/chemistry/form-ser/">chemical formula</a>, <a class="reference external" href="https://webbook.nist.gov/chemistry/cas-ser/">CAS RN</a>, <a class="reference external" href="https://webbook.nist.gov/chemistry/inchi-ser/">InChI / InChI Key</a>: <cite>nistchempy.run_search</cite>.</p></li>
+<li><p>Search by <a class="reference external" href="https://webbook.nist.gov/chemistry/str-file/">structure</a>, including substructural search: <cite>nistchempy.run_structural_search</cite>.</p></li>
+<li><p>Search over the table of pre-extracted components: <cite>nistchempy.get_all_data</cite>. This is useful considering that NIST Chemistry WebBook returns maximum of 400 found compounds only.</p></li>
+</ul>
+</div></blockquote>
+</li>
+<li><p>Compound info (<cite>nistchempy.compound.NistCompound</cite>):</p>
+<blockquote>
+<div><ul>
+<li><p>Object contains all properties and corresponding URLs.</p></li>
+<li><p>Supports extraction of:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>2D and 3D atomic coordinates.</p></li>
+<li><p>Spectral data (IR, MS, UV-Vis).</p></li>
+<li><p>Gas chromatography data.</p></li>
+</ul>
+</div></blockquote>
+</li>
+<li><p>Extraction of other data is under development: it’s a good idea to expect two feature updates per year.</p></li>
+</ul>
+</div></blockquote>
+</li>
+</ol>
+<p>For more details see the CookBook section of this documentation.</p>
+</section>
 <section id="extracted-data">
 <h2>Extracted data<a class="headerlink" href="#extracted-data" title="Link to this heading"></a></h2>
 <p>Before using <strong>NistChemPy</strong>, please check <a class="reference external" href="https://github.com/IvanChernyshov/NistChemData">NistChemData</a>.
