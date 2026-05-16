@@ -2,6 +2,7 @@ cff-version: 1.2.0
 message: "If you use NistChemPy in research, please cite the software using this metadata and verify retrieved records against the original NIST Chemistry WebBook pages."
 type: software
 title: "NistChemPy: Unofficial Python tools for querying NIST Chemistry WebBook pages"
+doi: 10.5281/zenodo.20235917
 authors:
   - family-names: Chernyshov
     given-names: Ivan Yu.

@@ -96,7 +96,7 @@ Citation
 ========
 
 If you use NistChemPy in research, please cite the software using the metadata in the repository's ``CITATION.cff`` file.
-A Zenodo DOI can be added after an archived GitHub release has been created.
+The Zenodo concept DOI for citing NistChemPy across versions is ``10.5281/zenodo.20235917`` (`Citation DOI`_).
 
 
 Useful links
@@ -105,8 +105,9 @@ Useful links
 1. `NIST Chemistry WebBook`_: web application for accessing NIST Chemistry WebBook records.
 2. `GitHub`_: GitHub page of the package.
 3. `PyPI package`_: PyPI page of the package.
-4. `Update tools`_: maintainer-oriented scripts for refreshing package-internal compound metadata.
-5. `NistChemData`_: historical companion repository with extracted files and provenance-sensitive data-use caveats.
+4. `Citation DOI`_: Zenodo concept DOI for citing NistChemPy across versions.
+5. `Update tools`_: maintainer-oriented scripts for refreshing package-internal compound metadata.
+6. `NistChemData`_: historical companion repository with extracted files and provenance-sensitive data-use caveats.
 
 
 Indices and tables
@@ -121,4 +122,5 @@ Indices and tables
 .. _NIST Chemistry WebBook: https://webbook.nist.gov/chemistry/
 .. _GitHub: https://github.com/IvanChernyshov/NistChemPy
 .. _PyPI package: https://pypi.org/project/nistchempy/
+.. _Citation DOI: https://doi.org/10.5281/zenodo.20235917
 .. _Update tools: https://github.com/IvanChernyshov/NistChemPy/tree/main/update

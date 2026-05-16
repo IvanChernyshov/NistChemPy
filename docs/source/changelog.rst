@@ -12,9 +12,9 @@ Changelog
 
 * Updates PyPI-facing metadata, project description, keywords, and project links.
 
-* Adds citation metadata for scientific-software citation.
+* Adds citation metadata and the Zenodo concept DOI for scientific-software citation: ``10.5281/zenodo.20235917``.
 
-* Prepares the repository for Zenodo archiving and DOI generation.
+* Prepares the repository metadata for the post-DOI PyPI release.
 
 No runtime API changes are intended in this release.
 

@@ -2,6 +2,8 @@
 
 Unofficial Python tools for querying NIST Chemistry WebBook pages and extracting molecular-property records.
 
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.20235917.svg)](https://doi.org/10.5281/zenodo.20235917)
+
 > **Status:** usable research package / beta.  
 > NistChemPy is an unofficial Python package for querying NIST Chemistry WebBook pages and extracting selected molecular-property records. It is not affiliated with, maintained by, or endorsed by NIST. Because the Chemistry WebBook does not provide a stable public web API for this package, functionality may depend on the current structure and behavior of the external web service.
 
@@ -63,4 +65,4 @@ The primary features of NistChemPy, such as search capabilities and compound man
 
 ## Citation
 
-If you use NistChemPy in research, please cite the software using the metadata in [CITATION.cff](CITATION.cff). A Zenodo DOI can be added after an archived GitHub release has been created.
+If you use NistChemPy in research, please cite the software using the metadata in [CITATION.cff](CITATION.cff). The Zenodo concept DOI for citing NistChemPy across versions is [10.5281/zenodo.20235917](https://doi.org/10.5281/zenodo.20235917).

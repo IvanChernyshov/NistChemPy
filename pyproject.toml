@@ -47,6 +47,7 @@ dynamic = ["version"]
 Documentation = "https://ivanchernyshov.github.io/NistChemPy/"
 Repository = "https://github.com/IvanChernyshov/NistChemPy.git"
 Issues = "https://github.com/IvanChernyshov/NistChemPy/issues"
+Citation = "https://doi.org/10.5281/zenodo.20235917"
 
 [tool.setuptools.dynamic]
 version = {attr = "nistchempy.__version__"}
