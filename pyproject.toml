@@ -10,12 +10,23 @@ authors = [
 maintainers = [
     {name = "Ivan Yu. Chernyshov", email = "ivan.chernyshoff@gmail.com"}
 ]
-description = "A simple Python wrapper around the NIST Chemistry WebBook"
+description = "Unofficial Python tools for querying NIST Chemistry WebBook pages and extracting molecular-property records"
 readme = {file = "README.md", content-type = "text/markdown"}
 license = {file = "LICENSE.md"}
-keywords = ["nist", "chemistry webbook", "api", "chemoinformatics"]
+keywords = [
+    "NIST Chemistry WebBook",
+    "chemical data",
+    "molecular properties",
+    "spectral data",
+    "mass spectra",
+    "infrared spectra",
+    "gas chromatography",
+    "cheminformatics",
+    "scientific Python",
+    "physical chemistry",
+]
 classifiers = [
-    "Development Status :: 5 - Production/Stable",
+    "Development Status :: 4 - Beta",
     "License :: OSI Approved :: MIT License",
     "Programming Language :: Python :: 3 :: Only",
     "Operating System :: OS Independent",
@@ -33,9 +44,9 @@ requires-python = ">= 3.7"
 dynamic = ["version"]
 
 [project.urls]
-documentation = "https://ivanchernyshov.github.io/NistChemPy/"
-repository = "https://github.com/IvanChernyshov/NistChemPy.git"
-issues = "https://github.com/IvanChernyshov/NistChemPy/issues"
+Documentation = "https://ivanchernyshov.github.io/NistChemPy/"
+Repository = "https://github.com/IvanChernyshov/NistChemPy.git"
+Issues = "https://github.com/IvanChernyshov/NistChemPy/issues"
 
 [tool.setuptools.dynamic]
 version = {attr = "nistchempy.__version__"}

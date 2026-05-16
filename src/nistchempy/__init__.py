@@ -1,11 +1,12 @@
-'''This package is a Python interface for the NIST Chemistry WebBook database
-that provides additional data for the efficient compound search and 
-automatic retrievement of the stored physico-chemical data
+'''Unofficial tools for querying NIST Chemistry WebBook pages.
 
+NistChemPy extracts selected molecular-property records from Chemistry
+WebBook pages for research workflows. It is not affiliated with,
+maintained by, or endorsed by NIST.
 '''
 
-__version__ = '1.0.5'
-__updated__ = 'July 21, 2025'
+__version__ = '1.0.6'
+__updated__ = 'May 16, 2026'
 __license__ = 'MIT'
 
 

@@ -1,6 +1,10 @@
 # NistChemPy Update Scripts
 
-This directory contains script those functionality is to update the pre-downloaded info on NIST Chemistry WebBook compounds.
+This directory contains maintainer-oriented scripts for refreshing package-internal metadata derived from NIST Chemistry WebBook compound pages.
+
+
+> [!WARNING]
+> These scripts are provided to support maintenance of NistChemPy's internal compound metadata. They are not guidance for bulk redistribution of NIST Chemistry WebBook data. Users are responsible for checking the original NIST Chemistry WebBook pages, applicable NIST terms, crawl-delay / service-use expectations, and source-reference provenance before reusing extracted data files.
 
 
 ## Requirements

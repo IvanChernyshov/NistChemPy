@@ -17,11 +17,11 @@ sys.path.insert(0, os.path.abspath('../src/'))
 # -- Project information -----------------------------------------------------
 
 project = 'NistChemPy'
-copyright = '2023, Ivan Yu. Chernyshov'
+copyright = '2023-2026, Ivan Yu. Chernyshov'
 author = 'Ivan Yu. Chernyshov'
 
 # The full version, including alpha/beta/rc tags
-release = '1.0.3'
+release = '1.0.6'
 
 
 # -- General configuration ---------------------------------------------------

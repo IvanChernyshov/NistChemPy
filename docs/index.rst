@@ -1,6 +1,6 @@
-==========================================
-Welcome to the NistChemPy's documentation!
-==========================================
+=========================================
+Welcome to the NistChemPy documentation!
+=========================================
 
 .. toctree::
    :hidden:
@@ -22,10 +22,15 @@ Welcome to the NistChemPy's documentation!
    Changelog <source/changelog>
 
 
-**NistChemPy** is an unofficial API for the `NIST Chemistry WebBook`_.
-This package not only automates the search and data extraction processes but also bypasses the WebBook's limitation of 400 compounds per search.
-Currently, **NistChemPy** enables the extraction of basic compound properties as well as IR, THz, MS, UV-Vis spectra and gas chromatography data.
-Additional properties are available via URLs that link to their respective web pages, with potential support for direct extraction in future updates.
+**NistChemPy** provides unofficial Python tools for querying `NIST Chemistry WebBook`_ pages and extracting selected molecular-property records.
+It is not affiliated with, maintained by, or endorsed by NIST.
+Because the Chemistry WebBook does not provide a stable public web API for this package, functionality may depend on the current structure and behavior of the external web service.
+
+NistChemPy currently supports extraction of basic compound metadata, selected spectral records (IR, THz, MS, and UV-Vis), and gas chromatography records where these are available from the corresponding WebBook pages.
+Additional properties may be reachable through source URLs stored by the package, but direct extraction is intentionally limited to the implemented record types.
+
+For serious scientific use, users should verify retrieved records against the original NIST Chemistry WebBook pages and the primary literature references given there.
+Package output should not be treated as an official NIST data product, a complete database dump, or a stable production API.
 
 
 Main features
@@ -37,31 +42,30 @@ Main features
     
     * Search by `structure <https://webbook.nist.gov/chemistry/str-file/>`_, including substructural search: `nistchempy.run_structural_search`.
     
-    * Search over the table of pre-extracted components: `nistchempy.get_all_data`. This is useful considering that NIST Chemistry WebBook returns maximum of 400 found compounds only.
+    * Search over the package-internal table of pre-extracted compound identifiers and metadata: `nistchempy.get_all_data`. This table is included to support NistChemPy workflows and should not be interpreted as an authoritative, complete, or independently licensed redistribution of the NIST Chemistry WebBook.
 
 #. Compound info (`nistchempy.compound.NistCompound`):
     
-    * Object contains all properties and corresponding URLs.
+    * Object stores parsed properties and corresponding source URLs.
     
-    * Supports extraction of:
+    * Supports extraction of selected records:
         
         * 2D and 3D atomic coordinates.
         
         * Spectral data (IR, MS, UV-Vis).
         
         * Gas chromatography data.
-    
-    * Extraction of other data is under development: it's a good idea to expect two feature updates per year.
 
 For more details see the CookBook section of this documentation.
 
 
-Extracted data
-==============
+Related project: NistChemData
+=============================
 
-Before using **NistChemPy**, please check `NistChemData`_.
-This repository contains information that has already been extracted from the WebBook using **NistChemPy** functionality.
-By doing so, you can bypass the web-scraping stage and proceed directly to data manipulation.
+`NistChemData`_ is a historical companion repository containing extracted data files and extraction scripts produced with earlier NistChemPy workflows.
+It is not an official NIST product and is not promoted here as an authoritative, complete, current, or independently licensed redistribution of the NIST Chemistry WebBook.
+
+Users should review the NistChemData data-use notice, original NIST Chemistry WebBook pages, applicable NIST terms, and source references before using those files in scientific, commercial, or redistributed datasets.
 
 
 Installation
@@ -88,14 +92,21 @@ Requirements
 5. importlib_resources (for Python 3.7 and 3.8).
 
 
+Citation
+========
+
+If you use NistChemPy in research, please cite the software using the metadata in the repository's ``CITATION.cff`` file.
+A Zenodo DOI can be added after an archived GitHub release has been created.
+
+
 Useful links
 ============
 
-1. `NIST Chemistry WebBook`_: webapp accessing the NIST Chemistry WebBook database.
+1. `NIST Chemistry WebBook`_: web application for accessing NIST Chemistry WebBook records.
 2. `GitHub`_: GitHub page of the package.
-3. `NistChemData`_: Repository containing already extracted WebBook's data.
-4. `PyPI package`_: PyPI page of the package.
-5. `Update tools`_: script for semi-automatic update of structural information of new NIST Chemistry WebBook compounds.
+3. `PyPI package`_: PyPI page of the package.
+4. `Update tools`_: maintainer-oriented scripts for refreshing package-internal compound metadata.
+5. `NistChemData`_: historical companion repository with extracted files and provenance-sensitive data-use caveats.
 
 
 Indices and tables

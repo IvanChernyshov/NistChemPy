@@ -1,6 +1,24 @@
 Changelog
 =========
 
+1.0.6
+-----
+
+* Refreshes README wording and public project status description.
+
+* Clarifies that NistChemPy is unofficial and is not affiliated with or endorsed by NIST.
+
+* Softens references to NistChemData and frames it as a historical companion repository with provenance-sensitive data-use caveats.
+
+* Updates PyPI-facing metadata, project description, keywords, and project links.
+
+* Adds citation metadata for scientific-software citation.
+
+* Prepares the repository for Zenodo archiving and DOI generation.
+
+No runtime API changes are intended in this release.
+
+
 1.0.5
 -------------------------
 
