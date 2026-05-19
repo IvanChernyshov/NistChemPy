@@ -33,6 +33,7 @@ PARTIAL_INDEX_FILENAME = 'index.partial.jsonl'
 TMP_DIR_NAME = 'tmp'
 DEFAULT_SOURCE_NOTICE = 'NIST Chemistry WebBook / SRD 69'
 DEFAULT_DISCOVERY_STRATEGY = 'formula-browser'
+SITEMAP_DISCOVERY_STRATEGY = 'sitemap'
 LOCAL_CSV_STRATEGY = 'local-csv'
 VALID_DISCOVERY_STRATEGIES = (
     'formula-browser',
@@ -291,7 +292,7 @@ class LocalIndexBuilder:
             timeout: Request timeout in seconds.
             max_attempts: Maximum attempts for each request.
             limit: Optional maximum number of seeds to collect.
-            max_pages: Optional maximum number of formula-browser pages to
+            max_pages: Optional maximum number of discovery pages/documents to
                 visit.
             replace: If False, raise an error when seeds.csv already exists.
             start_url: Optional formula-browser URL to start from.
@@ -335,6 +336,64 @@ class LocalIndexBuilder:
             replace=replace,
             source='NIST Chemistry WebBook formula browser',
             source_path=start_url or _discovery.FORMULA_BROWSER_ROOT,
+            status='seeds_complete',
+        )
+
+    def discover_sitemap(
+            self, request_delay=3.0, timeout=30.0, max_attempts=3,
+            limit=None, max_pages=None, replace=True, start_url=None,
+            request_func=None):
+        '''Discover intermediate seeds from WebBook sitemap files.
+
+        Args:
+            request_delay: Delay between NIST WebBook requests in seconds.
+            timeout: Request timeout in seconds.
+            max_attempts: Maximum attempts for each request.
+            limit: Optional maximum number of seeds to collect.
+            max_pages: Optional maximum number of robots/sitemap documents to
+                visit.
+            replace: If False, raise an error when seeds.csv already exists.
+            start_url: Optional robots.txt or sitemap URL to start from.
+            request_func: Optional request function for tests.
+
+        Returns:
+            pandas.DataFrame: Written discovery seed table.
+        '''
+        if self.strategy != SITEMAP_DISCOVERY_STRATEGY:
+            raise NistChemPyIndexBuildError(
+                'Sitemap discovery requires strategy='
+                f'{SITEMAP_DISCOVERY_STRATEGY!r}.'
+            )
+
+        self.prepare()
+        request_config = _RequestConfig(
+            delay=request_delay,
+            max_attempts=max_attempts,
+            kwargs={'timeout': timeout},
+        )
+        self.append_state(
+            'sitemap_discovery_started',
+            {
+                'limit': limit,
+                'max_pages': max_pages,
+                'request_delay': request_delay,
+                'timeout': timeout,
+                'max_attempts': max_attempts,
+                'start_url': start_url,
+            },
+        )
+        seeds = _discovery.discover_sitemap(
+            start_url=start_url,
+            request_config=request_config,
+            limit=limit,
+            max_pages=max_pages,
+            request_func=request_func,
+        )
+        return self.write_seeds(
+            seeds,
+            replace=replace,
+            source='NIST Chemistry WebBook sitemaps',
+            source_path=start_url or _discovery.ROBOTS_URL,
             status='seeds_complete',
         )
 
@@ -517,7 +576,7 @@ class LocalIndexBuilder:
             timeout: Request timeout in seconds.
             max_attempts: Maximum attempts for each request.
             limit: Optional maximum number of seeds to discover and enrich.
-            max_pages: Optional maximum number of formula-browser pages to
+            max_pages: Optional maximum number of discovery pages/documents to
                 visit during discovery.
             resume: If True, reuse existing partial enrichment rows.
             replace: If False, raise an error when index.csv or seeds.csv
@@ -547,6 +606,77 @@ class LocalIndexBuilder:
             },
         )
         self.discover_formula_browser(
+            request_delay=request_delay,
+            timeout=timeout,
+            max_attempts=max_attempts,
+            limit=limit,
+            max_pages=max_pages,
+            replace=replace,
+            start_url=start_url,
+            request_func=discovery_request_func,
+        )
+        index = self.enrich_from_seeds(
+            request_delay=request_delay,
+            timeout=timeout,
+            max_attempts=max_attempts,
+            limit=limit,
+            resume=resume,
+            replace=replace,
+            request_func=enrichment_request_func,
+        )
+        self.append_state(
+            'build_finished',
+            {'strategy': self.strategy, 'row_count': len(index.data)},
+        )
+        return index
+
+    def build_sitemap_index(
+            self, request_delay=3.0, timeout=30.0, max_attempts=3,
+            limit=None, max_pages=None, resume=True, replace=True,
+            start_url=None, discovery_request_func=None,
+            enrichment_request_func=None):
+        '''Build a page-enriched local index through sitemap seeds.
+
+        This orchestration method runs sitemap discovery followed by
+        compound-page enrichment. Sitemap discovery is mostly useful as an
+        audit/supplemental source; final metadata still comes from compound
+        pages.
+
+        Args:
+            request_delay: Delay between NIST WebBook requests in seconds.
+            timeout: Request timeout in seconds.
+            max_attempts: Maximum attempts for each request.
+            limit: Optional maximum number of seeds to discover and enrich.
+            max_pages: Optional maximum number of robots/sitemap documents to
+                visit during discovery.
+            resume: If True, reuse existing partial enrichment rows.
+            replace: If False, raise an error when index.csv or seeds.csv
+                already exists.
+            start_url: Optional robots.txt or sitemap URL to start from.
+            discovery_request_func: Optional discovery request function for
+                tests.
+            enrichment_request_func: Optional enrichment request function for
+                tests.
+
+        Returns:
+            WebBookIndex: Loaded final local index object.
+        '''
+        self.prepare()
+        self.append_state(
+            'build_started',
+            {
+                'strategy': self.strategy,
+                'request_delay': request_delay,
+                'timeout': timeout,
+                'max_attempts': max_attempts,
+                'limit': limit,
+                'max_pages': max_pages,
+                'resume': bool(resume),
+                'replace': bool(replace),
+                'start_url': start_url,
+            },
+        )
+        self.discover_sitemap(
             request_delay=request_delay,
             timeout=timeout,
             max_attempts=max_attempts,
@@ -699,7 +829,7 @@ def discover_formula_browser(
         timeout: Request timeout in seconds.
         max_attempts: Maximum attempts for each request.
         limit: Optional maximum number of seeds to collect.
-        max_pages: Optional maximum number of formula-browser pages to visit.
+        max_pages: Optional maximum number of discovery pages/documents to visit.
         replace: If False, raise an error when seeds.csv exists.
         start_url: Optional formula-browser URL to start from.
 
@@ -713,6 +843,45 @@ def discover_formula_browser(
         accept_data_terms=accept_data_terms,
     )
     return builder.discover_formula_browser(
+        request_delay=request_delay,
+        timeout=timeout,
+        max_attempts=max_attempts,
+        limit=limit,
+        max_pages=max_pages,
+        replace=replace,
+        start_url=start_url,
+    )
+
+
+def discover_sitemap(
+        path=None, accept_data_terms=False, request_delay=3.0, timeout=30.0,
+        max_attempts=3, limit=None, max_pages=None, replace=True,
+        start_url=None):
+    '''Discover sitemap seeds into a local cache directory.
+
+    Args:
+        path: Optional local index directory.
+        accept_data_terms: Explicit acknowledgement that generated local data
+            are local user artifacts.
+        request_delay: Delay between NIST WebBook requests in seconds.
+        timeout: Request timeout in seconds.
+        max_attempts: Maximum attempts for each request.
+        limit: Optional maximum number of seeds to collect.
+        max_pages: Optional maximum number of robots/sitemap documents to
+            visit.
+        replace: If False, raise an error when seeds.csv exists.
+        start_url: Optional robots.txt or sitemap URL to start from.
+
+    Returns:
+        pandas.DataFrame: Written discovery seed table.
+    '''
+    builder = LocalIndexBuilder(
+        path=path,
+        strategy=SITEMAP_DISCOVERY_STRATEGY,
+        capabilities=('compound_discovery_seeds',),
+        accept_data_terms=accept_data_terms,
+    )
+    return builder.discover_sitemap(
         request_delay=request_delay,
         timeout=timeout,
         max_attempts=max_attempts,
@@ -785,7 +954,7 @@ def build_index(
         timeout: Request timeout in seconds.
         max_attempts: Maximum attempts for each request.
         limit: Optional maximum number of seeds to discover/enrich.
-        max_pages: Optional maximum number of formula-browser pages to visit.
+        max_pages: Optional maximum number of discovery pages/documents to visit.
         resume: If True, reuse existing partial enrichment rows.
         start_url: Optional formula-browser URL to start from.
 
@@ -801,7 +970,7 @@ def build_index(
             replace=replace,
         )
 
-    if strategy != DEFAULT_DISCOVERY_STRATEGY:
+    if strategy not in (DEFAULT_DISCOVERY_STRATEGY, SITEMAP_DISCOVERY_STRATEGY):
         raise NistChemPyIndexBuildError(unavailable_discovery_message())
 
     builder = LocalIndexBuilder(
@@ -810,7 +979,11 @@ def build_index(
         include_cas=include_cas,
         accept_data_terms=accept_data_terms,
     )
-    return builder.build_formula_browser_index(
+    build_method = builder.build_formula_browser_index
+    if strategy == SITEMAP_DISCOVERY_STRATEGY:
+        build_method = builder.build_sitemap_index
+
+    return build_method(
         request_delay=request_delay,
         timeout=timeout,
         max_attempts=max_attempts,
@@ -850,18 +1023,18 @@ def import_index_csv(
 def unavailable_network_build_message() -> str:
     '''Return the current message for unavailable network index builders.'''
     return (
-        'Only formula-browser network builds are implemented in this '
-        'development step. Use --strategy formula-browser, or use --from-csv '
-        'to import an existing local CSV index.'
+        'Formula-browser and sitemap network builds are implemented in this '
+        'development step. Use --strategy formula-browser or --strategy '
+        'sitemap, or use --from-csv to import an existing local CSV index.'
     )
 
 
 def unavailable_discovery_message() -> str:
     '''Return the current message for unavailable discovery-only builders.'''
     return (
-        'Formula-browser discovery is available through the discover command. '
-        'Formula-search and sitemap discovery strategies are not implemented '
-        'in this development step yet.'
+        'Formula-browser and sitemap discovery are available through the '
+        'discover command. Formula-search and combined discovery strategies '
+        'are not implemented in this development step yet.'
     )
 
 

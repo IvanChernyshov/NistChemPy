@@ -174,14 +174,14 @@ class WebBookIndex:
         Args:
             path: Optional destination local index directory.
             strategy: Compound-discovery strategy. This development step
-                implements only ``formula-browser``.
+                implements ``formula-browser`` and ``sitemap``.
             accept_data_terms: Explicit acknowledgement that generated local
                 data are local user artifacts.
             request_delay: Delay between NIST WebBook requests in seconds.
             timeout: Request timeout in seconds.
             max_attempts: Maximum attempts for each request.
             limit: Optional maximum number of seeds to collect.
-            max_pages: Optional maximum number of formula-browser pages to
+            max_pages: Optional maximum number of discovery pages/documents to
                 visit.
             replace: If False, raise an error when seeds.csv exists.
             start_url: Optional formula-browser URL to start from.
@@ -191,23 +191,36 @@ class WebBookIndex:
         '''
         from nistchempy.exceptions import NistChemPyIndexBuildError
         from nistchempy.index_builder import DEFAULT_DISCOVERY_STRATEGY
+        from nistchempy.index_builder import SITEMAP_DISCOVERY_STRATEGY
         from nistchempy.index_builder import discover_formula_browser
+        from nistchempy.index_builder import discover_sitemap
         from nistchempy.index_builder import unavailable_discovery_message
 
-        if strategy != DEFAULT_DISCOVERY_STRATEGY:
-            raise NistChemPyIndexBuildError(unavailable_discovery_message())
-
-        return discover_formula_browser(
-            path=path,
-            accept_data_terms=accept_data_terms,
-            request_delay=request_delay,
-            timeout=timeout,
-            max_attempts=max_attempts,
-            limit=limit,
-            max_pages=max_pages,
-            replace=replace,
-            start_url=start_url,
-        )
+        if strategy == DEFAULT_DISCOVERY_STRATEGY:
+            return discover_formula_browser(
+                path=path,
+                accept_data_terms=accept_data_terms,
+                request_delay=request_delay,
+                timeout=timeout,
+                max_attempts=max_attempts,
+                limit=limit,
+                max_pages=max_pages,
+                replace=replace,
+                start_url=start_url,
+            )
+        if strategy == SITEMAP_DISCOVERY_STRATEGY:
+            return discover_sitemap(
+                path=path,
+                accept_data_terms=accept_data_terms,
+                request_delay=request_delay,
+                timeout=timeout,
+                max_attempts=max_attempts,
+                limit=limit,
+                max_pages=max_pages,
+                replace=replace,
+                start_url=start_url,
+            )
+        raise NistChemPyIndexBuildError(unavailable_discovery_message())
 
     @classmethod
     def enrich(
@@ -265,7 +278,7 @@ class WebBookIndex:
         Args:
             path: Optional destination local index directory.
             strategy: Compound-discovery strategy. The current network builder
-                implements only ``formula-browser``.
+                implements ``formula-browser`` and ``sitemap``.
             source_csv: Optional existing local CSV file to import.
             include_cas: Whether the local index intentionally includes CAS RN
                 values.
@@ -276,7 +289,7 @@ class WebBookIndex:
             timeout: Request timeout in seconds.
             max_attempts: Maximum request attempts per WebBook page.
             limit: Optional maximum number of seeds to discover/enrich.
-            max_pages: Optional maximum number of formula-browser pages to
+            max_pages: Optional maximum number of discovery pages/documents to
                 visit during discovery.
             resume: If True, reuse existing partial enrichment rows.
             start_url: Optional formula-browser URL to start from.
@@ -311,13 +324,13 @@ class WebBookIndex:
         '''Update a user-local WebBook index.
 
         Updating reruns the same local build/import operation with replacement
-        enabled. For network builds, this currently means formula-browser
-        discovery followed by compound-page enrichment.
+        enabled. For network builds, this means seed discovery followed by
+        compound-page enrichment.
 
         Args:
             path: Optional destination local index directory.
             strategy: Compound-discovery strategy. The current network builder
-                implements only ``formula-browser``.
+                implements ``formula-browser`` and ``sitemap``.
             source_csv: Optional existing local CSV file to import.
             include_cas: Whether the local index intentionally includes CAS RN
                 values.
@@ -327,7 +340,7 @@ class WebBookIndex:
             timeout: Request timeout in seconds.
             max_attempts: Maximum request attempts per WebBook page.
             limit: Optional maximum number of seeds to discover/enrich.
-            max_pages: Optional maximum number of formula-browser pages to
+            max_pages: Optional maximum number of discovery pages/documents to
                 visit during discovery.
             resume: If True, reuse existing partial enrichment rows.
             start_url: Optional formula-browser URL to start from.

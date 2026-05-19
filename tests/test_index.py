@@ -192,12 +192,12 @@ def test_cli_build_unsupported_strategy_is_unavailable(capsys, tmp_path):
         '--path',
         str(tmp_path / 'cache'),
         '--strategy',
-        'sitemap',
+        'formula-search',
         '--accept-data-terms',
     ])
 
     assert status == 1
-    assert 'Formula-search and sitemap discovery strategies are not implemented' in (
+    assert 'Formula-search and combined discovery strategies are not' in (
         capsys.readouterr().err
     )
 
@@ -317,6 +317,94 @@ def test_formula_browser_discovery_traverses_prefix_pages():
     assert [seed['webbook_id'] for seed in seeds] == ['C71432', 'C64175']
 
 
+def test_parse_robots_sitemaps_extracts_sitemap_urls():
+    from nistchempy.discovery import parse_robots_sitemaps
+
+    text = '''
+    User-agent: *
+    Disallow: /cgi/
+    Sitemap: /sitemap-index.xml
+    Sitemap: https://webbook.nist.gov/sitemap-extra.xml.gz
+    '''
+
+    urls = parse_robots_sitemaps(
+        text, page_url='https://webbook.nist.gov/robots.txt'
+    )
+
+    assert urls == [
+        'https://webbook.nist.gov/sitemap-index.xml',
+        'https://webbook.nist.gov/sitemap-extra.xml.gz',
+    ]
+
+
+def test_parse_sitemap_xml_extracts_nested_sitemaps_and_seeds():
+    from nistchempy.discovery import parse_sitemap_xml
+
+    xml = '''
+    <sitemapindex>
+      <sitemap>
+        <loc>https://webbook.nist.gov/sitemap-compounds.xml.gz</loc>
+      </sitemap>
+      <url>
+        <loc>https://webbook.nist.gov/cgi/cbook.cgi?ID=C71432</loc>
+      </url>
+      <url>
+        <loc>https://webbook.nist.gov/cgi/inchi/InChI%3D1S/CH4/h1H4</loc>
+      </url>
+      <url>
+        <loc>https://webbook.nist.gov/chemistry/</loc>
+      </url>
+    </sitemapindex>
+    '''
+
+    parsed = parse_sitemap_xml(
+        xml, page_url='https://webbook.nist.gov/sitemap-index.xml'
+    )
+
+    assert parsed.sitemap_urls == [
+        'https://webbook.nist.gov/sitemap-compounds.xml.gz'
+    ]
+    assert [seed['webbook_id'] for seed in parsed.seeds] == ['C71432', '']
+    assert [seed['source'] for seed in parsed.seeds] == ['sitemap', 'sitemap']
+    assert parsed.seeds[1]['lookup_url'].endswith('/cgi/inchi/InChI=1S/CH4/h1H4')
+
+
+def test_sitemap_discovery_traverses_robots_and_sitemaps():
+    from nistchempy.discovery import discover_sitemap
+
+    pages = {
+        'https://webbook.nist.gov/robots.txt': (
+            'User-agent: *\n'
+            'Sitemap: https://webbook.nist.gov/sitemap-index.xml\n'
+        ),
+        'https://webbook.nist.gov/sitemap-index.xml': '''
+            <sitemapindex>
+              <sitemap>
+                <loc>https://webbook.nist.gov/sitemap-compounds.xml</loc>
+              </sitemap>
+            </sitemapindex>
+        ''',
+        'https://webbook.nist.gov/sitemap-compounds.xml': '''
+            <urlset>
+              <url>
+                <loc>https://webbook.nist.gov/cgi/cbook.cgi?ID=C71432</loc>
+              </url>
+              <url>
+                <loc>https://webbook.nist.gov/cgi/cbook.cgi?ID=C64175</loc>
+              </url>
+            </urlset>
+        ''',
+    }
+
+    def fake_request(url, config=None):
+        _ = config
+        return _FakeResponse(pages[url])
+
+    seeds = discover_sitemap(request_func=fake_request)
+
+    assert [seed['webbook_id'] for seed in seeds] == ['C71432', 'C64175']
+
+
 def test_cli_discover_writes_formula_browser_seeds(capsys, monkeypatch, tmp_path):
     from nistchempy import discovery as discovery_module
 
@@ -361,6 +449,54 @@ def test_cli_discover_writes_formula_browser_seeds(capsys, monkeypatch, tmp_path
     assert seeds_path.exists()
     seeds = pd.read_csv(seeds_path, dtype='str')
     assert list(seeds['webbook_id']) == ['C71432']
+
+
+def test_cli_discover_writes_sitemap_seeds(capsys, monkeypatch, tmp_path):
+    from nistchempy import discovery as discovery_module
+
+    def fake_discover_sitemap(**kwargs):
+        _ = kwargs
+        return [
+            {
+                'lookup_key': 'C71432',
+                'lookup_url': 'https://webbook.nist.gov/cgi/cbook.cgi?ID=C71432',
+                'webbook_id': 'C71432',
+                'name_hint': '',
+                'formula_hint': '',
+                'source': 'sitemap',
+                'source_query': 'https://webbook.nist.gov/sitemap.xml',
+                'needs_page_enrichment': True,
+            }
+        ]
+
+    monkeypatch.setattr(
+        discovery_module,
+        'discover_sitemap',
+        fake_discover_sitemap,
+    )
+
+    status = cli_main([
+        'index',
+        'discover',
+        '--path',
+        str(tmp_path / 'cache'),
+        '--strategy',
+        'sitemap',
+        '--limit',
+        '1',
+        '--max-pages',
+        '2',
+        '--accept-data-terms',
+    ])
+
+    assert status == 0
+    assert 'Seed rows: 1' in capsys.readouterr().out
+    seeds = pd.read_csv(tmp_path / 'cache' / 'seeds.csv', dtype='str')
+    assert list(seeds['source']) == ['sitemap']
+    manifest = json.loads(
+        (tmp_path / 'cache' / 'manifest.json').read_text(encoding='utf-8')
+    )
+    assert manifest['strategy'] == 'sitemap'
 
 
 def _compound_page_html(compound_id='C71432', name='Benzene'):
@@ -578,6 +714,46 @@ def _patch_formula_browser_build(monkeypatch):
     )
 
 
+def _patch_sitemap_build(monkeypatch):
+    from nistchempy import discovery as discovery_module
+    import nistchempy.index_builder as builder_module
+
+    def fake_discover_sitemap(**kwargs):
+        _ = kwargs
+        return [
+            {
+                'lookup_key': 'C71432',
+                'lookup_url': '/cgi/cbook.cgi?ID=C71432',
+                'webbook_id': 'C71432',
+                'name_hint': '',
+                'formula_hint': '',
+                'source': 'sitemap',
+                'source_query': 'https://webbook.nist.gov/sitemap.xml',
+                'needs_page_enrichment': True,
+            }
+        ]
+
+    monkeypatch.setattr(
+        discovery_module,
+        'discover_sitemap',
+        fake_discover_sitemap,
+    )
+
+    original = builder_module.LocalIndexBuilder.enrich_from_seeds
+
+    def fake_enrich(self, **kwargs):
+        kwargs['request_func'] = lambda url, config=None: _FakeResponse(
+            _compound_page_html()
+        )
+        return original(self, **kwargs)
+
+    monkeypatch.setattr(
+        builder_module.LocalIndexBuilder,
+        'enrich_from_seeds',
+        fake_enrich,
+    )
+
+
 def test_build_formula_browser_runs_discovery_and_enrichment(
         monkeypatch, tmp_path):
     _patch_formula_browser_build(monkeypatch)
@@ -618,4 +794,45 @@ def test_cli_build_formula_browser_runs_full_pipeline(
     assert status == 0
     assert 'Rows: 1' in capsys.readouterr().out
     index = nist.get_local_index(tmp_path / 'cache')
+    assert index.get('C71432')['cas_rn'] == '71-43-2'
+
+
+def test_build_sitemap_runs_discovery_and_enrichment(monkeypatch, tmp_path):
+    _patch_sitemap_build(monkeypatch)
+
+    index = nist.WebBookIndex.build(
+        path=tmp_path / 'sitemap-cache',
+        strategy='sitemap',
+        accept_data_terms=True,
+        limit=1,
+        max_pages=2,
+    )
+
+    assert list(index.data['ID']) == ['C71432']
+    assert index.manifest['strategy'] == 'sitemap'
+    assert index.manifest['artifact'] == 'index'
+    assert (tmp_path / 'sitemap-cache' / 'seeds.csv').exists()
+    assert (tmp_path / 'sitemap-cache' / 'index.csv').exists()
+
+
+def test_cli_build_sitemap_runs_full_pipeline(capsys, monkeypatch, tmp_path):
+    _patch_sitemap_build(monkeypatch)
+
+    status = cli_main([
+        'index',
+        'build',
+        '--path',
+        str(tmp_path / 'sitemap-cache'),
+        '--strategy',
+        'sitemap',
+        '--limit',
+        '1',
+        '--max-pages',
+        '2',
+        '--accept-data-terms',
+    ])
+
+    assert status == 0
+    assert 'Rows: 1' in capsys.readouterr().out
+    index = nist.get_local_index(tmp_path / 'sitemap-cache')
     assert index.get('C71432')['cas_rn'] == '71-43-2'

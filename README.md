@@ -72,9 +72,9 @@ index = nist.get_local_index('/path/to/webbook-index')
 index = nist.get_local_index('/path/to/nist_data.csv')
 ```
 
-The current cleanup branch can also build a user-local index by traversing
-the WebBook formula browser and enriching discovered seeds from individual
-compound pages:
+The current cleanup branch can also build a user-local index by discovering
+candidate compounds through the WebBook formula browser or sitemaps and then
+enriching discovered seeds from individual compound pages:
 
 ```bash
 nistchempy index build \
@@ -84,6 +84,7 @@ nistchempy index build \
   --accept-data-terms
 ```
 
+The `sitemap` strategy is available as a secondary/audit discovery source.
 A full page-enriched build may need to visit many compound pages and can take
 several days with a polite request delay. For migration/testing, an existing
 local CSV can also be imported into the new cache layout:

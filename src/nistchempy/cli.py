@@ -264,18 +264,18 @@ def _add_build_arguments(parser):
         '--limit',
         type=int,
         default=None,
-        help='Maximum number of formula-browser seeds to discover/enrich.',
+        help='Maximum number of discovery seeds to discover/enrich.',
     )
     parser.add_argument(
         '--max-pages',
         type=int,
         default=None,
-        help='Maximum number of formula-browser pages to visit.',
+        help='Maximum number of discovery pages/documents to visit.',
     )
     parser.add_argument(
         '--start-url',
         default=None,
-        help='Optional formula-browser URL to start from.',
+        help='Optional formula-browser, robots.txt, or sitemap URL to start from.',
     )
     parser.add_argument(
         '--no-resume',
@@ -361,7 +361,7 @@ def _build_parser():
         '--max-attempts',
         type=int,
         default=3,
-        help='Maximum request attempts per formula-browser page.',
+        help='Maximum request attempts per discovery page/document.',
     )
     discover_parser.add_argument(
         '--limit',
@@ -373,12 +373,12 @@ def _build_parser():
         '--max-pages',
         type=int,
         default=None,
-        help='Maximum number of formula-browser pages to visit.',
+        help='Maximum number of discovery pages/documents to visit.',
     )
     discover_parser.add_argument(
         '--start-url',
         default=None,
-        help='Optional formula-browser URL to start from.',
+        help='Optional formula-browser, robots.txt, or sitemap URL to start from.',
     )
     discover_parser.add_argument(
         '--no-replace',
