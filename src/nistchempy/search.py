@@ -151,6 +151,7 @@ class NistSearch():
         success (bool): True if search request was successful
         num_compounds (int): number of found compounds
         lost (bool): True if search returns less compounds than there are in the database
+        message (str): Optional WebBook search status/error message.
     
     '''
     
@@ -162,6 +163,7 @@ class NistSearch():
     success: bool
     num_compounds: int = _dcs.field(init = False)
     lost: bool
+    message: str = ''
     
     
     def __post_init__(self):
@@ -183,6 +185,30 @@ class NistSearch():
 
 
 
+def _extract_search_error_message(soup) -> str:
+    if soup is None:
+        return ''
+
+    text = soup.get_text(' ', strip=True)
+    if not text:
+        return ''
+
+    lowered = text.lower()
+    patterns = (
+        'no matching species found',
+        'not found',
+        'information from the inchi',
+    )
+    if not any(pattern in lowered for pattern in patterns):
+        return ''
+
+    header = soup.find('h1')
+    if header is not None:
+        header_text = header.get_text(' ', strip=True)
+        if header_text:
+            return header_text
+    return text[:240]
+
 def search_from_response(
         nr: _ncpr.NistResponse,
         search_parameters: NistSearchParameters,
@@ -203,7 +229,8 @@ def search_from_response(
     if not nr.ok:
         return NistSearch(_request_config = config, _nist_response = nr,
                           search_parameters = search_parameters,
-                          compound_ids = [], success = False, lost = False)
+                          compound_ids = [], success = False, lost = False,
+                          message = 'Search request failed.')
     
     # XXX: there are possible "search errors" which follows the <h1> tag:
     #     1) 'information from the inchi' and 'no matching species found'
@@ -223,11 +250,16 @@ def search_from_response(
         return nsearch
     # extract IDs
     info = _parsing.get_found_compounds(nr.soup)
+    message = ''
+    success = True
+    if not info['IDs'] and not info['lost']:
+        message = _extract_search_error_message(nr.soup)
+        success = not bool(message)
     
     return NistSearch(_request_config = config, _nist_response = nr,
                       search_parameters = search_parameters,
-                      compound_ids = info['IDs'], success = True,
-                      lost = info['lost'])
+                      compound_ids = info['IDs'], success = success,
+                      lost = info['lost'], message = message)
 
 
 
