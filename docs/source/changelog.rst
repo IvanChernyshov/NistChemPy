@@ -20,6 +20,8 @@ Unreleased
 
 * Removes the legacy ``get_all_data`` compatibility API; local indexes are loaded through :py:func:`nistchempy.get_local_index` or :py:class:`nistchempy.WebBookIndex`.
 
+* Removes legacy ``update/`` reconstruction scripts in favor of the supported ``nistchempy index`` CLI workflow.
+
 1.0.6
 -----
 
