@@ -7,10 +7,7 @@ import hashlib as _hashlib
 import json as _json
 import shutil as _shutil
 import typing as _tp
-import urllib.parse as _urlparse
 import uuid as _uuid
-from dataclasses import asdict as _asdict
-from dataclasses import dataclass as _dataclass
 from pathlib import Path as _Path
 
 import pandas as _pd
@@ -18,90 +15,36 @@ import pandas as _pd
 import nistchempy.indexing.discovery as _discovery
 import nistchempy.parsing as _parsing
 import nistchempy.requests as _requests
-import nistchempy.search as _search
 from nistchempy.indexing.cache import resolve_index_path as _resolve_index_path
 from nistchempy.exceptions import NistChemPyDataTermsError
 from nistchempy.exceptions import NistChemPyIndexBuildError
 from nistchempy.indexing.core import INDEX_FILENAME
 from nistchempy.indexing.core import MANIFEST_FILENAME
 from nistchempy.indexing.core import WebBookIndex
+from nistchempy.indexing.enrichment import _append_jsonl
+from nistchempy.indexing.enrichment import _drop_cas_if_needed
+from nistchempy.indexing.enrichment import _final_index_dataframe
+from nistchempy.indexing.enrichment import _read_partial_index_rows
+from nistchempy.indexing.enrichment import _seed_lookup_key
+from nistchempy.indexing.enrichment import flatten_compound_info
+from nistchempy.indexing.enrichment import resolve_seed_url
+from nistchempy.indexing.schema import DEFAULT_DISCOVERY_STRATEGY
+from nistchempy.indexing.schema import DEFAULT_INDEX_CAPABILITIES
+from nistchempy.indexing.schema import DEFAULT_SOURCE_NOTICE
+from nistchempy.indexing.schema import ERRORS_FILENAME
+from nistchempy.indexing.schema import FORMULA_SEARCH_DISCOVERY_STRATEGY
+from nistchempy.indexing.schema import LOCAL_CSV_STRATEGY
+from nistchempy.indexing.schema import PARTIAL_INDEX_FILENAME
+from nistchempy.indexing.schema import SEEDS_FILENAME
+from nistchempy.indexing.schema import SITEMAP_DISCOVERY_STRATEGY
+from nistchempy.indexing.schema import STATE_FILENAME
+from nistchempy.indexing.schema import TMP_DIR_NAME
+from nistchempy.indexing.schema import VALID_DISCOVERY_STRATEGIES
+from nistchempy.indexing.schema import VALID_MANIFEST_STRATEGIES
+from nistchempy.indexing.schema import DiscoverySeed
+from nistchempy.indexing.schema import as_dataframe as _as_dataframe
+from nistchempy.indexing.schema import as_seed_dataframe as _as_seed_dataframe
 from nistchempy.requests import RequestConfig as _RequestConfig
-
-STATE_FILENAME = 'state.jsonl'
-ERRORS_FILENAME = 'errors.jsonl'
-SEEDS_FILENAME = 'seeds.csv'
-PARTIAL_INDEX_FILENAME = 'index.partial.jsonl'
-TMP_DIR_NAME = 'tmp'
-DEFAULT_SOURCE_NOTICE = 'NIST Chemistry WebBook / SRD 69'
-DEFAULT_DISCOVERY_STRATEGY = 'formula-browser'
-FORMULA_SEARCH_DISCOVERY_STRATEGY = 'formula-search'
-SITEMAP_DISCOVERY_STRATEGY = 'sitemap'
-LOCAL_CSV_STRATEGY = 'local-csv'
-VALID_DISCOVERY_STRATEGIES = (
-    'formula-browser',
-    'formula-search',
-    'sitemap',
-)
-VALID_MANIFEST_STRATEGIES = VALID_DISCOVERY_STRATEGIES + (
-    LOCAL_CSV_STRATEGY,
-    'legacy-csv',
-)
-DEFAULT_INDEX_CAPABILITIES = (
-    'compound_discovery',
-    'section_availability',
-)
-SEED_COLUMNS = (
-    'lookup_key',
-    'lookup_url',
-    'webbook_id',
-    'name_hint',
-    'formula_hint',
-    'source',
-    'source_query',
-    'needs_page_enrichment',
-)
-
-
-@_dataclass
-class DiscoverySeed:
-    '''Intermediate compound seed found before page enrichment.
-
-    A discovery seed is not a final local index row. It records a compound-like
-    identifier or URL found by a discovery source, such as the formula browser,
-    formula search, or sitemaps. Final section availability still requires
-    compound-page enrichment.
-
-    Args:
-        lookup_key: Stable key used for deduplication when WebBook ID is not
-            available yet.
-        lookup_url: Optional URL to visit during enrichment.
-        webbook_id: Optional NIST Chemistry WebBook compound ID.
-        name_hint: Optional name extracted from the discovery source.
-        formula_hint: Optional formula extracted from the discovery source.
-        source: Discovery source name.
-        source_query: Query, formula-prefix path, sitemap URL, or other source
-            locator that produced the seed.
-        needs_page_enrichment: Whether the seed still needs compound-page
-            parsing before it can become a final local index row.
-    '''
-
-    lookup_key: str
-    lookup_url: str = ''
-    webbook_id: str = ''
-    name_hint: str = ''
-    formula_hint: str = ''
-    source: str = ''
-    source_query: str = ''
-    needs_page_enrichment: bool = True
-
-    def to_dict(self) -> dict:
-        '''Return the seed as a dictionary with stable CSV columns.'''
-        result = _asdict(self)
-        result['needs_page_enrichment'] = str(
-            bool(self.needs_page_enrichment)
-        ).lower()
-        return result
-
 
 class LocalIndexBuilder:
     '''Write user-local NIST Chemistry WebBook index artifacts.
@@ -1359,76 +1302,6 @@ def unavailable_discovery_message() -> str:
     )
 
 
-def resolve_seed_url(seed) -> str:
-    '''Resolve one discovery seed to a compound-page URL.
-
-    Args:
-        seed: Seed dictionary or pandas Series.
-
-    Returns:
-        str: Absolute URL to request during enrichment.
-
-    Raises:
-        ValueError: If the seed has no usable URL or WebBook ID.
-    '''
-    seed = dict(seed)
-    lookup_url = _clean_scalar(seed.get('lookup_url', ''))
-    webbook_id = _clean_scalar(seed.get('webbook_id', ''))
-
-    if webbook_id and _is_formula_browser_lookup(lookup_url):
-        return f'{_requests.SEARCH_URL}?ID={webbook_id}'
-    if lookup_url:
-        return _normalize_webbook_url(lookup_url)
-    if webbook_id:
-        return f'{_requests.SEARCH_URL}?ID={webbook_id}'
-
-    raise ValueError('Discovery seed has neither lookup_url nor webbook_id.')
-
-
-def flatten_compound_info(info: dict, include_cas=True) -> dict:
-    '''Flatten parsed compound-page information into one index row.
-
-    Args:
-        info: Dictionary returned by ``parse_compound_page``.
-        include_cas: If False, omit the ``cas_rn`` column.
-
-    Returns:
-        dict: Flat local-index row with old-index-compatible columns.
-    '''
-    info = info or {}
-    row = {
-        'ID': _clean_scalar(info.get('ID', '')),
-        'name': _clean_scalar(info.get('name', '')),
-        'synonyms': _format_synonyms(info.get('synonyms', [])),
-        'formula': _clean_scalar(info.get('formula', '')),
-        'mol_weight': _clean_scalar(info.get('mol_weight', '')),
-        'inchi': _clean_scalar(info.get('inchi', '')),
-        'inchi_key': _clean_scalar(info.get('inchi_key', '')),
-    }
-    if include_cas:
-        row['cas_rn'] = _clean_scalar(info.get('cas_rn', ''))
-
-    for key, value in (info.get('mol_refs') or {}).items():
-        row[_clean_scalar(key)] = _clean_scalar(value)
-
-    search_names = _search.get_search_parameters()
-    for key, value in (info.get('data_refs') or {}).items():
-        column = search_names.get(key, key)
-        row[_clean_scalar(column)] = _clean_scalar(value)
-
-    for refs_key in ('nist_public_refs', 'nist_subscription_refs'):
-        for key, value in (info.get(refs_key) or {}).items():
-            row[_clean_scalar(key)] = _clean_scalar(value)
-
-    return row
-
-
-def _drop_cas_if_needed(dataframe: _pd.DataFrame, include_cas: bool):
-    if include_cas or 'cas_rn' not in dataframe.columns:
-        return dataframe
-    return dataframe.drop(columns=['cas_rn'])
-
-
 def _file_sha256(path: _Path) -> str:
     hasher = _hashlib.sha256()
     with open(path, 'rb') as infile:
@@ -1444,129 +1317,6 @@ def _read_json_file(path: _Path) -> dict:
         return _json.loads(path.read_text(encoding='utf-8'))
     except Exception:
         return {}
-
-
-def _read_partial_index_rows(path: _Path) -> _tp.List[dict]:
-    if not path.exists():
-        return []
-
-    rows = []
-    with open(path, 'r', encoding='utf-8') as infile:
-        for line in infile:
-            line = line.strip()
-            if not line:
-                continue
-            rows.append(_json.loads(line))
-    return rows
-
-
-def _append_jsonl(path: _Path, row: dict) -> None:
-    path.parent.mkdir(parents=True, exist_ok=True)
-    with open(path, 'a', encoding='utf-8') as outfile:
-        outfile.write(_json.dumps(row, sort_keys=True) + '\n')
-
-
-def _final_index_dataframe(
-        rows: _tp.List[dict], include_cas=True) -> _pd.DataFrame:
-    base_columns = [
-        'ID', 'name', 'synonyms', 'formula', 'mol_weight', 'inchi',
-        'inchi_key',
-    ]
-    if include_cas:
-        base_columns.append('cas_rn')
-    dataframe = _pd.DataFrame(rows)
-    if dataframe.empty:
-        return _pd.DataFrame(columns=base_columns)
-
-    for column in reversed(base_columns):
-        if column in dataframe.columns:
-            value = dataframe.pop(column)
-            dataframe.insert(0, column, value)
-
-    if 'ID' in dataframe.columns:
-        ids = dataframe['ID'].fillna('').astype(str)
-        with_id = dataframe[ids.ne('')].drop_duplicates(
-            subset=['ID'], keep='first'
-        )
-        without_id = dataframe[ids.eq('')]
-        dataframe = _pd.concat([with_id, without_id], ignore_index=True)
-
-    internal_columns = [
-        column for column in dataframe.columns if column.startswith('_seed_')
-    ]
-    if internal_columns:
-        dataframe = dataframe.drop(columns=internal_columns)
-    return dataframe
-
-
-def _seed_lookup_key(seed: dict) -> str:
-    for key in ('lookup_key', 'webbook_id', 'lookup_url'):
-        value = _clean_scalar(seed.get(key, ''))
-        if value:
-            return value
-    return ''
-
-
-def _is_formula_browser_lookup(url: str) -> bool:
-    if not url:
-        return False
-    parsed = _urlparse.urlparse(_normalize_webbook_url(url))
-    return parsed.path == '/cgi/formula'
-
-
-def _normalize_webbook_url(url: str) -> str:
-    parsed = _urlparse.urlparse(url)
-    if not parsed.netloc:
-        return _urlparse.urljoin(_requests.BASE_URL, url)
-    return url
-
-
-def _format_synonyms(value) -> str:
-    if value is None:
-        return ''
-    if isinstance(value, str):
-        return value
-    return '\n'.join(_clean_scalar(item) for item in value if item)
-
-
-def _clean_scalar(value) -> str:
-    if value is None:
-        return ''
-    return str(value).strip()
-
-
-def _as_dataframe(data) -> _pd.DataFrame:
-    if isinstance(data, _pd.DataFrame):
-        return data.copy()
-    return _pd.DataFrame(list(data))
-
-
-def _as_seed_dataframe(seeds) -> _pd.DataFrame:
-    if isinstance(seeds, _pd.DataFrame):
-        dataframe = seeds.copy()
-    else:
-        rows = []
-        for seed in seeds:
-            if isinstance(seed, DiscoverySeed):
-                rows.append(seed.to_dict())
-            else:
-                rows.append(dict(seed))
-        dataframe = _pd.DataFrame(rows)
-
-    for column in SEED_COLUMNS:
-        if column not in dataframe.columns:
-            dataframe[column] = ''
-    dataframe = dataframe.loc[:, list(SEED_COLUMNS)]
-    dataframe['needs_page_enrichment'] = dataframe[
-        'needs_page_enrichment'
-    ].fillna(True).map(_bool_to_text)
-    return dataframe
-
-
-def _bool_to_text(value) -> str:
-    if isinstance(value, str):
-        return str(value).lower()
-    return str(bool(value)).lower()
 
 
 def _utc_timestamp() -> str:
