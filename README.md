@@ -56,7 +56,7 @@ pip install nistchempy
 
 > [!WARNING]
 > Please note that versions starting with 1.0.0 are not backward compatible with the older alpha versions due to significant changes in the code structure.
-> Development versions after 1.0.6 also remove the packaged WebBook-derived index. Code using `nistchempy.get_all_data()` should migrate to a user-local index loaded with `nistchempy.WebBookIndex.from_cache()` or `nistchempy.get_local_index()`.
+> Development versions after 1.0.6 remove the packaged WebBook-derived index. Code that previously used the old bundled index should migrate to a user-local index loaded with `nistchempy.WebBookIndex.from_cache()` or `nistchempy.get_local_index()`.
 
 
 ## Local WebBook index

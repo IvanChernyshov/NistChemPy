@@ -50,18 +50,6 @@ nistchempy.index
    :noindex:
 
 
-nistchempy.compound_list
-------------------------
-
-.. automodule:: nistchempy.compound_list
-   :imported-members:
-   :members:
-   :undoc-members:
-   :show-inheritance:
-   :member-order: bysource
-   :noindex:
-
-
 nistchempy.requests
 -------------------
 

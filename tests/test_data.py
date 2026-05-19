@@ -14,8 +14,6 @@ def test_bundled_nist_data_removed():
     assert not (PACKAGE_DIR / 'data' / 'nist_data.zip').exists()
 
 
-def test_get_all_data_requires_local_index(monkeypatch, tmp_path):
-    monkeypatch.setenv('NISTCHEMPY_INDEX_PATH', str(tmp_path / 'missing'))
-    with pytest.deprecated_call():
-        with pytest.raises(nist.NistChemPyIndexNotFoundError):
-            nist.get_all_data()
+def test_legacy_get_all_data_removed():
+    assert not hasattr(nist, 'get_all_data')
+    assert not (PACKAGE_DIR / 'compound_list.py').exists()

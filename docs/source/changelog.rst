@@ -18,7 +18,7 @@ Unreleased
 
 * Adds a package-artifact release check to prevent generated WebBook-derived index/cache files from being shipped in wheels or source distributions.
 
-* Deprecates :py:func:`nistchempy.compound_list.get_all_data` as a local-cache-only compatibility wrapper.
+* Removes the legacy ``get_all_data`` compatibility API; local indexes are loaded through :py:func:`nistchempy.get_local_index` or :py:class:`nistchempy.WebBookIndex`.
 
 1.0.6
 -----

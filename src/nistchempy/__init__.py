@@ -10,7 +10,6 @@ __updated__ = 'May 19, 2026'
 __license__ = 'MIT'
 
 
-from nistchempy.compound_list import get_all_data
 from nistchempy.indexing.core import WebBookIndex, get_local_index
 from nistchempy.indexing.builder import import_index_csv
 from nistchempy.compound import get_compound
