@@ -8,6 +8,7 @@ import gzip as _gzip
 import re as _re
 import typing as _tp
 import urllib.parse as _urlparse
+import xml.etree.ElementTree as _ElementTree
 
 import bs4 as _bs4
 
@@ -126,7 +127,7 @@ def discover_formula_browser(
 def discover_formula_search(
         carbon_start=1, carbon_end=None, hydrogen_max=149,
         heteroatom_max=50, elements=None, request_config=None, limit=None,
-        max_queries=None, search_func=None):
+        max_queries=None, search_func=None, lost_queries=None):
     '''Discover compound seeds with bounded formula-search subdivision.
 
     This strategy promotes the legacy carbon-formula search prototype into a
@@ -151,6 +152,9 @@ def discover_formula_search(
         search_func: Optional search function for testing. It must accept
             ``formula``, ``params``, and ``config`` arguments and return an
             object with ``success``, ``compound_ids``, and ``lost`` attributes.
+        lost_queries: Optional list populated with unresolved formula queries
+            that still hit the WebBook result cutoff after available
+            refinement.
 
     Returns:
         list[dict]: Discovery seed dictionaries.
@@ -170,6 +174,19 @@ def discover_formula_search(
     params = _search.NistSearchParameters(allow_other=True, no_ion=True)
     seeds_by_key = {}
     query_count = 0
+    if lost_queries is None:
+        lost_queries = []
+
+    def record_lost_query(formula, stage):
+        lost_queries.append({
+            'query': formula,
+            'stage': stage,
+            'reason': (
+                'Search still reached the WebBook result cutoff after '
+                'available formula refinement.'
+            ),
+            'strategy': FORMULA_SEARCH_SOURCE,
+        })
 
     def search_formula(formula):
         nonlocal query_count
@@ -210,6 +227,10 @@ def discover_formula_search(
             if not lost:
                 continue
 
+            if not elements:
+                record_lost_query(formula, 'hydrogen')
+                continue
+
             for element in elements:
                 formula = f'C{carbon_count}H{hydrogen_count}{element}?'
                 lost, stop = search_formula(formula)
@@ -218,14 +239,20 @@ def discover_formula_search(
                 if not lost:
                     continue
 
+                if heteroatom_max < 1:
+                    record_lost_query(formula, 'heteroelement_wildcard')
+                    continue
+
                 for element_count in range(1, heteroatom_max + 1):
                     formula = (
                         f'C{carbon_count}H{hydrogen_count}'
                         f'{element}{element_count}'
                     )
-                    _, stop = search_formula(formula)
+                    lost, stop = search_formula(formula)
                     if stop or should_stop():
                         break
+                    if lost:
+                        record_lost_query(formula, 'heteroelement_count')
                 if should_stop():
                     break
             if should_stop():
@@ -409,24 +436,37 @@ def parse_sitemap_xml(text: str, page_url=ROBOTS_URL):
 
     Returns:
         SitemapPage: Parsed nested sitemap URLs and compound seeds.
+
+    Raises:
+        ValueError: If the XML document cannot be parsed.
     '''
-    soup = _bs4.BeautifulSoup(text, features='xml')
+    try:
+        root = _ElementTree.fromstring(text)
+    except _ElementTree.ParseError as exc:
+        message = f'Failed to parse sitemap XML from {page_url}.'
+        raise ValueError(message) from exc
+
     sitemap_urls = []
     seeds = []
+    for child in list(root):
+        child_name = _xml_local_name(child.tag)
+        if child_name not in {'sitemap', 'url'}:
+            continue
 
-    for loc in soup.find_all('loc'):
-        raw_url = _normalise_text(loc.get_text(' ', strip=True))
+        raw_url = ''
+        for item in list(child):
+            if _xml_local_name(item.tag) == 'loc':
+                raw_url = _normalise_text(item.text or '')
+                break
         if not raw_url:
             continue
+
         url = _normalize_url(
             _urlparse.urljoin(page_url, _urlparse.unquote(raw_url))
         )
-        parent = loc.find_parent()
-        parent_name = getattr(parent, 'name', '')
-        if parent_name == 'sitemap':
+        if child_name == 'sitemap':
             sitemap_urls.append(url)
-            continue
-        if parent_name == 'url':
+        else:
             seed = seed_from_sitemap_url(url, source_query=page_url)
             if seed is not None:
                 seeds.append(seed)
@@ -472,6 +512,12 @@ def seed_from_sitemap_url(url: str, source_query=''):
         'source_query': source_query,
         'needs_page_enrichment': True,
     }
+
+
+def _xml_local_name(name: str) -> str:
+    if '}' in name:
+        return name.rsplit('}', 1)[1]
+    return name
 
 
 def _run_webbook_formula_search(formula, params, config):

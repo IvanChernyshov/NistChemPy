@@ -352,6 +352,7 @@ def test_formula_search_discovery_refines_lost_queries():
         'C1H1N1': _FakeSearchResult(['C1H1N1'], lost=False),
     }
     calls = []
+    lost_queries = []
 
     def fake_search(formula, params, config):
         _ = params, config
@@ -365,6 +366,7 @@ def test_formula_search_discovery_refines_lost_queries():
         heteroatom_max=1,
         elements=['N'],
         search_func=fake_search,
+        lost_queries=lost_queries,
     )
 
     assert calls == ['C1', 'C1H0', 'C1H1', 'C1H1N?', 'C1H1N1']
@@ -375,6 +377,38 @@ def test_formula_search_discovery_refines_lost_queries():
         'C1H1N1',
     ]
     assert {seed['source'] for seed in seeds} == {'formula-search'}
+    assert lost_queries == []
+
+
+def test_formula_search_discovery_records_unresolved_lost_queries():
+    from nistchempy.discovery import discover_formula_search
+
+    def fake_search(formula, params, config):
+        _ = params, config
+        return _FakeSearchResult([formula], lost=True)
+
+    lost_queries = []
+    discover_formula_search(
+        carbon_start=1,
+        carbon_end=1,
+        hydrogen_max=0,
+        heteroatom_max=1,
+        elements=['N'],
+        search_func=fake_search,
+        lost_queries=lost_queries,
+    )
+
+    assert lost_queries == [
+        {
+            'query': 'C1H0N1',
+            'stage': 'heteroelement_count',
+            'reason': (
+                'Search still reached the WebBook result cutoff after '
+                'available formula refinement.'
+            ),
+            'strategy': 'formula-search',
+        }
+    ]
 
 
 def test_formula_search_discovery_requires_explicit_carbon_end():
@@ -408,6 +442,33 @@ def test_local_index_builder_writes_formula_search_seeds(tmp_path):
         (tmp_path / 'cache' / 'manifest.json').read_text(encoding='utf-8')
     )
     assert manifest['strategy'] == 'formula-search'
+
+
+def test_local_index_builder_logs_lost_formula_search_queries(tmp_path):
+    builder = LocalIndexBuilder(
+        path=tmp_path / 'cache',
+        strategy='formula-search',
+        accept_data_terms=True,
+    )
+
+    def fake_search(formula, params, config):
+        _ = params, config
+        return _FakeSearchResult([formula], lost=True)
+
+    builder.discover_formula_search(
+        carbon_start=1,
+        carbon_end=1,
+        hydrogen_max=0,
+        heteroatom_max=1,
+        elements=['N'],
+        search_func=fake_search,
+    )
+
+    errors = (tmp_path / 'cache' / 'errors.jsonl').read_text(
+        encoding='utf-8'
+    )
+    assert 'formula_search_lost_query' in errors
+    assert 'C1H0N1' in errors
 
 
 def test_parse_robots_sitemaps_extracts_sitemap_urls():
@@ -462,6 +523,24 @@ def test_parse_sitemap_xml_extracts_nested_sitemaps_and_seeds():
     assert parsed.seeds[1]['lookup_url'].endswith(
         '/cgi/inchi/InChI=1S/CH4/h1H4'
     )
+
+
+def test_parse_sitemap_xml_handles_namespaces_without_lxml():
+    from nistchempy.discovery import parse_sitemap_xml
+
+    xml = '''
+    <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+      <url>
+        <loc>https://webbook.nist.gov/cgi/cbook.cgi?ID=C64175</loc>
+      </url>
+    </urlset>
+    '''
+
+    parsed = parse_sitemap_xml(
+        xml, page_url='https://webbook.nist.gov/sitemap.xml'
+    )
+
+    assert [seed['webbook_id'] for seed in parsed.seeds] == ['C64175']
 
 
 def test_sitemap_discovery_traverses_robots_and_sitemaps():

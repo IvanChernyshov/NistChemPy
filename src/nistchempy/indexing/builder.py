@@ -361,6 +361,7 @@ class LocalIndexBuilder:
                 'max_attempts': max_attempts,
             },
         )
+        lost_queries = []
         try:
             seeds = _discovery.discover_formula_search(
                 carbon_start=carbon_start,
@@ -372,6 +373,7 @@ class LocalIndexBuilder:
                 limit=limit,
                 max_queries=max_queries,
                 search_func=search_func,
+                lost_queries=lost_queries,
             )
         except ValueError as exc:
             raise NistChemPyIndexBuildError(str(exc)) from exc
@@ -380,7 +382,7 @@ class LocalIndexBuilder:
                 f'Formula-search discovery failed: {exc}'
             ) from exc
 
-        return self.write_seeds(
+        seed_table = self.write_seeds(
             seeds,
             replace=replace,
             source='NIST Chemistry WebBook formula search',
@@ -390,6 +392,18 @@ class LocalIndexBuilder:
             ),
             status='seeds_complete',
         )
+        for lost_query in lost_queries:
+            self.append_error(
+                'formula_search_lost_query',
+                lost_query.get('reason', 'Formula-search query was lost.'),
+                lost_query,
+            )
+        if lost_queries:
+            self.append_state(
+                'formula_search_lost_queries_recorded',
+                {'lost_query_count': len(lost_queries)},
+            )
+        return seed_table
 
     def discover_sitemap(
             self, request_delay=3.0, timeout=30.0, max_attempts=3,
