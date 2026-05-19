@@ -59,6 +59,34 @@ pip install nistchempy
 > Development versions after 1.0.6 also remove the packaged WebBook-derived index. Code using `nistchempy.get_all_data()` should migrate to a user-local index loaded with `nistchempy.WebBookIndex.from_cache()` or `nistchempy.get_local_index()`.
 
 
+## Local WebBook index
+
+NistChemPy can load a user-local WebBook index from either a cache directory
+containing `index.csv` or from an explicit CSV file path:
+
+```python
+import nistchempy as nist
+
+index = nist.get_local_index('/path/to/webbook-index')
+# or, for a local CSV extracted from an older private package copy:
+index = nist.get_local_index('/path/to/nist_data.csv')
+```
+
+The current cleanup branch also includes a local cache writer for importing an
+existing local CSV into the new cache layout:
+
+```bash
+nistchempy index build \
+  --from-csv /path/to/nist_data.csv \
+  --path /path/to/webbook-index \
+  --mode availability \
+  --accept-data-terms
+```
+
+Network-based rebuilding of discovery/availability indexes is intentionally a
+separate next step and is not implemented by this import command yet.
+
+
 ## How To
 
 The primary features of NistChemPy, such as search capabilities and compound manipulations, are detailed in the [documentation](https://ivanchernyshov.github.io/NistChemPy/).

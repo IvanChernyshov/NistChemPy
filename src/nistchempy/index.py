@@ -159,6 +159,82 @@ class WebBookIndex:
 
         return cls(index_path, data, manifest)
 
+    @classmethod
+    def build(
+            cls, path=None, mode='discovery', source_csv=None,
+            include_cas=False, accept_data_terms=False, replace=True):
+        '''Build or import a user-local WebBook index.
+
+        This development-step implementation supports importing an existing
+        local CSV into the cache layout. Network-based WebBook traversal is
+        implemented in a later builder patch.
+
+        Args:
+            path: Optional destination local index directory.
+            mode: Local index mode stored in the manifest.
+            source_csv: Optional existing local CSV file to import.
+            include_cas: Whether the local index intentionally includes CAS RN
+                values.
+            accept_data_terms: Explicit acknowledgement that generated/imported
+                local data are local user artifacts.
+            replace: If False, raise an error when destination index.csv
+                exists.
+
+        Returns:
+            WebBookIndex: Loaded local index object.
+
+        Raises:
+            NistChemPyIndexBuildError: If no supported build source is
+                provided.
+        '''
+        from nistchempy.exceptions import NistChemPyIndexBuildError
+        from nistchempy.index_builder import import_index_csv
+        from nistchempy.index_builder import unavailable_network_build_message
+
+        if source_csv is None:
+            message = unavailable_network_build_message()
+            raise NistChemPyIndexBuildError(message)
+
+        return import_index_csv(
+            source_csv,
+            path=path,
+            mode=mode,
+            include_cas=include_cas,
+            accept_data_terms=accept_data_terms,
+            replace=replace,
+        )
+
+    @classmethod
+    def update(
+            cls, path=None, mode='discovery', source_csv=None,
+            include_cas=False, accept_data_terms=False):
+        '''Update a user-local WebBook index.
+
+        This development-step implementation updates the local cache by
+        replacing it with an explicitly provided local CSV. Network update
+        logic is implemented in a later builder patch.
+
+        Args:
+            path: Optional destination local index directory.
+            mode: Local index mode stored in the manifest.
+            source_csv: Optional existing local CSV file to import.
+            include_cas: Whether the local index intentionally includes CAS RN
+                values.
+            accept_data_terms: Explicit acknowledgement that generated/imported
+                local data are local user artifacts.
+
+        Returns:
+            WebBookIndex: Loaded local index object.
+        '''
+        return cls.build(
+            path=path,
+            mode=mode,
+            source_csv=source_csv,
+            include_cas=include_cas,
+            accept_data_terms=accept_data_terms,
+            replace=True,
+        )
+
     def to_dataframe(self, copy=True):
         '''Return the local index table as a pandas DataFrame.
 
@@ -215,7 +291,9 @@ class WebBookIndex:
 
         rows = self.data[self.data['ID'] == compound_id]
         if rows.empty:
-            raise KeyError(f'Compound ID not found in local index: {compound_id}')
+            raise KeyError(
+                f'Compound ID not found in local index: {compound_id}'
+            )
         return rows.iloc[0]
 
     def filter(self, has_sections=None, ids=None, limit=None):
@@ -264,8 +342,8 @@ class WebBookIndex:
                 when present.
             case: If True, perform case-sensitive matching.
             regex: If True, treat query as a regular expression.
-            sections: Optional section column name or iterable of section column
-                names required to be non-empty in returned rows.
+            sections: Optional section column name or iterable of section
+                column names required to be non-empty in returned rows.
             limit: Optional maximum number of returned rows.
 
         Returns:
@@ -290,7 +368,9 @@ class WebBookIndex:
         ]
         if missing_fields:
             missing = ', '.join(missing_fields)
-            raise KeyError(f'Search columns not found in local index: {missing}')
+            raise KeyError(
+                f'Search columns not found in local index: {missing}'
+            )
 
         mask = _pd.Series(False, index=self.data.index)
         for field in search_fields:
@@ -319,7 +399,7 @@ def get_local_index(path=None, require=True):
             False, return None when the index is missing.
 
     Returns:
-        WebBookIndex | None: Loaded local index object, or None when missing and
-        require is False.
+        WebBookIndex | None: Loaded local index object, or None when missing
+        and require is False.
     '''
     return WebBookIndex.from_cache(path=path, require=require)

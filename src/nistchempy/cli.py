@@ -6,8 +6,11 @@ import argparse as _argparse
 import sys as _sys
 
 from nistchempy.cache import resolve_index_path as _resolve_index_path
+from nistchempy.exceptions import NistChemPyDataTermsError
+from nistchempy.exceptions import NistChemPyIndexBuildError
 from nistchempy.exceptions import NistChemPyIndexNotFoundError
 from nistchempy.index import WebBookIndex
+from nistchempy.index_builder import unavailable_network_build_message
 
 
 _NOTICE = '''NistChemPy does not ship a prebuilt NIST Chemistry WebBook index.
@@ -80,6 +83,84 @@ def _cmd_index_search(args) -> int:
     return 0
 
 
+def _cmd_index_build(args) -> int:
+    if args.from_csv is None:
+        print(unavailable_network_build_message(), file=_sys.stderr)
+        return 2
+
+    try:
+        index = WebBookIndex.build(
+            path=args.path,
+            mode=args.mode,
+            source_csv=args.from_csv,
+            include_cas=args.include_cas,
+            accept_data_terms=args.accept_data_terms,
+            replace=not args.no_replace,
+        )
+    except (NistChemPyDataTermsError, NistChemPyIndexBuildError) as exc:
+        print(str(exc), file=_sys.stderr)
+        return 1
+
+    print(f'Local WebBook index written to {index.path}.')
+    print(f'Rows: {len(index.data)}')
+    return 0
+
+
+def _cmd_index_update(args) -> int:
+    if args.from_csv is None:
+        print(unavailable_network_build_message(), file=_sys.stderr)
+        return 2
+
+    try:
+        index = WebBookIndex.update(
+            path=args.path,
+            mode=args.mode,
+            source_csv=args.from_csv,
+            include_cas=args.include_cas,
+            accept_data_terms=args.accept_data_terms,
+        )
+    except (NistChemPyDataTermsError, NistChemPyIndexBuildError) as exc:
+        print(str(exc), file=_sys.stderr)
+        return 1
+
+    print(f'Local WebBook index updated at {index.path}.')
+    print(f'Rows: {len(index.data)}')
+    return 0
+
+
+def _add_build_arguments(parser):
+    _add_path_argument(parser)
+    parser.add_argument(
+        '--mode',
+        choices=('discovery', 'availability', 'full'),
+        default='discovery',
+        help='Local index mode to record in the manifest.',
+    )
+    parser.add_argument(
+        '--from-csv',
+        default=None,
+        help=(
+            'Import an existing local CSV file into the cache layout. '
+            'Network-based building is not implemented yet.'
+        ),
+    )
+    parser.add_argument(
+        '--include-cas',
+        action='store_true',
+        help='Record that the imported/generated local index includes CAS RN.',
+    )
+    parser.add_argument(
+        '--accept-data-terms',
+        action='store_true',
+        help=(
+            'Acknowledge that generated/imported WebBook-derived local data '
+            'are local user artifacts and are not redistributed or licensed '
+            'by NistChemPy.'
+        ),
+    )
+
+
+
 def _build_parser():
     parser = _argparse.ArgumentParser(prog='nistchempy')
     subparsers = parser.add_subparsers(dest='command')
@@ -105,6 +186,23 @@ def _build_parser():
     )
     _add_path_argument(status_parser)
     status_parser.set_defaults(func=_cmd_index_status)
+
+    build_parser = index_subparsers.add_parser(
+        'build', help='Build or import a user-local WebBook index.'
+    )
+    _add_build_arguments(build_parser)
+    build_parser.add_argument(
+        '--no-replace',
+        action='store_true',
+        help='Fail if the destination index.csv already exists.',
+    )
+    build_parser.set_defaults(func=_cmd_index_build)
+
+    update_parser = index_subparsers.add_parser(
+        'update', help='Update a user-local WebBook index.'
+    )
+    _add_build_arguments(update_parser)
+    update_parser.set_defaults(func=_cmd_index_update)
 
     search_parser = index_subparsers.add_parser(
         'search', help='Search a local WebBook index.'

@@ -11,3 +11,11 @@ class NistChemPyIndexNotFoundError(NistChemPyError):
 
 class NistChemPyIndexError(NistChemPyError):
     '''Raised when a user-local WebBook index is invalid.'''
+
+class NistChemPyIndexBuildError(NistChemPyIndexError):
+    '''Raised when a user-local WebBook index build fails.'''
+
+
+class NistChemPyDataTermsError(NistChemPyIndexBuildError):
+    '''Raised when local index creation lacks explicit acknowledgement.'''
+

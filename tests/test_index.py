@@ -125,3 +125,78 @@ def test_cli_status_and_search(capsys, tmp_path):
     ])
     assert search == 0
     assert 'C71432' in capsys.readouterr().out
+
+
+def test_build_local_index_requires_data_terms(tmp_path):
+    csv_path = tmp_path / 'source.csv'
+    pd.DataFrame([{'ID': 'C71432', 'name': 'benzene'}]).to_csv(
+        csv_path, index=False
+    )
+
+    with pytest.raises(nist.NistChemPyDataTermsError):
+        nist.WebBookIndex.build(
+            path=tmp_path / 'cache',
+            source_csv=csv_path,
+            mode='availability',
+        )
+
+
+def test_build_local_index_from_csv_writes_cache_layout(tmp_path):
+    csv_path = tmp_path / 'source.csv'
+    pd.DataFrame([{'ID': 'C71432', 'name': 'benzene'}]).to_csv(
+        csv_path, index=False
+    )
+
+    index = nist.WebBookIndex.build(
+        path=tmp_path / 'cache',
+        source_csv=csv_path,
+        mode='availability',
+        accept_data_terms=True,
+    )
+
+    assert index.path == (tmp_path / 'cache').resolve()
+    assert index.manifest['mode'] == 'availability'
+    assert index.manifest['row_count'] == 1
+    assert index.has_capability('section_availability')
+    assert (tmp_path / 'cache' / 'index.csv').exists()
+    assert (tmp_path / 'cache' / 'manifest.json').exists()
+    assert (tmp_path / 'cache' / 'state.jsonl').exists()
+
+
+def test_cli_build_from_csv(capsys, tmp_path):
+    csv_path = tmp_path / 'source.csv'
+    pd.DataFrame([{'ID': 'C71432', 'name': 'benzene'}]).to_csv(
+        csv_path, index=False
+    )
+
+    status = cli_main([
+        'index',
+        'build',
+        '--path',
+        str(tmp_path / 'cache'),
+        '--from-csv',
+        str(csv_path),
+        '--mode',
+        'availability',
+        '--accept-data-terms',
+    ])
+
+    assert status == 0
+    assert 'Rows: 1' in capsys.readouterr().out
+    index = nist.get_local_index(tmp_path / 'cache')
+    assert list(index.search('benz', fields='name')['ID']) == ['C71432']
+
+
+def test_cli_build_without_source_is_unavailable(capsys, tmp_path):
+    status = cli_main([
+        'index',
+        'build',
+        '--path',
+        str(tmp_path / 'cache'),
+        '--accept-data-terms',
+    ])
+
+    assert status == 2
+    assert 'Network-based local index building is not implemented' in (
+        capsys.readouterr().err
+    )
