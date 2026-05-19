@@ -2,7 +2,6 @@ cff-version: 1.2.0
 message: "If you use NistChemPy in research, please cite the software using this metadata and verify retrieved records against the original NIST Chemistry WebBook pages."
 type: software
 title: "NistChemPy: Unofficial Python tools for querying NIST Chemistry WebBook pages"
-doi: 10.5281/zenodo.20235917
 authors:
   - family-names: Chernyshov
     given-names: Ivan Yu.
@@ -11,7 +10,8 @@ abstract: >-
   WebBook pages and extracting selected molecular-property records. It is
   intended for research workflows that need programmatic access to selected
   WebBook page contents while preserving links to the original source pages for
-  verification. NistChemPy is not affiliated with, maintained by, or endorsed by
+  verification. NistChemPy does not distribute a prebuilt WebBook-derived
+  compound index. NistChemPy is not affiliated with, maintained by, or endorsed by
   NIST, and users should verify retrieved records against the original NIST
   Chemistry WebBook pages and applicable terms before downstream use.
 keywords:
@@ -28,5 +28,5 @@ keywords:
 license: MIT
 repository-code: "https://github.com/IvanChernyshov/NistChemPy"
 url: "https://ivanchernyshov.github.io/NistChemPy/"
-version: 1.0.6
-date-released: "2026-05-16"
+version: 1.1.0.dev0
+date-released: "2026-05-19"

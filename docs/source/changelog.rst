@@ -1,6 +1,15 @@
 Changelog
 =========
 
+Unreleased
+----------
+
+* Removes the packaged WebBook-derived compound index from NistChemPy distributions.
+
+* Adds the initial user-local WebBook index loading/search API and CLI status/search helpers.
+
+* Deprecates :py:func:`nistchempy.compound_list.get_all_data` as a local-cache-only compatibility wrapper.
+
 1.0.6
 -----
 
@@ -11,8 +20,6 @@ Changelog
 * Softens references to NistChemData and frames it as a historical companion repository with provenance-sensitive data-use caveats.
 
 * Updates PyPI-facing metadata, project description, keywords, and project links.
-
-* Adds citation metadata and the Zenodo concept DOI for scientific-software citation: ``10.5281/zenodo.20235917``.
 
 * Prepares the repository metadata for the post-DOI PyPI release.
 

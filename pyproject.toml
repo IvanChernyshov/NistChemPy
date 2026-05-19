@@ -38,7 +38,8 @@ dependencies = [
   "importlib-resources>=1.1.0; python_version<'3.9'",
   "requests",
   "pandas",
-  "bs4"
+  "bs4",
+  "platformdirs"
 ]
 requires-python = ">= 3.7"
 dynamic = ["version"]
@@ -47,7 +48,9 @@ dynamic = ["version"]
 Documentation = "https://ivanchernyshov.github.io/NistChemPy/"
 Repository = "https://github.com/IvanChernyshov/NistChemPy.git"
 Issues = "https://github.com/IvanChernyshov/NistChemPy/issues"
-Citation = "https://doi.org/10.5281/zenodo.20235917"
+
+[project.scripts]
+nistchempy = "nistchempy.cli:main"
 
 [tool.setuptools.dynamic]
 version = {attr = "nistchempy.__version__"}

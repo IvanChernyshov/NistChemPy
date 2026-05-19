@@ -1,33 +1,29 @@
-'''Loads pre-prepared info on compounds structure and data availability'''
+'''Deprecated helpers for local WebBook index loading.'''
 
-#%% Imports
+import warnings as _warnings
 
-import sys as _sys
-if _sys.version_info < (3, 9):
-    import importlib_resources as _importlib_resources
-else:
-    import importlib.resources as _importlib_resources
-
-import zipfile as _zipfile
-import pandas as _pd
+from nistchempy.index import get_local_index as _get_local_index
 
 
-#%% Functions
+def get_all_data(path=None):
+    '''Return the user-local WebBook index as a pandas DataFrame.
 
-def get_all_data() -> _pd.core.frame.DataFrame:
-    '''Returns pandas dataframe containing info on all NIST Chem WebBook compounds
-    
+    Deprecated:
+        NistChemPy no longer ships a prebuilt WebBook-derived index. Use
+        ``nistchempy.get_local_index(path).to_dataframe()`` or
+        ``nistchempy.WebBookIndex.from_cache(path).to_dataframe()`` instead.
+
+    Args:
+        path: Optional local index directory.
+
     Returns:
-        _pd.core.frame.DataFrame: dataframe containing pre-extracted compound info
-    
+        pandas.DataFrame: User-local WebBook index table.
     '''
-    pkg = _importlib_resources.files('nistchempy')
-    data_file = pkg / 'data' / 'nist_data.zip'
-    with _importlib_resources.as_file(data_file) as path:
-        with _zipfile.ZipFile(path) as zf:
-            df = _pd.read_csv(zf.open('nist_data.csv'), dtype = 'str')
-            df['mol_weight'] = df['mol_weight'].astype(float)
-    
-    return df
-
-
+    _warnings.warn(
+        'nistchempy.get_all_data() is deprecated. NistChemPy no longer ships '
+        'a prebuilt WebBook index. Use nistchempy.get_local_index() or '
+        'nistchempy.WebBookIndex.from_cache() instead.',
+        DeprecationWarning,
+        stacklevel=2,
+    )
+    return _get_local_index(path=path).to_dataframe()

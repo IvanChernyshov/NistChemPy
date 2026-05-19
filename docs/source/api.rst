@@ -38,6 +38,18 @@ nistchempy.search
    :noindex:
 
 
+nistchempy.index
+----------------
+
+.. automodule:: nistchempy.index
+   :imported-members:
+   :members:
+   :undoc-members:
+   :show-inheritance:
+   :member-order: bysource
+   :noindex:
+
+
 nistchempy.compound_list
 ------------------------
 
@@ -110,3 +122,27 @@ nistchempy.utils
    :noindex:
 
 
+
+
+nistchempy.cache
+----------------
+
+.. automodule:: nistchempy.cache
+   :imported-members:
+   :members:
+   :undoc-members:
+   :show-inheritance:
+   :member-order: bysource
+   :noindex:
+
+
+nistchempy.exceptions
+----------------------
+
+.. automodule:: nistchempy.exceptions
+   :imported-members:
+   :members:
+   :undoc-members:
+   :show-inheritance:
+   :member-order: bysource
+   :noindex:

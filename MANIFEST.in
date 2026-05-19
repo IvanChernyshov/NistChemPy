@@ -1,2 +1,1 @@
 include CITATION.cff
-include src/nistchempy/data/*

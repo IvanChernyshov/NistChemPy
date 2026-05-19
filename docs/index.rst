@@ -6,7 +6,7 @@ Welcome to the NistChemPy documentation!
    :hidden:
    :maxdepth: 2
    :caption: Cookbook:
-   
+
    Basic Search <source/basic_search.ipynb>
    Compound Properties <source/compound_properties.ipynb>
    Advanced Search <source/advanced_search.ipynb>
@@ -17,7 +17,7 @@ Welcome to the NistChemPy documentation!
    :hidden:
    :maxdepth: 1
    :caption: Package details:
-   
+
    Package API <source/api>
    Changelog <source/changelog>
 
@@ -25,6 +25,12 @@ Welcome to the NistChemPy documentation!
 **NistChemPy** provides unofficial Python tools for querying `NIST Chemistry WebBook`_ pages and extracting selected molecular-property records.
 It is not affiliated with, maintained by, or endorsed by NIST.
 Because the Chemistry WebBook does not provide a stable public web API for this package, functionality may depend on the current structure and behavior of the external web service.
+
+.. warning::
+
+   NistChemPy no longer ships a prebuilt NIST Chemistry WebBook compound index.
+   Live WebBook search and individual compound-page parsing remain separate functionality, but local index search now requires a user-generated local index/cache.
+   Rebuilding a full section-availability index can require visiting one WebBook page per compound; with a polite 3 second delay and roughly 100,000-150,000 pages, the initial rebuild can take about 3.5-5+ days before retries and network overhead.
 
 NistChemPy currently supports extraction of basic compound metadata, selected spectral records (IR, THz, MS, and UV-Vis), and gas chromatography records where these are available from the corresponding WebBook pages.
 Additional properties may be reachable through source URLs stored by the package, but direct extraction is intentionally limited to the implemented record types.
@@ -39,21 +45,21 @@ Main features
 #. Search:
 
     * Search by `name <https://webbook.nist.gov/chemistry/name-ser/>`_, `chemical formula <https://webbook.nist.gov/chemistry/form-ser/>`_, `CAS RN <https://webbook.nist.gov/chemistry/cas-ser/>`_, `InChI / InChI Key <https://webbook.nist.gov/chemistry/inchi-ser/>`_: `nistchempy.run_search`.
-    
+
     * Search by `structure <https://webbook.nist.gov/chemistry/str-file/>`_, including substructural search: `nistchempy.run_structural_search`.
-    
-    * Search over the package-internal table of pre-extracted compound identifiers and metadata: `nistchempy.get_all_data`. This table is included to support NistChemPy workflows and should not be interpreted as an authoritative, complete, or independently licensed redistribution of the NIST Chemistry WebBook.
+
+    * Search over a user-local compound index/cache with ``nistchempy.WebBookIndex.from_cache()`` or ``nistchempy.get_local_index()``. NistChemPy does not redistribute a prebuilt WebBook-derived index.
 
 #. Compound info (`nistchempy.compound.NistCompound`):
-    
+
     * Object stores parsed properties and corresponding source URLs.
-    
+
     * Supports extraction of selected records:
-        
+
         * 2D and 3D atomic coordinates.
-        
+
         * Spectral data (IR, MS, UV-Vis).
-        
+
         * Gas chromatography data.
 
 For more details see the CookBook section of this documentation.
@@ -74,7 +80,7 @@ Installation
 **NistChemPy** can be installed as a `PyPI package`_:
 
 .. code-block::
-   
+
    > pip install nistchempy
 
 
@@ -96,7 +102,6 @@ Citation
 ========
 
 If you use NistChemPy in research, please cite the software using the metadata in the repository's ``CITATION.cff`` file.
-The Zenodo concept DOI for citing NistChemPy across versions is ``10.5281/zenodo.20235917`` (`Citation DOI`_).
 
 
 Useful links
@@ -105,9 +110,8 @@ Useful links
 1. `NIST Chemistry WebBook`_: web application for accessing NIST Chemistry WebBook records.
 2. `GitHub`_: GitHub page of the package.
 3. `PyPI package`_: PyPI page of the package.
-4. `Citation DOI`_: Zenodo concept DOI for citing NistChemPy across versions.
-5. `Update tools`_: maintainer-oriented scripts for refreshing package-internal compound metadata.
-6. `NistChemData`_: historical companion repository with extracted files and provenance-sensitive data-use caveats.
+4. `Update tools`_: maintainer-oriented scripts for local index reconstruction experiments.
+5. `NistChemData`_: historical companion repository with extracted files and provenance-sensitive data-use caveats.
 
 
 Indices and tables
@@ -122,5 +126,4 @@ Indices and tables
 .. _NIST Chemistry WebBook: https://webbook.nist.gov/chemistry/
 .. _GitHub: https://github.com/IvanChernyshov/NistChemPy
 .. _PyPI package: https://pypi.org/project/nistchempy/
-.. _Citation DOI: https://doi.org/10.5281/zenodo.20235917
 .. _Update tools: https://github.com/IvanChernyshov/NistChemPy/tree/main/update
