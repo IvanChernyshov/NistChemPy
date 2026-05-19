@@ -6,6 +6,7 @@ import datetime as _datetime
 import json as _json
 import shutil as _shutil
 import typing as _tp
+import urllib.parse as _urlparse
 import uuid as _uuid
 from dataclasses import asdict as _asdict
 from dataclasses import dataclass as _dataclass
@@ -14,6 +15,9 @@ from pathlib import Path as _Path
 import pandas as _pd
 
 import nistchempy.discovery as _discovery
+import nistchempy.parsing as _parsing
+import nistchempy.requests as _requests
+import nistchempy.search as _search
 from nistchempy.cache import resolve_index_path as _resolve_index_path
 from nistchempy.exceptions import NistChemPyDataTermsError
 from nistchempy.exceptions import NistChemPyIndexBuildError
@@ -25,6 +29,7 @@ from nistchempy.requests import RequestConfig as _RequestConfig
 STATE_FILENAME = 'state.jsonl'
 ERRORS_FILENAME = 'errors.jsonl'
 SEEDS_FILENAME = 'seeds.csv'
+PARTIAL_INDEX_FILENAME = 'index.partial.jsonl'
 TMP_DIR_NAME = 'tmp'
 DEFAULT_SOURCE_NOTICE = 'NIST Chemistry WebBook / SRD 69'
 DEFAULT_DISCOVERY_STRATEGY = 'formula-browser'
@@ -120,7 +125,7 @@ class LocalIndexBuilder:
 
     def __init__(
             self, path=None, strategy=DEFAULT_DISCOVERY_STRATEGY,
-            capabilities=None, include_cas=False, accept_data_terms=False):
+            capabilities=None, include_cas=True, accept_data_terms=False):
         self.path = _resolve_index_path(path)
         self.strategy = strategy
         self.capabilities = list(capabilities or DEFAULT_INDEX_CAPABILITIES)
@@ -147,6 +152,11 @@ class LocalIndexBuilder:
     def seeds_path(self) -> _Path:
         '''Return the local discovery seeds CSV path.'''
         return self.path / SEEDS_FILENAME
+
+    @property
+    def partial_index_path(self) -> _Path:
+        '''Return the resumable partial-index JSONL path.'''
+        return self.path / PARTIAL_INDEX_FILENAME
 
     @property
     def state_path(self) -> _Path:
@@ -327,6 +337,167 @@ class LocalIndexBuilder:
             status='seeds_complete',
         )
 
+    def enrich_from_seeds(
+            self, seeds_path=None, request_delay=3.0, timeout=30.0,
+            max_attempts=3, limit=None, resume=True, replace=True,
+            request_func=None):
+        '''Enrich discovery seeds into a final local WebBook index.
+
+        This method visits one compound page per seed, parses the compound
+        metadata and section-availability links, and writes the final
+        ``index.csv`` table. Intermediate rows are appended to
+        ``index.partial.jsonl`` so long-running jobs can be resumed.
+
+        Args:
+            seeds_path: Optional path to a seed CSV file. If omitted, use the
+                local cache ``seeds.csv``.
+            request_delay: Delay between NIST WebBook requests in seconds.
+            timeout: Request timeout in seconds.
+            max_attempts: Maximum attempts for each request.
+            limit: Optional maximum number of seeds to process.
+            resume: If True, reuse existing ``index.partial.jsonl`` rows.
+            replace: If False, raise an error when final ``index.csv`` exists.
+            request_func: Optional request function for tests.
+
+        Returns:
+            WebBookIndex: Loaded final local index.
+        '''
+        self.prepare()
+        if self.index_path.exists() and not replace:
+            raise NistChemPyIndexBuildError(
+                f'Local WebBook index already exists at {self.index_path}.'
+            )
+
+        source_path = _Path(seeds_path).expanduser().resolve() if (
+            seeds_path is not None
+        ) else self.seeds_path
+        if not source_path.exists():
+            raise NistChemPyIndexBuildError(
+                f'Local discovery seeds not found at {source_path}.'
+            )
+
+        try:
+            seeds = _pd.read_csv(source_path, dtype='str').fillna('')
+        except Exception as exc:
+            raise NistChemPyIndexBuildError(
+                f'Failed to read local discovery seeds from {source_path}.'
+            ) from exc
+
+        if limit is not None:
+            seeds = seeds.head(limit)
+
+        if not resume and self.partial_index_path.exists():
+            self.partial_index_path.unlink()
+
+        rows = _read_partial_index_rows(self.partial_index_path)
+        completed_keys = {
+            row.get('_seed_lookup_key', '') for row in rows
+            if row.get('_seed_lookup_key', '')
+        }
+
+        request_func = request_func or _requests.make_nist_request
+        request_config = _RequestConfig(
+            delay=request_delay,
+            max_attempts=max_attempts,
+            kwargs={'timeout': timeout},
+        )
+        self.append_state(
+            'enrichment_started',
+            {
+                'seed_count': len(seeds),
+                'already_enriched': len(completed_keys),
+                'request_delay': request_delay,
+                'timeout': timeout,
+                'max_attempts': max_attempts,
+                'resume': bool(resume),
+                'source_path': str(source_path),
+            },
+        )
+
+        for _, seed in seeds.iterrows():
+            seed_dict = seed.to_dict()
+            lookup_key = _seed_lookup_key(seed_dict)
+            if lookup_key in completed_keys:
+                continue
+
+            try:
+                url = resolve_seed_url(seed_dict)
+            except ValueError as exc:
+                self.append_error(
+                    'enrichment', str(exc), {'seed': seed_dict}
+                )
+                continue
+
+            try:
+                response = request_func(url, config=request_config)
+            except Exception as exc:
+                self.append_error(
+                    'enrichment_request',
+                    str(exc),
+                    {'lookup_key': lookup_key, 'url': url},
+                )
+                continue
+
+            if not getattr(response, 'ok', False):
+                self.append_error(
+                    'enrichment_response',
+                    'Bad server response while enriching seed.',
+                    {'lookup_key': lookup_key, 'url': url},
+                )
+                continue
+
+            soup = getattr(response, 'soup', None)
+            if soup is None or not _parsing.is_compound_page(soup):
+                self.append_error(
+                    'enrichment_parse',
+                    'Response is not a single compound page.',
+                    {'lookup_key': lookup_key, 'url': url},
+                )
+                continue
+
+            try:
+                info = _parsing.parse_compound_page(soup)
+                row = flatten_compound_info(info)
+            except Exception as exc:
+                self.append_error(
+                    'enrichment_parse',
+                    str(exc),
+                    {'lookup_key': lookup_key, 'url': url},
+                )
+                continue
+
+            row['_seed_lookup_key'] = lookup_key
+            row['_seed_source'] = seed_dict.get('source', '')
+            row['_seed_source_query'] = seed_dict.get('source_query', '')
+            _append_jsonl(self.partial_index_path, row)
+            rows.append(row)
+            completed_keys.add(lookup_key)
+            self.append_state(
+                'seed_enriched',
+                {
+                    'lookup_key': lookup_key,
+                    'ID': row.get('ID', ''),
+                    'url': url,
+                },
+            )
+
+        final_dataframe = _final_index_dataframe(rows)
+        index = self.write_index(
+            final_dataframe,
+            replace=replace,
+            source='NIST Chemistry WebBook compound pages',
+            source_path=str(source_path),
+            status='complete',
+        )
+        self.append_state(
+            'enrichment_finished',
+            {
+                'row_count': len(final_dataframe),
+                'seed_count': len(seeds),
+            },
+        )
+        return index
+
     def append_state(self, event: str, payload=None) -> None:
         '''Append one JSON record to the local build state log.
 
@@ -479,8 +650,48 @@ def discover_formula_browser(
     )
 
 
+def enrich_index_from_seeds(
+        path=None, seeds_path=None, accept_data_terms=False,
+        request_delay=3.0, timeout=30.0, max_attempts=3, limit=None,
+        resume=True, replace=True, request_func=None):
+    '''Enrich local discovery seeds into a final local index.
+
+    Args:
+        path: Optional local index directory.
+        seeds_path: Optional explicit discovery seed CSV path.
+        accept_data_terms: Explicit acknowledgement that generated local data
+            are local user artifacts.
+        request_delay: Delay between NIST WebBook requests in seconds.
+        timeout: Request timeout in seconds.
+        max_attempts: Maximum attempts for each request.
+        limit: Optional maximum number of seeds to process.
+        resume: If True, reuse existing partial enrichment rows.
+        replace: If False, raise an error when index.csv exists.
+        request_func: Optional request function for tests.
+
+    Returns:
+        WebBookIndex: Loaded final local index object.
+    '''
+    builder = LocalIndexBuilder(
+        path=path,
+        strategy=DEFAULT_DISCOVERY_STRATEGY,
+        include_cas=True,
+        accept_data_terms=accept_data_terms,
+    )
+    return builder.enrich_from_seeds(
+        seeds_path=seeds_path,
+        request_delay=request_delay,
+        timeout=timeout,
+        max_attempts=max_attempts,
+        limit=limit,
+        resume=resume,
+        replace=replace,
+        request_func=request_func,
+    )
+
+
 def import_index_csv(
-        csv_path, path=None, include_cas=False, accept_data_terms=False,
+        csv_path, path=None, include_cas=True, accept_data_terms=False,
         replace=True):
     '''Create a local index cache layout from an existing local CSV file.
 
@@ -521,6 +732,154 @@ def unavailable_discovery_message() -> str:
         'Formula-search and sitemap discovery strategies are not implemented '
         'in this development step yet.'
     )
+
+
+def resolve_seed_url(seed) -> str:
+    '''Resolve one discovery seed to a compound-page URL.
+
+    Args:
+        seed: Seed dictionary or pandas Series.
+
+    Returns:
+        str: Absolute URL to request during enrichment.
+
+    Raises:
+        ValueError: If the seed has no usable URL or WebBook ID.
+    '''
+    seed = dict(seed)
+    lookup_url = _clean_scalar(seed.get('lookup_url', ''))
+    webbook_id = _clean_scalar(seed.get('webbook_id', ''))
+
+    if webbook_id and _is_formula_browser_lookup(lookup_url):
+        return f'{_requests.SEARCH_URL}?ID={webbook_id}'
+    if lookup_url:
+        return _normalize_webbook_url(lookup_url)
+    if webbook_id:
+        return f'{_requests.SEARCH_URL}?ID={webbook_id}'
+
+    raise ValueError('Discovery seed has neither lookup_url nor webbook_id.')
+
+
+def flatten_compound_info(info: dict) -> dict:
+    '''Flatten parsed compound-page information into one index row.
+
+    Args:
+        info: Dictionary returned by ``parse_compound_page``.
+
+    Returns:
+        dict: Flat local-index row with old-index-compatible columns.
+    '''
+    info = info or {}
+    row = {
+        'ID': _clean_scalar(info.get('ID', '')),
+        'name': _clean_scalar(info.get('name', '')),
+        'synonyms': _format_synonyms(info.get('synonyms', [])),
+        'formula': _clean_scalar(info.get('formula', '')),
+        'mol_weight': _clean_scalar(info.get('mol_weight', '')),
+        'inchi': _clean_scalar(info.get('inchi', '')),
+        'inchi_key': _clean_scalar(info.get('inchi_key', '')),
+        'cas_rn': _clean_scalar(info.get('cas_rn', '')),
+    }
+
+    for key, value in (info.get('mol_refs') or {}).items():
+        row[_clean_scalar(key)] = _clean_scalar(value)
+
+    search_names = _search.get_search_parameters()
+    for key, value in (info.get('data_refs') or {}).items():
+        column = search_names.get(key, key)
+        row[_clean_scalar(column)] = _clean_scalar(value)
+
+    for refs_key in ('nist_public_refs', 'nist_subscription_refs'):
+        for key, value in (info.get(refs_key) or {}).items():
+            row[_clean_scalar(key)] = _clean_scalar(value)
+
+    return row
+
+
+def _read_partial_index_rows(path: _Path) -> _tp.List[dict]:
+    if not path.exists():
+        return []
+
+    rows = []
+    with open(path, 'r', encoding='utf-8') as infile:
+        for line in infile:
+            line = line.strip()
+            if not line:
+                continue
+            rows.append(_json.loads(line))
+    return rows
+
+
+def _append_jsonl(path: _Path, row: dict) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with open(path, 'a', encoding='utf-8') as outfile:
+        outfile.write(_json.dumps(row, sort_keys=True) + '\n')
+
+
+def _final_index_dataframe(rows: _tp.List[dict]) -> _pd.DataFrame:
+    base_columns = [
+        'ID', 'name', 'synonyms', 'formula', 'mol_weight', 'inchi',
+        'inchi_key', 'cas_rn',
+    ]
+    dataframe = _pd.DataFrame(rows)
+    if dataframe.empty:
+        return _pd.DataFrame(columns=base_columns)
+
+    for column in reversed(base_columns):
+        if column in dataframe.columns:
+            value = dataframe.pop(column)
+            dataframe.insert(0, column, value)
+
+    if 'ID' in dataframe.columns:
+        ids = dataframe['ID'].fillna('').astype(str)
+        with_id = dataframe[ids.ne('')].drop_duplicates(
+            subset=['ID'], keep='first'
+        )
+        without_id = dataframe[ids.eq('')]
+        dataframe = _pd.concat([with_id, without_id], ignore_index=True)
+
+    internal_columns = [
+        column for column in dataframe.columns if column.startswith('_seed_')
+    ]
+    if internal_columns:
+        dataframe = dataframe.drop(columns=internal_columns)
+    return dataframe
+
+
+def _seed_lookup_key(seed: dict) -> str:
+    for key in ('lookup_key', 'webbook_id', 'lookup_url'):
+        value = _clean_scalar(seed.get(key, ''))
+        if value:
+            return value
+    return ''
+
+
+def _is_formula_browser_lookup(url: str) -> bool:
+    if not url:
+        return False
+    parsed = _urlparse.urlparse(_normalize_webbook_url(url))
+    return parsed.path == '/cgi/formula'
+
+
+def _normalize_webbook_url(url: str) -> str:
+    parsed = _urlparse.urlparse(url)
+    if not parsed.netloc:
+        return _urlparse.urljoin(_requests.BASE_URL, url)
+    return url
+
+
+def _format_synonyms(value) -> str:
+    if value is None:
+        return ''
+    if isinstance(value, str):
+        return value
+    return '\n'.join(_clean_scalar(item) for item in value if item)
+
+
+def _clean_scalar(value) -> str:
+    if value is None:
+        return ''
+    return str(value).strip()
 
 
 def _as_dataframe(data) -> _pd.DataFrame:

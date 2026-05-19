@@ -359,3 +359,178 @@ def test_cli_discover_writes_formula_browser_seeds(capsys, monkeypatch, tmp_path
     assert seeds_path.exists()
     seeds = pd.read_csv(seeds_path, dtype='str')
     assert list(seeds['webbook_id']) == ['C71432']
+
+
+def _compound_page_html(compound_id='C71432', name='Benzene'):
+    return f'''
+    <html><body>
+      <!-- /cgi/cbook.cgi?Form={compound_id}&Units=SI -->
+      <h1 id="Top">{name}</h1>
+      <ul>
+        <li>Formula: C6H6</li>
+        <li>Molecular weight: 78.11</li>
+        <li>Other names:
+          benzol;
+          cyclohexatriene;
+        </li>
+        <li>CAS Registry Number: 71-43-2</li>
+        <li><span>InChI:</span>
+          <span class="inchi-text">InChI=1S/C6H6/c1-2-4-6-5-3-1/h1-6H</span>
+        </li>
+        <li><span>InChIKey:</span>
+          <span class="inchi-text">UHOVQNZJYSORNB-UHFFFAOYSA-N</span>
+        </li>
+        <li><a href="/cgi/cbook.cgi?Str2File={compound_id}">2D</a></li>
+        <li><a href="/cgi/cbook.cgi?Str3File={compound_id}">3D</a></li>
+        <li>Other data available:
+          <ul>
+            <li>
+              <a href="/cgi/cbook.cgi?ID={compound_id}&Mask=200">
+                Mass spectrum
+              </a>
+            </li>
+            <li>
+              <a href="/cgi/cbook.cgi?ID={compound_id}&Mask=800">
+                Energy levels
+              </a>
+            </li>
+          </ul>
+        </li>
+      </ul>
+    </body></html>
+    '''
+
+
+def test_resolve_seed_url_supports_url_and_webbook_id():
+    from nistchempy.index_builder import resolve_seed_url
+
+    assert resolve_seed_url({'lookup_url': '/cgi/cbook.cgi?ID=C71432'}) == (
+        'https://webbook.nist.gov/cgi/cbook.cgi?ID=C71432'
+    )
+    assert resolve_seed_url({'webbook_id': 'C71432'}) == (
+        'https://webbook.nist.gov/cgi/cbook.cgi?ID=C71432'
+    )
+
+
+def test_flatten_compound_info_keeps_cas_and_renames_data_refs():
+    from bs4 import BeautifulSoup
+    from nistchempy.index_builder import flatten_compound_info
+    from nistchempy.parsing import parse_compound_page
+
+    soup = BeautifulSoup(_compound_page_html(), features='html.parser')
+    row = flatten_compound_info(parse_compound_page(soup))
+
+    assert row['ID'] == 'C71432'
+    assert row['name'] == 'Benzene'
+    assert row['cas_rn'] == '71-43-2'
+    assert 'benzol' in row['synonyms']
+    assert row['Mass spectrum (electron ionization)'].endswith('Mask=200')
+    assert row['Vibrational and/or electronic energy levels'].endswith(
+        'Mask=800'
+    )
+    assert row['mol2D'].endswith('Str2File=C71432')
+    assert row['mol3D'].endswith('Str3File=C71432')
+
+
+def test_enrich_from_seeds_writes_final_index(tmp_path):
+    builder = LocalIndexBuilder(
+        path=tmp_path / 'cache',
+        strategy='formula-browser',
+        include_cas=True,
+        accept_data_terms=True,
+    )
+    builder.write_seeds([
+        DiscoverySeed(
+            lookup_key='C71432',
+            lookup_url='/cgi/cbook.cgi?ID=C71432',
+            webbook_id='C71432',
+        )
+    ])
+
+    def fake_request(url, config=None):
+        _ = url, config
+        return _FakeResponse(_compound_page_html())
+
+    index = builder.enrich_from_seeds(request_func=fake_request)
+
+    assert list(index.data['ID']) == ['C71432']
+    assert index.data.loc[0, 'cas_rn'] == '71-43-2'
+    assert 'Mass spectrum (electron ionization)' in index.data.columns
+    assert (tmp_path / 'cache' / 'index.csv').exists()
+    assert (tmp_path / 'cache' / 'index.partial.jsonl').exists()
+    manifest = json.loads(
+        (tmp_path / 'cache' / 'manifest.json').read_text(encoding='utf-8')
+    )
+    assert manifest['artifact'] == 'index'
+    assert manifest['include_cas'] is True
+    assert manifest['row_count'] == 1
+
+
+def test_enrich_from_seeds_logs_bad_seed_and_continues(tmp_path):
+    builder = LocalIndexBuilder(
+        path=tmp_path / 'cache',
+        strategy='formula-browser',
+        accept_data_terms=True,
+    )
+    builder.write_seeds([
+        DiscoverySeed(lookup_key='bad-seed'),
+        DiscoverySeed(
+            lookup_key='C71432',
+            lookup_url='/cgi/cbook.cgi?ID=C71432',
+            webbook_id='C71432',
+        ),
+    ])
+
+    def fake_request(url, config=None):
+        _ = url, config
+        return _FakeResponse(_compound_page_html())
+
+    index = builder.enrich_from_seeds(request_func=fake_request)
+
+    assert list(index.data['ID']) == ['C71432']
+    errors = (tmp_path / 'cache' / 'errors.jsonl').read_text(encoding='utf-8')
+    assert 'neither lookup_url nor webbook_id' in errors
+
+
+def test_cli_enrich_from_seeds(capsys, monkeypatch, tmp_path):
+    import nistchempy.index_builder as builder_module
+
+    builder = LocalIndexBuilder(
+        path=tmp_path / 'cache',
+        strategy='formula-browser',
+        accept_data_terms=True,
+    )
+    builder.write_seeds([
+        DiscoverySeed(
+            lookup_key='C71432',
+            lookup_url='/cgi/cbook.cgi?ID=C71432',
+            webbook_id='C71432',
+        )
+    ])
+
+    original = builder_module.LocalIndexBuilder.enrich_from_seeds
+
+    def fake_enrich(self, **kwargs):
+        kwargs['request_func'] = lambda url, config=None: _FakeResponse(
+            _compound_page_html()
+        )
+        return original(self, **kwargs)
+
+    monkeypatch.setattr(
+        builder_module.LocalIndexBuilder,
+        'enrich_from_seeds',
+        fake_enrich,
+    )
+
+    status = cli_main([
+        'index',
+        'enrich',
+        '--path',
+        str(tmp_path / 'cache'),
+        '--accept-data-terms',
+    ])
+
+    assert status == 0
+    assert 'Rows: 1' in capsys.readouterr().out
+    index = nist.get_local_index(tmp_path / 'cache')
+    assert index.get('C71432')['cas_rn'] == '71-43-2'

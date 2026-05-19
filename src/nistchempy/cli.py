@@ -12,6 +12,7 @@ from nistchempy.exceptions import NistChemPyIndexBuildError
 from nistchempy.exceptions import NistChemPyIndexNotFoundError
 from nistchempy.index import MANIFEST_FILENAME
 from nistchempy.index import WebBookIndex
+from nistchempy.index_builder import PARTIAL_INDEX_FILENAME
 from nistchempy.index_builder import SEEDS_FILENAME
 from nistchempy.index_builder import VALID_DISCOVERY_STRATEGIES
 from nistchempy.index_builder import unavailable_network_build_message
@@ -62,15 +63,24 @@ def _cmd_index_status(args) -> int:
 
     manifest = _read_manifest_if_available(path)
     seeds_path = path / SEEDS_FILENAME
+    partial_path = path / PARTIAL_INDEX_FILENAME
     if seeds_path.exists():
         print(f'Path: {path}')
         print(f'Seeds: {seeds_path}')
+        if partial_path.exists():
+            print(f'Partial index: {partial_path}')
         if manifest:
             strategy = manifest.get('strategy', 'unknown')
             print(f'Strategy: {strategy}')
             seed_count = manifest.get('seed_count', 'unknown')
             print(f'Seed rows: {seed_count}')
             print(f'Status: {manifest.get("status", "unknown")}')
+        print('Final index: missing')
+        return 0
+
+    if partial_path.exists():
+        print(f'Path: {path}')
+        print(f'Partial index: {partial_path}')
         print('Final index: missing')
         return 0
 
@@ -113,7 +123,7 @@ def _cmd_index_build(args) -> int:
             path=args.path,
             strategy=args.strategy,
             source_csv=args.from_csv,
-            include_cas=args.include_cas,
+            include_cas=not args.exclude_cas,
             accept_data_terms=args.accept_data_terms,
             replace=not args.no_replace,
         )
@@ -136,7 +146,7 @@ def _cmd_index_update(args) -> int:
             path=args.path,
             strategy=args.strategy,
             source_csv=args.from_csv,
-            include_cas=args.include_cas,
+            include_cas=not args.exclude_cas,
             accept_data_terms=args.accept_data_terms,
         )
     except (NistChemPyDataTermsError, NistChemPyIndexBuildError) as exc:
@@ -171,6 +181,28 @@ def _cmd_index_discover(args) -> int:
     return 0
 
 
+def _cmd_index_enrich(args) -> int:
+    try:
+        index = WebBookIndex.enrich(
+            path=args.path,
+            seeds_path=args.seeds,
+            accept_data_terms=args.accept_data_terms,
+            request_delay=args.request_delay,
+            timeout=args.timeout,
+            max_attempts=args.max_attempts,
+            limit=args.limit,
+            resume=not args.no_resume,
+            replace=not args.no_replace,
+        )
+    except (NistChemPyDataTermsError, NistChemPyIndexBuildError) as exc:
+        print(str(exc), file=_sys.stderr)
+        return 1
+
+    print(f'Local WebBook index written to {index.path}.')
+    print(f'Rows: {len(index.data)}')
+    return 0
+
+
 def _add_strategy_argument(parser):
     parser.add_argument(
         '--strategy',
@@ -192,9 +224,9 @@ def _add_build_arguments(parser):
         ),
     )
     parser.add_argument(
-        '--include-cas',
+        '--exclude-cas',
         action='store_true',
-        help='Record that the imported/generated local index includes CAS RN.',
+        help='Record that the imported/generated local index omits CAS RN.',
     )
     parser.add_argument(
         '--accept-data-terms',
@@ -309,6 +341,56 @@ def _build_parser():
         help='Fail if the destination seeds.csv already exists.',
     )
     discover_parser.set_defaults(func=_cmd_index_discover)
+
+    enrich_parser = index_subparsers.add_parser(
+        'enrich', help='Enrich discovery seeds into a local WebBook index.'
+    )
+    _add_path_argument(enrich_parser)
+    enrich_parser.add_argument(
+        '--seeds',
+        default=None,
+        help='Optional explicit discovery seeds CSV file.',
+    )
+    enrich_parser.add_argument(
+        '--accept-data-terms',
+        action='store_true',
+        help='Acknowledge local data-generation terms.',
+    )
+    enrich_parser.add_argument(
+        '--request-delay',
+        type=float,
+        default=3.0,
+        help='Delay between NIST WebBook requests in seconds.',
+    )
+    enrich_parser.add_argument(
+        '--timeout',
+        type=float,
+        default=30.0,
+        help='Request timeout in seconds.',
+    )
+    enrich_parser.add_argument(
+        '--max-attempts',
+        type=int,
+        default=3,
+        help='Maximum request attempts per compound page.',
+    )
+    enrich_parser.add_argument(
+        '--limit',
+        type=int,
+        default=None,
+        help='Maximum number of seeds to process.',
+    )
+    enrich_parser.add_argument(
+        '--no-resume',
+        action='store_true',
+        help='Discard existing partial enrichment rows before running.',
+    )
+    enrich_parser.add_argument(
+        '--no-replace',
+        action='store_true',
+        help='Fail if the destination index.csv already exists.',
+    )
+    enrich_parser.set_defaults(func=_cmd_index_enrich)
 
     search_parser = index_subparsers.add_parser(
         'search', help='Search a local WebBook index.'

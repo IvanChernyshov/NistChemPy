@@ -210,9 +210,50 @@ class WebBookIndex:
         )
 
     @classmethod
+    def enrich(
+            cls, path=None, seeds_path=None, accept_data_terms=False,
+            request_delay=3.0, timeout=30.0, max_attempts=3, limit=None,
+            resume=True, replace=True):
+        '''Enrich discovery seeds into a final local WebBook index.
+
+        This method visits compound pages listed in ``seeds.csv`` and writes
+        the final ``index.csv`` table. Long-running enrichment can be resumed
+        from ``index.partial.jsonl``.
+
+        Args:
+            path: Optional local index directory.
+            seeds_path: Optional explicit seed CSV file. If omitted, use the
+                cache-local ``seeds.csv``.
+            accept_data_terms: Explicit acknowledgement that generated local
+                data are local user artifacts.
+            request_delay: Delay between NIST WebBook requests in seconds.
+            timeout: Request timeout in seconds.
+            max_attempts: Maximum request attempts per seed.
+            limit: Optional maximum number of seeds to process.
+            resume: If True, reuse existing partial enrichment rows.
+            replace: If False, raise an error when index.csv exists.
+
+        Returns:
+            WebBookIndex: Loaded final local index object.
+        '''
+        from nistchempy.index_builder import enrich_index_from_seeds
+
+        return enrich_index_from_seeds(
+            path=path,
+            seeds_path=seeds_path,
+            accept_data_terms=accept_data_terms,
+            request_delay=request_delay,
+            timeout=timeout,
+            max_attempts=max_attempts,
+            limit=limit,
+            resume=resume,
+            replace=replace,
+        )
+
+    @classmethod
     def build(
             cls, path=None, strategy='formula-browser', source_csv=None,
-            include_cas=False, accept_data_terms=False, replace=True):
+            include_cas=True, accept_data_terms=False, replace=True):
         '''Build or import a user-local WebBook index.
 
         This development-step implementation supports importing an existing
@@ -259,7 +300,7 @@ class WebBookIndex:
     @classmethod
     def update(
             cls, path=None, strategy='formula-browser', source_csv=None,
-            include_cas=False, accept_data_terms=False):
+            include_cas=True, accept_data_terms=False):
         '''Update a user-local WebBook index.
 
         This development-step implementation updates the local cache by
