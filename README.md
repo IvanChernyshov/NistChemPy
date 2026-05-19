@@ -96,6 +96,20 @@ nistchempy index build \
 ```
 
 
+## Maintainer release check
+
+Before publishing a release, build the package and verify that no generated
+WebBook-derived index/cache artifacts are included:
+
+```bash
+python -m build
+python tools/check_package_artifacts.py dist/*
+```
+
+The check rejects files such as `nist_data.zip`, `nist_data.csv`,
+`compounds_data.json`, and package-internal `nistchempy/data/` contents.
+
+
 ## How To
 
 The primary features of NistChemPy, such as search capabilities and compound manipulations, are detailed in the [documentation](https://ivanchernyshov.github.io/NistChemPy/).
