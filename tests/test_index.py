@@ -185,7 +185,7 @@ def test_cli_build_from_csv(capsys, tmp_path):
     assert list(index.search('benz', fields='name')['ID']) == ['C71432']
 
 
-def test_cli_build_unsupported_strategy_is_unavailable(capsys, tmp_path):
+def test_cli_build_formula_search_requires_carbon_end(capsys, tmp_path):
     status = cli_main([
         'index',
         'build',
@@ -197,9 +197,7 @@ def test_cli_build_unsupported_strategy_is_unavailable(capsys, tmp_path):
     ])
 
     assert status == 1
-    assert 'Formula-search and combined discovery strategies are not' in (
-        capsys.readouterr().err
-    )
+    assert 'requires an explicit carbon_end' in capsys.readouterr().err
 
 
 def test_local_index_builder_writes_discovery_seeds(tmp_path):
@@ -315,6 +313,84 @@ def test_formula_browser_discovery_traverses_prefix_pages():
     seeds = discover_formula_browser(request_func=fake_request)
 
     assert [seed['webbook_id'] for seed in seeds] == ['C71432', 'C64175']
+
+
+
+
+class _FakeSearchResult:
+    def __init__(self, compound_ids, lost=False, success=True):
+        self.compound_ids = compound_ids
+        self.lost = lost
+        self.success = success
+
+
+def test_formula_search_discovery_refines_lost_queries():
+    from nistchempy.discovery import discover_formula_search
+
+    responses = {
+        'C1': _FakeSearchResult(['C1ROOT'], lost=True),
+        'C1H0': _FakeSearchResult([], lost=False),
+        'C1H1': _FakeSearchResult(['C1H1'], lost=True),
+        'C1H1N?': _FakeSearchResult(['C1H1N'], lost=True),
+        'C1H1N1': _FakeSearchResult(['C1H1N1'], lost=False),
+    }
+    calls = []
+
+    def fake_search(formula, params, config):
+        _ = params, config
+        calls.append(formula)
+        return responses.get(formula, _FakeSearchResult([], lost=False))
+
+    seeds = discover_formula_search(
+        carbon_start=1,
+        carbon_end=1,
+        hydrogen_max=1,
+        heteroatom_max=1,
+        elements=['N'],
+        search_func=fake_search,
+    )
+
+    assert calls == ['C1', 'C1H0', 'C1H1', 'C1H1N?', 'C1H1N1']
+    assert [seed['webbook_id'] for seed in seeds] == [
+        'C1ROOT',
+        'C1H1',
+        'C1H1N',
+        'C1H1N1',
+    ]
+    assert {seed['source'] for seed in seeds} == {'formula-search'}
+
+
+def test_formula_search_discovery_requires_explicit_carbon_end():
+    from nistchempy.discovery import discover_formula_search
+
+    with pytest.raises(ValueError, match='explicit carbon_end'):
+        discover_formula_search()
+
+
+def test_local_index_builder_writes_formula_search_seeds(tmp_path):
+    builder = LocalIndexBuilder(
+        path=tmp_path / 'cache',
+        strategy='formula-search',
+        accept_data_terms=True,
+    )
+
+    def fake_search(formula, params, config):
+        _ = params, config
+        assert formula == 'C1'
+        return _FakeSearchResult(['C71432'], lost=False)
+
+    seeds = builder.discover_formula_search(
+        carbon_start=1,
+        carbon_end=1,
+        search_func=fake_search,
+    )
+
+    assert list(seeds['webbook_id']) == ['C71432']
+    assert list(seeds['source']) == ['formula-search']
+    manifest = json.loads(
+        (tmp_path / 'cache' / 'manifest.json').read_text(encoding='utf-8')
+    )
+    assert manifest['strategy'] == 'formula-search'
 
 
 def test_parse_robots_sitemaps_extracts_sitemap_urls():
@@ -795,6 +871,67 @@ def test_cli_build_formula_browser_runs_full_pipeline(
     assert 'Rows: 1' in capsys.readouterr().out
     index = nist.get_local_index(tmp_path / 'cache')
     assert index.get('C71432')['cas_rn'] == '71-43-2'
+
+
+
+
+def _patch_formula_search_build(monkeypatch):
+    from nistchempy import discovery as discovery_module
+    import nistchempy.index_builder as builder_module
+
+    def fake_discover_formula_search(**kwargs):
+        _ = kwargs
+        return [
+            {
+                'lookup_key': 'C71432',
+                'lookup_url': '/cgi/cbook.cgi?ID=C71432',
+                'webbook_id': 'C71432',
+                'name_hint': '',
+                'formula_hint': 'C1',
+                'source': 'formula-search',
+                'source_query': 'C1',
+                'needs_page_enrichment': True,
+            }
+        ]
+
+    monkeypatch.setattr(
+        discovery_module,
+        'discover_formula_search',
+        fake_discover_formula_search,
+    )
+
+    original = builder_module.LocalIndexBuilder.enrich_from_seeds
+
+    def fake_enrich(self, **kwargs):
+        kwargs['request_func'] = lambda url, config=None: _FakeResponse(
+            _compound_page_html()
+        )
+        return original(self, **kwargs)
+
+    monkeypatch.setattr(
+        builder_module.LocalIndexBuilder,
+        'enrich_from_seeds',
+        fake_enrich,
+    )
+
+
+def test_build_formula_search_runs_discovery_and_enrichment(
+        monkeypatch, tmp_path):
+    _patch_formula_search_build(monkeypatch)
+
+    index = nist.WebBookIndex.build(
+        path=tmp_path / 'formula-search-cache',
+        strategy='formula-search',
+        accept_data_terms=True,
+        carbon_start=1,
+        carbon_end=1,
+        max_queries=1,
+    )
+
+    assert list(index.data['ID']) == ['C71432']
+    assert index.manifest['strategy'] == 'formula-search'
+    assert (tmp_path / 'formula-search-cache' / 'seeds.csv').exists()
+    assert (tmp_path / 'formula-search-cache' / 'index.csv').exists()
 
 
 def test_build_sitemap_runs_discovery_and_enrichment(monkeypatch, tmp_path):

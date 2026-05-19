@@ -165,7 +165,9 @@ class WebBookIndex:
             cls, path=None, strategy='formula-browser',
             accept_data_terms=False, request_delay=3.0, timeout=30.0,
             max_attempts=3, limit=None, max_pages=None, replace=True,
-            start_url=None):
+            start_url=None, max_queries=None, carbon_start=1,
+            carbon_end=None, hydrogen_max=149, heteroatom_max=50,
+            elements=None):
         '''Discover intermediate seeds for a user-local WebBook index.
 
         Discovery creates ``seeds.csv`` and does not create a final local
@@ -174,7 +176,8 @@ class WebBookIndex:
         Args:
             path: Optional destination local index directory.
             strategy: Compound-discovery strategy. This development step
-                implements ``formula-browser`` and ``sitemap``.
+                implements ``formula-browser``, ``formula-search``, and
+                ``sitemap``.
             accept_data_terms: Explicit acknowledgement that generated local
                 data are local user artifacts.
             request_delay: Delay between NIST WebBook requests in seconds.
@@ -184,15 +187,25 @@ class WebBookIndex:
             max_pages: Optional maximum number of discovery pages/documents to
                 visit.
             replace: If False, raise an error when seeds.csv exists.
-            start_url: Optional formula-browser URL to start from.
+            start_url: Optional formula-browser, robots.txt, or sitemap URL to
+                start from.
+            max_queries: Optional maximum number of formula-search queries to run.
+            carbon_start: First carbon count to scan for formula-search discovery.
+            carbon_end: Last carbon count to scan for formula-search discovery.
+            hydrogen_max: Maximum hydrogen count for formula-search refinement.
+            heteroatom_max: Maximum one-heteroelement count for formula-search
+                refinement.
+            elements: Optional formula-search element list.
 
         Returns:
             pandas.DataFrame: Written discovery seed table.
         '''
         from nistchempy.exceptions import NistChemPyIndexBuildError
         from nistchempy.index_builder import DEFAULT_DISCOVERY_STRATEGY
+        from nistchempy.index_builder import FORMULA_SEARCH_DISCOVERY_STRATEGY
         from nistchempy.index_builder import SITEMAP_DISCOVERY_STRATEGY
         from nistchempy.index_builder import discover_formula_browser
+        from nistchempy.index_builder import discover_formula_search
         from nistchempy.index_builder import discover_sitemap
         from nistchempy.index_builder import unavailable_discovery_message
 
@@ -207,6 +220,22 @@ class WebBookIndex:
                 max_pages=max_pages,
                 replace=replace,
                 start_url=start_url,
+            )
+        if strategy == FORMULA_SEARCH_DISCOVERY_STRATEGY:
+            return discover_formula_search(
+                path=path,
+                accept_data_terms=accept_data_terms,
+                request_delay=request_delay,
+                timeout=timeout,
+                max_attempts=max_attempts,
+                limit=limit,
+                max_queries=max_queries,
+                replace=replace,
+                carbon_start=carbon_start,
+                carbon_end=carbon_end,
+                hydrogen_max=hydrogen_max,
+                heteroatom_max=heteroatom_max,
+                elements=elements,
             )
         if strategy == SITEMAP_DISCOVERY_STRATEGY:
             return discover_sitemap(
@@ -268,7 +297,9 @@ class WebBookIndex:
             cls, path=None, strategy='formula-browser', source_csv=None,
             include_cas=True, accept_data_terms=False, replace=True,
             request_delay=3.0, timeout=30.0, max_attempts=3, limit=None,
-            max_pages=None, resume=True, start_url=None):
+            max_pages=None, resume=True, start_url=None, max_queries=None,
+            carbon_start=1, carbon_end=None, hydrogen_max=149,
+            heteroatom_max=50, elements=None):
         '''Build or import a user-local WebBook index.
 
         If ``source_csv`` is provided, the CSV is imported into the local cache
@@ -278,7 +309,8 @@ class WebBookIndex:
         Args:
             path: Optional destination local index directory.
             strategy: Compound-discovery strategy. The current network builder
-                implements ``formula-browser`` and ``sitemap``.
+                implements ``formula-browser``, ``formula-search``, and
+                ``sitemap``.
             source_csv: Optional existing local CSV file to import.
             include_cas: Whether the local index intentionally includes CAS RN
                 values.
@@ -292,7 +324,15 @@ class WebBookIndex:
             max_pages: Optional maximum number of discovery pages/documents to
                 visit during discovery.
             resume: If True, reuse existing partial enrichment rows.
-            start_url: Optional formula-browser URL to start from.
+            start_url: Optional formula-browser, robots.txt, or sitemap URL to
+                start from.
+            max_queries: Optional maximum number of formula-search queries to run.
+            carbon_start: First carbon count to scan for formula-search discovery.
+            carbon_end: Last carbon count to scan for formula-search discovery.
+            hydrogen_max: Maximum hydrogen count for formula-search refinement.
+            heteroatom_max: Maximum one-heteroelement count for formula-search
+                refinement.
+            elements: Optional formula-search element list.
 
         Returns:
             WebBookIndex: Loaded local index object.
@@ -313,6 +353,12 @@ class WebBookIndex:
             max_pages=max_pages,
             resume=resume,
             start_url=start_url,
+            max_queries=max_queries,
+            carbon_start=carbon_start,
+            carbon_end=carbon_end,
+            hydrogen_max=hydrogen_max,
+            heteroatom_max=heteroatom_max,
+            elements=elements,
         )
 
     @classmethod
@@ -320,7 +366,9 @@ class WebBookIndex:
             cls, path=None, strategy='formula-browser', source_csv=None,
             include_cas=True, accept_data_terms=False, request_delay=3.0,
             timeout=30.0, max_attempts=3, limit=None, max_pages=None,
-            resume=True, start_url=None):
+            resume=True, start_url=None, max_queries=None, carbon_start=1,
+            carbon_end=None, hydrogen_max=149, heteroatom_max=50,
+            elements=None):
         '''Update a user-local WebBook index.
 
         Updating reruns the same local build/import operation with replacement
@@ -330,7 +378,8 @@ class WebBookIndex:
         Args:
             path: Optional destination local index directory.
             strategy: Compound-discovery strategy. The current network builder
-                implements ``formula-browser`` and ``sitemap``.
+                implements ``formula-browser``, ``formula-search``, and
+                ``sitemap``.
             source_csv: Optional existing local CSV file to import.
             include_cas: Whether the local index intentionally includes CAS RN
                 values.
@@ -343,7 +392,15 @@ class WebBookIndex:
             max_pages: Optional maximum number of discovery pages/documents to
                 visit during discovery.
             resume: If True, reuse existing partial enrichment rows.
-            start_url: Optional formula-browser URL to start from.
+            start_url: Optional formula-browser, robots.txt, or sitemap URL to
+                start from.
+            max_queries: Optional maximum number of formula-search queries to run.
+            carbon_start: First carbon count to scan for formula-search discovery.
+            carbon_end: Last carbon count to scan for formula-search discovery.
+            hydrogen_max: Maximum hydrogen count for formula-search refinement.
+            heteroatom_max: Maximum one-heteroelement count for formula-search
+                refinement.
+            elements: Optional formula-search element list.
 
         Returns:
             WebBookIndex: Loaded local index object.
@@ -362,6 +419,12 @@ class WebBookIndex:
             max_pages=max_pages,
             resume=resume,
             start_url=start_url,
+            max_queries=max_queries,
+            carbon_start=carbon_start,
+            carbon_end=carbon_end,
+            hydrogen_max=hydrogen_max,
+            heteroatom_max=heteroatom_max,
+            elements=elements,
         )
 
     def to_dataframe(self, copy=True):

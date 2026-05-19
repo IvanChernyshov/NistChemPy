@@ -33,6 +33,7 @@ PARTIAL_INDEX_FILENAME = 'index.partial.jsonl'
 TMP_DIR_NAME = 'tmp'
 DEFAULT_SOURCE_NOTICE = 'NIST Chemistry WebBook / SRD 69'
 DEFAULT_DISCOVERY_STRATEGY = 'formula-browser'
+FORMULA_SEARCH_DISCOVERY_STRATEGY = 'formula-search'
 SITEMAP_DISCOVERY_STRATEGY = 'sitemap'
 LOCAL_CSV_STRATEGY = 'local-csv'
 VALID_DISCOVERY_STRATEGIES = (
@@ -339,6 +340,91 @@ class LocalIndexBuilder:
             status='seeds_complete',
         )
 
+    def discover_formula_search(
+            self, request_delay=3.0, timeout=30.0, max_attempts=3,
+            limit=None, max_queries=None, replace=True, carbon_start=1,
+            carbon_end=None, hydrogen_max=149, heteroatom_max=50,
+            elements=None, search_func=None):
+        '''Discover intermediate seeds from formula-search results.
+
+        This method wraps the legacy carbon-formula search prototype as a
+        bounded discovery strategy. It writes seed rows only; final metadata
+        still requires compound-page enrichment.
+
+        Args:
+            request_delay: Delay between NIST WebBook requests in seconds.
+            timeout: Request timeout in seconds.
+            max_attempts: Maximum attempts for each request.
+            limit: Optional maximum number of seeds to collect.
+            max_queries: Optional maximum number of formula-search queries to
+                run.
+            replace: If False, raise an error when seeds.csv already exists.
+            carbon_start: First carbon count to scan, inclusive.
+            carbon_end: Last carbon count to scan, inclusive. Required for
+                formula-search discovery.
+            hydrogen_max: Maximum hydrogen count used for refinement.
+            heteroatom_max: Maximum one-heteroelement count used for
+                refinement.
+            elements: Optional iterable or comma-separated string of element
+                symbols used for refinement.
+            search_func: Optional formula-search function for tests.
+
+        Returns:
+            pandas.DataFrame: Written discovery seed table.
+        '''
+        if self.strategy != FORMULA_SEARCH_DISCOVERY_STRATEGY:
+            raise NistChemPyIndexBuildError(
+                'Formula-search discovery requires strategy='
+                f'{FORMULA_SEARCH_DISCOVERY_STRATEGY!r}.'
+            )
+
+        self.prepare()
+        request_config = _RequestConfig(
+            delay=request_delay,
+            max_attempts=max_attempts,
+            kwargs={'timeout': timeout},
+        )
+        self.append_state(
+            'formula_search_discovery_started',
+            {
+                'carbon_start': carbon_start,
+                'carbon_end': carbon_end,
+                'hydrogen_max': hydrogen_max,
+                'heteroatom_max': heteroatom_max,
+                'elements': elements,
+                'limit': limit,
+                'max_queries': max_queries,
+                'request_delay': request_delay,
+                'timeout': timeout,
+                'max_attempts': max_attempts,
+            },
+        )
+        try:
+            seeds = _discovery.discover_formula_search(
+                carbon_start=carbon_start,
+                carbon_end=carbon_end,
+                hydrogen_max=hydrogen_max,
+                heteroatom_max=heteroatom_max,
+                elements=elements,
+                request_config=request_config,
+                limit=limit,
+                max_queries=max_queries,
+                search_func=search_func,
+            )
+        except ValueError as exc:
+            raise NistChemPyIndexBuildError(str(exc)) from exc
+
+        return self.write_seeds(
+            seeds,
+            replace=replace,
+            source='NIST Chemistry WebBook formula search',
+            source_path=(
+                f'C{carbon_start}..C{carbon_end}; '
+                f'H0..H{hydrogen_max}; heteroatom<={heteroatom_max}'
+            ),
+            status='seeds_complete',
+        )
+
     def discover_sitemap(
             self, request_delay=3.0, timeout=30.0, max_attempts=3,
             limit=None, max_pages=None, replace=True, start_url=None,
@@ -630,6 +716,90 @@ class LocalIndexBuilder:
         )
         return index
 
+    def build_formula_search_index(
+            self, request_delay=3.0, timeout=30.0, max_attempts=3,
+            limit=None, max_queries=None, resume=True, replace=True,
+            carbon_start=1, carbon_end=None, hydrogen_max=149,
+            heteroatom_max=50, elements=None, discovery_search_func=None,
+            enrichment_request_func=None):
+        '''Build a page-enriched local index through formula-search seeds.
+
+        Formula-search discovery is a bounded carbon-formula strategy promoted
+        from the legacy updater prototype. It discovers seed IDs first and then
+        uses the shared compound-page enrichment stage to build ``index.csv``.
+
+        Args:
+            request_delay: Delay between NIST WebBook requests in seconds.
+            timeout: Request timeout in seconds.
+            max_attempts: Maximum attempts for each request.
+            limit: Optional maximum number of seeds to discover and enrich.
+            max_queries: Optional maximum number of formula-search queries to
+                run during discovery.
+            resume: If True, reuse existing partial enrichment rows.
+            replace: If False, raise an error when output artifacts exist.
+            carbon_start: First carbon count to scan, inclusive.
+            carbon_end: Last carbon count to scan, inclusive. Required for
+                formula-search discovery.
+            hydrogen_max: Maximum hydrogen count used for refinement.
+            heteroatom_max: Maximum one-heteroelement count used for
+                refinement.
+            elements: Optional iterable or comma-separated string of element
+                symbols used for refinement.
+            discovery_search_func: Optional search function for tests.
+            enrichment_request_func: Optional enrichment request function for
+                tests.
+
+        Returns:
+            WebBookIndex: Loaded final local index object.
+        '''
+        self.prepare()
+        self.append_state(
+            'build_started',
+            {
+                'strategy': self.strategy,
+                'request_delay': request_delay,
+                'timeout': timeout,
+                'max_attempts': max_attempts,
+                'limit': limit,
+                'max_queries': max_queries,
+                'resume': bool(resume),
+                'replace': bool(replace),
+                'carbon_start': carbon_start,
+                'carbon_end': carbon_end,
+                'hydrogen_max': hydrogen_max,
+                'heteroatom_max': heteroatom_max,
+                'elements': elements,
+            },
+        )
+        self.discover_formula_search(
+            request_delay=request_delay,
+            timeout=timeout,
+            max_attempts=max_attempts,
+            limit=limit,
+            max_queries=max_queries,
+            replace=replace,
+            carbon_start=carbon_start,
+            carbon_end=carbon_end,
+            hydrogen_max=hydrogen_max,
+            heteroatom_max=heteroatom_max,
+            elements=elements,
+            search_func=discovery_search_func,
+        )
+        index = self.enrich_from_seeds(
+            request_delay=request_delay,
+            timeout=timeout,
+            max_attempts=max_attempts,
+            limit=limit,
+            resume=resume,
+            replace=replace,
+            request_func=enrichment_request_func,
+        )
+        self.append_state(
+            'build_finished',
+            {'strategy': self.strategy, 'row_count': len(index.data)},
+        )
+        return index
+
     def build_sitemap_index(
             self, request_delay=3.0, timeout=30.0, max_attempts=3,
             limit=None, max_pages=None, resume=True, replace=True,
@@ -853,6 +1023,53 @@ def discover_formula_browser(
     )
 
 
+def discover_formula_search(
+        path=None, accept_data_terms=False, request_delay=3.0, timeout=30.0,
+        max_attempts=3, limit=None, max_queries=None, replace=True,
+        carbon_start=1, carbon_end=None, hydrogen_max=149,
+        heteroatom_max=50, elements=None):
+    '''Discover formula-search seeds into a local cache directory.
+
+    Args:
+        path: Optional local index directory.
+        accept_data_terms: Explicit acknowledgement that generated local data
+            are local user artifacts.
+        request_delay: Delay between NIST WebBook requests in seconds.
+        timeout: Request timeout in seconds.
+        max_attempts: Maximum attempts for each request.
+        limit: Optional maximum number of seeds to collect.
+        max_queries: Optional maximum number of formula-search queries to run.
+        replace: If False, raise an error when seeds.csv exists.
+        carbon_start: First carbon count to scan, inclusive.
+        carbon_end: Last carbon count to scan, inclusive.
+        hydrogen_max: Maximum hydrogen count used for refinement.
+        heteroatom_max: Maximum one-heteroelement count used for refinement.
+        elements: Optional iterable or comma-separated string of element symbols.
+
+    Returns:
+        pandas.DataFrame: Written discovery seed table.
+    '''
+    builder = LocalIndexBuilder(
+        path=path,
+        strategy=FORMULA_SEARCH_DISCOVERY_STRATEGY,
+        capabilities=('compound_discovery_seeds',),
+        accept_data_terms=accept_data_terms,
+    )
+    return builder.discover_formula_search(
+        request_delay=request_delay,
+        timeout=timeout,
+        max_attempts=max_attempts,
+        limit=limit,
+        max_queries=max_queries,
+        replace=replace,
+        carbon_start=carbon_start,
+        carbon_end=carbon_end,
+        hydrogen_max=hydrogen_max,
+        heteroatom_max=heteroatom_max,
+        elements=elements,
+    )
+
+
 def discover_sitemap(
         path=None, accept_data_terms=False, request_delay=3.0, timeout=30.0,
         max_attempts=3, limit=None, max_pages=None, replace=True,
@@ -936,13 +1153,16 @@ def build_index(
         path=None, strategy=DEFAULT_DISCOVERY_STRATEGY, source_csv=None,
         include_cas=True, accept_data_terms=False, replace=True,
         request_delay=3.0, timeout=30.0, max_attempts=3, limit=None,
-        max_pages=None, resume=True, start_url=None):
+        max_pages=None, resume=True, start_url=None, max_queries=None,
+        carbon_start=1, carbon_end=None, hydrogen_max=149,
+        heteroatom_max=50, elements=None):
     '''Build or import a user-local WebBook index.
 
     Args:
         path: Optional destination local index directory.
         strategy: Compound-discovery strategy. The current network builder
-            implements only ``formula-browser``.
+            implements ``formula-browser``, ``formula-search``, and
+            ``sitemap``.
         source_csv: Optional existing local CSV file to import instead of
             running network discovery/enrichment.
         include_cas: Whether the local index intentionally includes CAS RN
@@ -956,7 +1176,15 @@ def build_index(
         limit: Optional maximum number of seeds to discover/enrich.
         max_pages: Optional maximum number of discovery pages/documents to visit.
         resume: If True, reuse existing partial enrichment rows.
-        start_url: Optional formula-browser URL to start from.
+        start_url: Optional formula-browser, robots.txt, or sitemap URL to
+            start from.
+        max_queries: Optional maximum number of formula-search queries to run.
+        carbon_start: First carbon count to scan for formula-search discovery.
+        carbon_end: Last carbon count to scan for formula-search discovery.
+        hydrogen_max: Maximum hydrogen count for formula-search refinement.
+        heteroatom_max: Maximum one-heteroelement count for formula-search
+            refinement.
+        elements: Optional formula-search element list.
 
     Returns:
         WebBookIndex: Loaded local index object.
@@ -970,7 +1198,11 @@ def build_index(
             replace=replace,
         )
 
-    if strategy not in (DEFAULT_DISCOVERY_STRATEGY, SITEMAP_DISCOVERY_STRATEGY):
+    if strategy not in (
+            DEFAULT_DISCOVERY_STRATEGY,
+            FORMULA_SEARCH_DISCOVERY_STRATEGY,
+            SITEMAP_DISCOVERY_STRATEGY,
+    ):
         raise NistChemPyIndexBuildError(unavailable_discovery_message())
 
     builder = LocalIndexBuilder(
@@ -980,19 +1212,36 @@ def build_index(
         accept_data_terms=accept_data_terms,
     )
     build_method = builder.build_formula_browser_index
-    if strategy == SITEMAP_DISCOVERY_STRATEGY:
+    build_kwargs = {
+        'request_delay': request_delay,
+        'timeout': timeout,
+        'max_attempts': max_attempts,
+        'limit': limit,
+        'max_pages': max_pages,
+        'resume': resume,
+        'replace': replace,
+        'start_url': start_url,
+    }
+    if strategy == FORMULA_SEARCH_DISCOVERY_STRATEGY:
+        build_method = builder.build_formula_search_index
+        build_kwargs = {
+            'request_delay': request_delay,
+            'timeout': timeout,
+            'max_attempts': max_attempts,
+            'limit': limit,
+            'max_queries': max_queries,
+            'resume': resume,
+            'replace': replace,
+            'carbon_start': carbon_start,
+            'carbon_end': carbon_end,
+            'hydrogen_max': hydrogen_max,
+            'heteroatom_max': heteroatom_max,
+            'elements': elements,
+        }
+    elif strategy == SITEMAP_DISCOVERY_STRATEGY:
         build_method = builder.build_sitemap_index
 
-    return build_method(
-        request_delay=request_delay,
-        timeout=timeout,
-        max_attempts=max_attempts,
-        limit=limit,
-        max_pages=max_pages,
-        resume=resume,
-        replace=replace,
-        start_url=start_url,
-    )
+    return build_method(**build_kwargs)
 
 
 def import_index_csv(
@@ -1023,18 +1272,19 @@ def import_index_csv(
 def unavailable_network_build_message() -> str:
     '''Return the current message for unavailable network index builders.'''
     return (
-        'Formula-browser and sitemap network builds are implemented in this '
-        'development step. Use --strategy formula-browser or --strategy '
-        'sitemap, or use --from-csv to import an existing local CSV index.'
+        'Formula-browser, formula-search, and sitemap network builds are '
+        'implemented in this development step. Use --strategy formula-browser, '
+        '--strategy formula-search, --strategy sitemap, or --from-csv to '
+        'import an existing local CSV index.'
     )
 
 
 def unavailable_discovery_message() -> str:
     '''Return the current message for unavailable discovery-only builders.'''
     return (
-        'Formula-browser and sitemap discovery are available through the '
-        'discover command. Formula-search and combined discovery strategies '
-        'are not implemented in this development step yet.'
+        'Formula-browser, formula-search, and sitemap discovery are available '
+        'through the discover command. Combined discovery is not implemented '
+        'in this development step yet.'
     )
 
 

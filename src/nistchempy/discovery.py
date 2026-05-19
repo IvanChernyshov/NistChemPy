@@ -12,11 +12,27 @@ import urllib.parse as _urlparse
 import bs4 as _bs4
 
 import nistchempy.requests as _requests
+import nistchempy.search as _search
 
 FORMULA_BROWSER_ROOT = f'{_requests.BASE_URL}/cgi/formula/'
 FORMULA_BROWSER_SOURCE = 'formula-browser'
+FORMULA_SEARCH_SOURCE = 'formula-search'
 ROBOTS_URL = f'{_requests.BASE_URL}/robots.txt'
 SITEMAP_SOURCE = 'sitemap'
+FORMULA_SEARCH_ELEMENTS = (
+    'He', 'Li', 'Be', 'B', 'N', 'O', 'F', 'Ne', 'Na', 'Mg',
+    'Al', 'Si', 'P', 'S', 'Cl', 'Ar', 'K', 'Ca', 'Sc', 'Ti',
+    'V', 'Cr', 'Mn', 'Fe', 'Co', 'Ni', 'Cu', 'Zn', 'Ga', 'Ge',
+    'As', 'Se', 'Br', 'Kr', 'Rb', 'Sr', 'Y', 'Zr', 'Nb', 'Mo',
+    'Tc', 'Ru', 'Rh', 'Pd', 'Ag', 'Cd', 'In', 'Sn', 'Sb', 'Te',
+    'I', 'Xe', 'Cs', 'Ba', 'La', 'Ce', 'Pr', 'Nd', 'Pm', 'Sm',
+    'Eu', 'Gd', 'Tb', 'Dy', 'Ho', 'Er', 'Tm', 'Yb', 'Lu', 'Hf',
+    'Ta', 'W', 'Re', 'Os', 'Ir', 'Pt', 'Au', 'Hg', 'Tl', 'Pb',
+    'Bi', 'Po', 'At', 'Rn', 'Fr', 'Ra', 'Ac', 'Th', 'Pa', 'U',
+    'Np', 'Pu', 'Am', 'Cm', 'Bk', 'Cf', 'Es', 'Fm', 'Md', 'No',
+    'Lr', 'Rf', 'Db', 'Sg', 'Bh', 'Hs', 'Mt', 'Ds', 'Rg', 'Cn',
+    'Nh', 'Fl', 'Mc', 'Lv', 'Ts', 'Og',
+)
 
 
 @_dataclasses.dataclass
@@ -105,6 +121,140 @@ def discover_formula_browser(
                 return list(seeds_by_key.values())
 
     return list(seeds_by_key.values())
+
+
+def discover_formula_search(
+        carbon_start=1, carbon_end=None, hydrogen_max=149,
+        heteroatom_max=50, elements=None, request_config=None, limit=None,
+        max_queries=None, search_func=None):
+    '''Discover compound seeds with bounded formula-search subdivision.
+
+    This strategy promotes the legacy carbon-formula search prototype into a
+    reusable discovery source. It searches ``C<n>`` formula spaces, refines
+    searches that hit the WebBook result cutoff by hydrogen count, then by one
+    heteroelement wildcard/count. The strategy discovers candidate WebBook IDs
+    only; final metadata and section availability still require compound-page
+    enrichment.
+
+    Args:
+        carbon_start: First carbon count to scan, inclusive.
+        carbon_end: Last carbon count to scan, inclusive. This argument is
+            required so bounded formula-search runs are explicit.
+        hydrogen_max: Maximum hydrogen count used when refining lost searches.
+        heteroatom_max: Maximum count for one heteroelement refinement.
+        elements: Optional iterable or comma-separated string of element
+            symbols used for heteroelement refinement. If omitted, use the
+            same non-H/non-C element list as the legacy updater prototype.
+        request_config: Optional NistChemPy request configuration.
+        limit: Optional maximum number of unique seed rows to collect.
+        max_queries: Optional maximum number of formula-search queries to run.
+        search_func: Optional search function for testing. It must accept
+            ``formula``, ``params``, and ``config`` arguments and return an
+            object with ``success``, ``compound_ids``, and ``lost`` attributes.
+
+    Returns:
+        list[dict]: Discovery seed dictionaries.
+
+    Raises:
+        ValueError: If the formula-search bounds are invalid.
+    '''
+    _validate_formula_search_bounds(
+        carbon_start=carbon_start,
+        carbon_end=carbon_end,
+        hydrogen_max=hydrogen_max,
+        heteroatom_max=heteroatom_max,
+        max_queries=max_queries,
+    )
+    elements = _normalise_elements(elements)
+    search_func = search_func or _run_webbook_formula_search
+    params = _search.NistSearchParameters(allow_other=True, no_ion=True)
+    seeds_by_key = {}
+    query_count = 0
+
+    def search_formula(formula):
+        nonlocal query_count
+        if max_queries is not None and query_count >= max_queries:
+            return False, True
+        query_count += 1
+        result = search_func(formula, params=params, config=request_config)
+        if not getattr(result, 'success', False):
+            return False, False
+        for compound_id in getattr(result, 'compound_ids', []) or []:
+            seed = seed_from_formula_search_id(compound_id, formula)
+            key = seed['lookup_key']
+            if key not in seeds_by_key:
+                seeds_by_key[key] = seed
+            if limit is not None and len(seeds_by_key) >= limit:
+                return bool(getattr(result, 'lost', False)), True
+        return bool(getattr(result, 'lost', False)), False
+
+    def should_stop():
+        if limit is not None and len(seeds_by_key) >= limit:
+            return True
+        if max_queries is not None and query_count >= max_queries:
+            return True
+        return False
+
+    for carbon_count in range(carbon_start, carbon_end + 1):
+        lost, stop = search_formula(f'C{carbon_count}')
+        if stop or should_stop():
+            break
+        if not lost:
+            continue
+
+        for hydrogen_count in range(hydrogen_max + 1):
+            formula = f'C{carbon_count}H{hydrogen_count}'
+            lost, stop = search_formula(formula)
+            if stop or should_stop():
+                break
+            if not lost:
+                continue
+
+            for element in elements:
+                formula = f'C{carbon_count}H{hydrogen_count}{element}?'
+                lost, stop = search_formula(formula)
+                if stop or should_stop():
+                    break
+                if not lost:
+                    continue
+
+                for element_count in range(1, heteroatom_max + 1):
+                    formula = (
+                        f'C{carbon_count}H{hydrogen_count}'
+                        f'{element}{element_count}'
+                    )
+                    _, stop = search_formula(formula)
+                    if stop or should_stop():
+                        break
+                if should_stop():
+                    break
+            if should_stop():
+                break
+
+    return list(seeds_by_key.values())
+
+
+def seed_from_formula_search_id(compound_id: str, source_query=''):
+    '''Create a discovery seed from a formula-search WebBook ID.
+
+    Args:
+        compound_id: NIST Chemistry WebBook compound ID.
+        source_query: Formula query that found the compound ID.
+
+    Returns:
+        dict: Discovery seed dictionary.
+    '''
+    compound_id = _normalise_text(compound_id)
+    return {
+        'lookup_key': compound_id,
+        'lookup_url': f'{_requests.SEARCH_URL}?ID={compound_id}',
+        'webbook_id': compound_id,
+        'name_hint': '',
+        'formula_hint': source_query,
+        'source': FORMULA_SEARCH_SOURCE,
+        'source_query': source_query,
+        'needs_page_enrichment': True,
+    }
 
 
 def discover_sitemap(
@@ -318,6 +468,52 @@ def seed_from_sitemap_url(url: str, source_query=''):
         'source_query': source_query,
         'needs_page_enrichment': True,
     }
+
+
+def _run_webbook_formula_search(formula, params, config):
+    return _search.run_search(
+        formula,
+        'formula',
+        search_parameters=params,
+        request_config=config,
+    )
+
+
+def _normalise_elements(elements):
+    if elements is None:
+        return list(FORMULA_SEARCH_ELEMENTS)
+    if isinstance(elements, str):
+        elements = [item.strip() for item in elements.split(',')]
+    result = []
+    for element in elements:
+        element = _normalise_text(element)
+        if element:
+            result.append(element)
+    return result
+
+
+def _validate_formula_search_bounds(
+        carbon_start, carbon_end, hydrogen_max, heteroatom_max, max_queries):
+    if carbon_end is None:
+        raise ValueError(
+            'Formula-search discovery requires an explicit carbon_end value.'
+        )
+    checks = {
+        'carbon_start': carbon_start,
+        'carbon_end': carbon_end,
+        'hydrogen_max': hydrogen_max,
+        'heteroatom_max': heteroatom_max,
+    }
+    for name, value in checks.items():
+        if value is None or int(value) != value or int(value) < 0:
+            raise ValueError(f'{name} must be a non-negative integer.')
+    if int(carbon_start) < 1:
+        raise ValueError('carbon_start must be at least 1.')
+    if int(carbon_end) < int(carbon_start):
+        raise ValueError('carbon_end must be greater than or equal to carbon_start.')
+    if max_queries is not None:
+        if int(max_queries) != max_queries or int(max_queries) < 1:
+            raise ValueError('max_queries must be a positive integer.')
 
 
 def _classify_formula_browser_url(url):

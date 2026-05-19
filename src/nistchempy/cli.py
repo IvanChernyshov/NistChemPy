@@ -128,6 +128,12 @@ def _cmd_index_build(args) -> int:
             max_pages=args.max_pages,
             resume=not args.no_resume,
             start_url=args.start_url,
+            max_queries=args.max_queries,
+            carbon_start=args.formula_carbon_start,
+            carbon_end=args.formula_carbon_end,
+            hydrogen_max=args.formula_hydrogen_max,
+            heteroatom_max=args.formula_heteroatom_max,
+            elements=args.formula_elements,
         )
     except (NistChemPyDataTermsError, NistChemPyIndexBuildError) as exc:
         print(str(exc), file=_sys.stderr)
@@ -153,6 +159,12 @@ def _cmd_index_update(args) -> int:
             max_pages=args.max_pages,
             resume=not args.no_resume,
             start_url=args.start_url,
+            max_queries=args.max_queries,
+            carbon_start=args.formula_carbon_start,
+            carbon_end=args.formula_carbon_end,
+            hydrogen_max=args.formula_hydrogen_max,
+            heteroatom_max=args.formula_heteroatom_max,
+            elements=args.formula_elements,
         )
     except (NistChemPyDataTermsError, NistChemPyIndexBuildError) as exc:
         print(str(exc), file=_sys.stderr)
@@ -176,6 +188,12 @@ def _cmd_index_discover(args) -> int:
             max_pages=args.max_pages,
             replace=not args.no_replace,
             start_url=args.start_url,
+            max_queries=args.max_queries,
+            carbon_start=args.formula_carbon_start,
+            carbon_end=args.formula_carbon_end,
+            hydrogen_max=args.formula_hydrogen_max,
+            heteroatom_max=args.formula_heteroatom_max,
+            elements=args.formula_elements,
         )
     except (NistChemPyDataTermsError, NistChemPyIndexBuildError) as exc:
         print(str(exc), file=_sys.stderr)
@@ -214,6 +232,50 @@ def _add_strategy_argument(parser):
         choices=VALID_DISCOVERY_STRATEGIES,
         default='formula-browser',
         help='Compound-ID discovery strategy for network builds.',
+    )
+
+
+def _add_formula_search_arguments(parser):
+    parser.add_argument(
+        '--formula-carbon-start',
+        type=int,
+        default=1,
+        help='First carbon count for formula-search discovery.',
+    )
+    parser.add_argument(
+        '--formula-carbon-end',
+        type=int,
+        default=None,
+        help=(
+            'Last carbon count for formula-search discovery. Required when '
+            'using --strategy formula-search.'
+        ),
+    )
+    parser.add_argument(
+        '--formula-hydrogen-max',
+        type=int,
+        default=149,
+        help='Maximum hydrogen count for formula-search refinement.',
+    )
+    parser.add_argument(
+        '--formula-heteroatom-max',
+        type=int,
+        default=50,
+        help='Maximum one-heteroelement count for formula-search refinement.',
+    )
+    parser.add_argument(
+        '--formula-elements',
+        default=None,
+        help=(
+            'Comma-separated element symbols for formula-search refinement. '
+            'If omitted, use the legacy non-C/non-H element list.'
+        ),
+    )
+    parser.add_argument(
+        '--max-queries',
+        type=int,
+        default=None,
+        help='Maximum number of formula-search queries to run.',
     )
 
 
@@ -277,6 +339,7 @@ def _add_build_arguments(parser):
         default=None,
         help='Optional formula-browser, robots.txt, or sitemap URL to start from.',
     )
+    _add_formula_search_arguments(parser)
     parser.add_argument(
         '--no-resume',
         action='store_true',
@@ -380,6 +443,7 @@ def _build_parser():
         default=None,
         help='Optional formula-browser, robots.txt, or sitemap URL to start from.',
     )
+    _add_formula_search_arguments(discover_parser)
     discover_parser.add_argument(
         '--no-replace',
         action='store_true',
