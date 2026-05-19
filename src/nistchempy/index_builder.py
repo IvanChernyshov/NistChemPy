@@ -306,6 +306,7 @@ class LocalIndexBuilder:
                 f'{DEFAULT_DISCOVERY_STRATEGY!r}.'
             )
 
+        self.prepare()
         request_config = _RequestConfig(
             delay=request_delay,
             max_attempts=max_attempts,
@@ -495,6 +496,78 @@ class LocalIndexBuilder:
                 'row_count': len(final_dataframe),
                 'seed_count': len(seeds),
             },
+        )
+        return index
+
+    def build_formula_browser_index(
+            self, request_delay=3.0, timeout=30.0, max_attempts=3,
+            limit=None, max_pages=None, resume=True, replace=True,
+            start_url=None, discovery_request_func=None,
+            enrichment_request_func=None):
+        '''Build a page-enriched local index through formula-browser seeds.
+
+        This orchestration method runs the currently implemented full network
+        pipeline: formula-browser discovery followed by compound-page
+        enrichment. It keeps ``discover`` and ``enrich`` available as separate
+        lower-level recovery/debugging steps, but gives normal users one build
+        command.
+
+        Args:
+            request_delay: Delay between NIST WebBook requests in seconds.
+            timeout: Request timeout in seconds.
+            max_attempts: Maximum attempts for each request.
+            limit: Optional maximum number of seeds to discover and enrich.
+            max_pages: Optional maximum number of formula-browser pages to
+                visit during discovery.
+            resume: If True, reuse existing partial enrichment rows.
+            replace: If False, raise an error when index.csv or seeds.csv
+                already exists.
+            start_url: Optional formula-browser URL to start from.
+            discovery_request_func: Optional discovery request function for
+                tests.
+            enrichment_request_func: Optional enrichment request function for
+                tests.
+
+        Returns:
+            WebBookIndex: Loaded final local index object.
+        '''
+        self.prepare()
+        self.append_state(
+            'build_started',
+            {
+                'strategy': self.strategy,
+                'request_delay': request_delay,
+                'timeout': timeout,
+                'max_attempts': max_attempts,
+                'limit': limit,
+                'max_pages': max_pages,
+                'resume': bool(resume),
+                'replace': bool(replace),
+                'start_url': start_url,
+            },
+        )
+        self.discover_formula_browser(
+            request_delay=request_delay,
+            timeout=timeout,
+            max_attempts=max_attempts,
+            limit=limit,
+            max_pages=max_pages,
+            replace=replace,
+            start_url=start_url,
+            request_func=discovery_request_func,
+        )
+        index = self.enrich_from_seeds(
+            request_delay=request_delay,
+            timeout=timeout,
+            max_attempts=max_attempts,
+            limit=limit,
+            resume=resume,
+            replace=replace,
+            request_func=enrichment_request_func,
+        )
+        self.append_state(
+            'build_finished',
+            {'strategy': self.strategy, 'row_count': len(index.data)},
         )
         return index
 
@@ -690,6 +763,65 @@ def enrich_index_from_seeds(
     )
 
 
+def build_index(
+        path=None, strategy=DEFAULT_DISCOVERY_STRATEGY, source_csv=None,
+        include_cas=True, accept_data_terms=False, replace=True,
+        request_delay=3.0, timeout=30.0, max_attempts=3, limit=None,
+        max_pages=None, resume=True, start_url=None):
+    '''Build or import a user-local WebBook index.
+
+    Args:
+        path: Optional destination local index directory.
+        strategy: Compound-discovery strategy. The current network builder
+            implements only ``formula-browser``.
+        source_csv: Optional existing local CSV file to import instead of
+            running network discovery/enrichment.
+        include_cas: Whether the local index intentionally includes CAS RN
+            values.
+        accept_data_terms: Explicit acknowledgement that generated/imported
+            local data are local user artifacts.
+        replace: If False, raise an error when destination artifacts exist.
+        request_delay: Delay between NIST WebBook requests in seconds.
+        timeout: Request timeout in seconds.
+        max_attempts: Maximum attempts for each request.
+        limit: Optional maximum number of seeds to discover/enrich.
+        max_pages: Optional maximum number of formula-browser pages to visit.
+        resume: If True, reuse existing partial enrichment rows.
+        start_url: Optional formula-browser URL to start from.
+
+    Returns:
+        WebBookIndex: Loaded local index object.
+    '''
+    if source_csv is not None:
+        return import_index_csv(
+            source_csv,
+            path=path,
+            include_cas=include_cas,
+            accept_data_terms=accept_data_terms,
+            replace=replace,
+        )
+
+    if strategy != DEFAULT_DISCOVERY_STRATEGY:
+        raise NistChemPyIndexBuildError(unavailable_discovery_message())
+
+    builder = LocalIndexBuilder(
+        path=path,
+        strategy=strategy,
+        include_cas=include_cas,
+        accept_data_terms=accept_data_terms,
+    )
+    return builder.build_formula_browser_index(
+        request_delay=request_delay,
+        timeout=timeout,
+        max_attempts=max_attempts,
+        limit=limit,
+        max_pages=max_pages,
+        resume=resume,
+        replace=replace,
+        start_url=start_url,
+    )
+
+
 def import_index_csv(
         csv_path, path=None, include_cas=True, accept_data_terms=False,
         replace=True):
@@ -718,10 +850,9 @@ def import_index_csv(
 def unavailable_network_build_message() -> str:
     '''Return the current message for unavailable network index builders.'''
     return (
-        'Network-based local index discovery and enrichment are not '
-        'implemented in this development step yet. Use --from-csv to import '
-        'an existing local CSV index, or wait for the WebBook discovery and '
-        'page-enrichment builder patches.'
+        'Only formula-browser network builds are implemented in this '
+        'development step. Use --strategy formula-browser, or use --from-csv '
+        'to import an existing local CSV index.'
     )
 
 

@@ -15,7 +15,6 @@ from nistchempy.index import WebBookIndex
 from nistchempy.index_builder import PARTIAL_INDEX_FILENAME
 from nistchempy.index_builder import SEEDS_FILENAME
 from nistchempy.index_builder import VALID_DISCOVERY_STRATEGIES
-from nistchempy.index_builder import unavailable_network_build_message
 
 
 _NOTICE = '''NistChemPy does not ship a prebuilt NIST Chemistry WebBook index.
@@ -114,10 +113,6 @@ def _cmd_index_search(args) -> int:
 
 
 def _cmd_index_build(args) -> int:
-    if args.from_csv is None:
-        print(unavailable_network_build_message(), file=_sys.stderr)
-        return 2
-
     try:
         index = WebBookIndex.build(
             path=args.path,
@@ -126,6 +121,13 @@ def _cmd_index_build(args) -> int:
             include_cas=not args.exclude_cas,
             accept_data_terms=args.accept_data_terms,
             replace=not args.no_replace,
+            request_delay=args.request_delay,
+            timeout=args.timeout,
+            max_attempts=args.max_attempts,
+            limit=args.limit,
+            max_pages=args.max_pages,
+            resume=not args.no_resume,
+            start_url=args.start_url,
         )
     except (NistChemPyDataTermsError, NistChemPyIndexBuildError) as exc:
         print(str(exc), file=_sys.stderr)
@@ -137,10 +139,6 @@ def _cmd_index_build(args) -> int:
 
 
 def _cmd_index_update(args) -> int:
-    if args.from_csv is None:
-        print(unavailable_network_build_message(), file=_sys.stderr)
-        return 2
-
     try:
         index = WebBookIndex.update(
             path=args.path,
@@ -148,6 +146,13 @@ def _cmd_index_update(args) -> int:
             source_csv=args.from_csv,
             include_cas=not args.exclude_cas,
             accept_data_terms=args.accept_data_terms,
+            request_delay=args.request_delay,
+            timeout=args.timeout,
+            max_attempts=args.max_attempts,
+            limit=args.limit,
+            max_pages=args.max_pages,
+            resume=not args.no_resume,
+            start_url=args.start_url,
         )
     except (NistChemPyDataTermsError, NistChemPyIndexBuildError) as exc:
         print(str(exc), file=_sys.stderr)
@@ -208,7 +213,7 @@ def _add_strategy_argument(parser):
         '--strategy',
         choices=VALID_DISCOVERY_STRATEGIES,
         default='formula-browser',
-        help='Compound-ID discovery strategy for future network builds.',
+        help='Compound-ID discovery strategy for network builds.',
     )
 
 
@@ -219,8 +224,8 @@ def _add_build_arguments(parser):
         '--from-csv',
         default=None,
         help=(
-            'Import an existing local CSV file into the cache layout. '
-            'Network-based building is not implemented yet.'
+            'Import an existing local CSV file into the cache layout instead '
+            'of running network discovery and enrichment.'
         ),
     )
     parser.add_argument(
@@ -236,6 +241,46 @@ def _add_build_arguments(parser):
             'are local user artifacts and are not redistributed or licensed '
             'by NistChemPy.'
         ),
+    )
+    parser.add_argument(
+        '--request-delay',
+        type=float,
+        default=3.0,
+        help='Delay between NIST WebBook requests in seconds.',
+    )
+    parser.add_argument(
+        '--timeout',
+        type=float,
+        default=30.0,
+        help='Request timeout in seconds.',
+    )
+    parser.add_argument(
+        '--max-attempts',
+        type=int,
+        default=3,
+        help='Maximum request attempts per WebBook page.',
+    )
+    parser.add_argument(
+        '--limit',
+        type=int,
+        default=None,
+        help='Maximum number of formula-browser seeds to discover/enrich.',
+    )
+    parser.add_argument(
+        '--max-pages',
+        type=int,
+        default=None,
+        help='Maximum number of formula-browser pages to visit.',
+    )
+    parser.add_argument(
+        '--start-url',
+        default=None,
+        help='Optional formula-browser URL to start from.',
+    )
+    parser.add_argument(
+        '--no-resume',
+        action='store_true',
+        help='Do not reuse existing partial enrichment rows.',
     )
 
 

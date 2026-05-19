@@ -185,17 +185,19 @@ def test_cli_build_from_csv(capsys, tmp_path):
     assert list(index.search('benz', fields='name')['ID']) == ['C71432']
 
 
-def test_cli_build_without_source_is_unavailable(capsys, tmp_path):
+def test_cli_build_unsupported_strategy_is_unavailable(capsys, tmp_path):
     status = cli_main([
         'index',
         'build',
         '--path',
         str(tmp_path / 'cache'),
+        '--strategy',
+        'sitemap',
         '--accept-data-terms',
     ])
 
-    assert status == 2
-    assert 'Network-based local index discovery and enrichment are not implemented' in (
+    assert status == 1
+    assert 'Formula-search and sitemap discovery strategies are not implemented' in (
         capsys.readouterr().err
     )
 
@@ -527,6 +529,89 @@ def test_cli_enrich_from_seeds(capsys, monkeypatch, tmp_path):
         'enrich',
         '--path',
         str(tmp_path / 'cache'),
+        '--accept-data-terms',
+    ])
+
+    assert status == 0
+    assert 'Rows: 1' in capsys.readouterr().out
+    index = nist.get_local_index(tmp_path / 'cache')
+    assert index.get('C71432')['cas_rn'] == '71-43-2'
+
+
+def _patch_formula_browser_build(monkeypatch):
+    from nistchempy import discovery as discovery_module
+    import nistchempy.index_builder as builder_module
+
+    def fake_discover_formula_browser(**kwargs):
+        _ = kwargs
+        return [
+            {
+                'lookup_key': 'C71432',
+                'lookup_url': '/cgi/cbook.cgi?ID=C71432',
+                'webbook_id': 'C71432',
+                'name_hint': 'benzene',
+                'formula_hint': 'C 6 H 6',
+                'source': 'formula-browser',
+                'source_query': 'C',
+                'needs_page_enrichment': True,
+            }
+        ]
+
+    monkeypatch.setattr(
+        discovery_module,
+        'discover_formula_browser',
+        fake_discover_formula_browser,
+    )
+
+    original = builder_module.LocalIndexBuilder.enrich_from_seeds
+
+    def fake_enrich(self, **kwargs):
+        kwargs['request_func'] = lambda url, config=None: _FakeResponse(
+            _compound_page_html()
+        )
+        return original(self, **kwargs)
+
+    monkeypatch.setattr(
+        builder_module.LocalIndexBuilder,
+        'enrich_from_seeds',
+        fake_enrich,
+    )
+
+
+def test_build_formula_browser_runs_discovery_and_enrichment(
+        monkeypatch, tmp_path):
+    _patch_formula_browser_build(monkeypatch)
+
+    index = nist.WebBookIndex.build(
+        path=tmp_path / 'cache',
+        strategy='formula-browser',
+        accept_data_terms=True,
+        limit=1,
+        max_pages=1,
+    )
+
+    assert list(index.data['ID']) == ['C71432']
+    assert index.manifest['strategy'] == 'formula-browser'
+    assert index.manifest['artifact'] == 'index'
+    assert (tmp_path / 'cache' / 'seeds.csv').exists()
+    assert (tmp_path / 'cache' / 'index.csv').exists()
+
+
+def test_cli_build_formula_browser_runs_full_pipeline(
+        capsys, monkeypatch, tmp_path):
+    _patch_formula_browser_build(monkeypatch)
+
+    status = cli_main([
+        'index',
+        'build',
+        '--path',
+        str(tmp_path / 'cache'),
+        '--strategy',
+        'formula-browser',
+        '--limit',
+        '1',
+        '--max-pages',
+        '1',
         '--accept-data-terms',
     ])
 

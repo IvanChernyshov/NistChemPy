@@ -253,68 +253,84 @@ class WebBookIndex:
     @classmethod
     def build(
             cls, path=None, strategy='formula-browser', source_csv=None,
-            include_cas=True, accept_data_terms=False, replace=True):
+            include_cas=True, accept_data_terms=False, replace=True,
+            request_delay=3.0, timeout=30.0, max_attempts=3, limit=None,
+            max_pages=None, resume=True, start_url=None):
         '''Build or import a user-local WebBook index.
 
-        This development-step implementation supports importing an existing
-        local CSV into the cache layout. Network-based WebBook discovery and
-        page enrichment are implemented in later builder patches.
+        If ``source_csv`` is provided, the CSV is imported into the local cache
+        layout. Otherwise, the current network builder runs formula-browser
+        discovery followed by compound-page enrichment.
 
         Args:
             path: Optional destination local index directory.
-            strategy: Compound-discovery strategy for network builds. The
-                current implementation records this API but only supports
-                ``source_csv`` imports.
+            strategy: Compound-discovery strategy. The current network builder
+                implements only ``formula-browser``.
             source_csv: Optional existing local CSV file to import.
             include_cas: Whether the local index intentionally includes CAS RN
                 values.
             accept_data_terms: Explicit acknowledgement that generated/imported
                 local data are local user artifacts.
-            replace: If False, raise an error when destination index.csv
-                exists.
+            replace: If False, raise an error when destination artifacts exist.
+            request_delay: Delay between NIST WebBook requests in seconds.
+            timeout: Request timeout in seconds.
+            max_attempts: Maximum request attempts per WebBook page.
+            limit: Optional maximum number of seeds to discover/enrich.
+            max_pages: Optional maximum number of formula-browser pages to
+                visit during discovery.
+            resume: If True, reuse existing partial enrichment rows.
+            start_url: Optional formula-browser URL to start from.
 
         Returns:
             WebBookIndex: Loaded local index object.
-
-        Raises:
-            NistChemPyIndexBuildError: If no supported build source is
-                provided.
         '''
-        from nistchempy.exceptions import NistChemPyIndexBuildError
-        from nistchempy.index_builder import import_index_csv
-        from nistchempy.index_builder import unavailable_network_build_message
+        from nistchempy.index_builder import build_index
 
-        if source_csv is None:
-            _ = strategy
-            message = unavailable_network_build_message()
-            raise NistChemPyIndexBuildError(message)
-
-        return import_index_csv(
-            source_csv,
+        return build_index(
             path=path,
+            strategy=strategy,
+            source_csv=source_csv,
             include_cas=include_cas,
             accept_data_terms=accept_data_terms,
             replace=replace,
+            request_delay=request_delay,
+            timeout=timeout,
+            max_attempts=max_attempts,
+            limit=limit,
+            max_pages=max_pages,
+            resume=resume,
+            start_url=start_url,
         )
 
     @classmethod
     def update(
             cls, path=None, strategy='formula-browser', source_csv=None,
-            include_cas=True, accept_data_terms=False):
+            include_cas=True, accept_data_terms=False, request_delay=3.0,
+            timeout=30.0, max_attempts=3, limit=None, max_pages=None,
+            resume=True, start_url=None):
         '''Update a user-local WebBook index.
 
-        This development-step implementation updates the local cache by
-        replacing it with an explicitly provided local CSV. Network update
-        logic is implemented in a later builder patch.
+        Updating reruns the same local build/import operation with replacement
+        enabled. For network builds, this currently means formula-browser
+        discovery followed by compound-page enrichment.
 
         Args:
             path: Optional destination local index directory.
-            strategy: Compound-discovery strategy for future network builds.
+            strategy: Compound-discovery strategy. The current network builder
+                implements only ``formula-browser``.
             source_csv: Optional existing local CSV file to import.
             include_cas: Whether the local index intentionally includes CAS RN
                 values.
             accept_data_terms: Explicit acknowledgement that generated/imported
                 local data are local user artifacts.
+            request_delay: Delay between NIST WebBook requests in seconds.
+            timeout: Request timeout in seconds.
+            max_attempts: Maximum request attempts per WebBook page.
+            limit: Optional maximum number of seeds to discover/enrich.
+            max_pages: Optional maximum number of formula-browser pages to
+                visit during discovery.
+            resume: If True, reuse existing partial enrichment rows.
+            start_url: Optional formula-browser URL to start from.
 
         Returns:
             WebBookIndex: Loaded local index object.
@@ -326,6 +342,13 @@ class WebBookIndex:
             include_cas=include_cas,
             accept_data_terms=accept_data_terms,
             replace=True,
+            request_delay=request_delay,
+            timeout=timeout,
+            max_attempts=max_attempts,
+            limit=limit,
+            max_pages=max_pages,
+            resume=resume,
+            start_url=start_url,
         )
 
     def to_dataframe(self, copy=True):
