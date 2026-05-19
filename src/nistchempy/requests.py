@@ -100,7 +100,7 @@ class NistResponse():
     def __post_init__(self):
         self.ok = self.response.ok
         self.text = self.response.text
-        self.content_type = self.response.headers.get('content-type', None)
+        self.content_type = self.response.headers.get('content-type', '')
         if 'html' in self.content_type.lower():
             self.text = fix_html(self.text)
             self.soup = _bs4.BeautifulSoup(self.text, features = 'html.parser')
@@ -113,7 +113,7 @@ class NistResponse():
 
 
 
-def make_nist_request(url: str, params: dict = {},
+def make_nist_request(url: str, params: _tp.Optional[dict] = None,
                       config: _tp.Optional[RequestConfig] = None) -> NistResponse:
     '''Dummy GET request to the NIST Chemistry WebBook
     
@@ -128,6 +128,7 @@ def make_nist_request(url: str, params: dict = {},
     '''
     # get config
     config = config or RequestConfig()
+    params = dict(params or {})
     # get response
     n_err = 0
     while True:
@@ -151,7 +152,9 @@ def make_nist_request(url: str, params: dict = {},
 
 
 
-def make_nist_post_request(url: str, data: dict = {}, json: dict = {}, files: dict = {},
+def make_nist_post_request(url: str, data: _tp.Optional[dict] = None,
+                           json: _tp.Optional[dict] = None,
+                           files: _tp.Optional[dict] = None,
                            config: _tp.Optional[RequestConfig] = None) -> NistResponse:
     '''Dummy GET request to the NIST Chemistry WebBook
     
@@ -168,6 +171,9 @@ def make_nist_post_request(url: str, data: dict = {}, json: dict = {}, files: di
     '''
     # get config
     config = config or RequestConfig()
+    data = dict(data or {})
+    json = dict(json or {})
+    files = dict(files or {})
     # get response
     n_err = 0
     while True:

@@ -4,6 +4,9 @@ import pytest
 import nistchempy as nist
 
 
+pytestmark = pytest.mark.network
+
+
 class TestConfig:
     
     def test_incorrect_delay(self):

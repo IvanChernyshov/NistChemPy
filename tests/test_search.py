@@ -3,8 +3,13 @@
 import os, tempfile
 
 import pytest
-from rdkit import Chem
+
+Chem = pytest.importorskip('rdkit.Chem')
+
 import nistchempy as nist
+
+
+pytestmark = pytest.mark.network
 
 
 class TestSearch:

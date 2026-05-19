@@ -1,6 +1,11 @@
 '''Unit tests for nistchempy.compound'''
 
+import pytest
+
 import nistchempy as nist
+
+
+pytestmark = pytest.mark.network
 
 
 class TestCompoundInitialization:
@@ -29,23 +34,24 @@ class TestCompoundInitialization:
 
 class TestPropertyExtraction:
     
-    X = nist.get_compound('C71432')
-    
     def test_mol2D(self):
-        assert self.X.mol2D is None
-        self.X.get_mol2D()
-        assert self.X.mol2D is not None
+        compound = nist.get_compound('C71432')
+        assert compound.mol2D is None
+        compound.get_mol2D()
+        assert compound.mol2D is not None
     
     def test_ms_spec(self):
-        assert not self.X.ms_specs
-        self.X.get_ms_spectra()
-        assert self.X.ms_specs
-        assert self.X.ms_specs[0].jdx_text is not None
+        compound = nist.get_compound('C71432')
+        assert not compound.ms_specs
+        compound.get_ms_spectra()
+        assert compound.ms_specs
+        assert compound.ms_specs[0].jdx_text is not None
     
     def test_gas_chromat(self):
-        assert not self.X.gas_chromat
-        self.X.get_gas_chromatography()
-        assert self.X.gas_chromat
-        assert len(self.X.gas_chromat[0].data) > 0
+        compound = nist.get_compound('C71432')
+        assert not compound.gas_chromat
+        compound.get_gas_chromatography()
+        assert compound.gas_chromat
+        assert len(compound.gas_chromat[0].data) > 0
 
 

@@ -26,7 +26,7 @@ def get_found_compounds(soup: _bs4.BeautifulSoup) -> dict:
     
     '''
     try:
-        refs = soup.find('ol').findChildren('a', href = _re.compile('/cgi/cbook.cgi'))
+        refs = soup.find('ol').find_all('a', href = _re.compile('/cgi/cbook.cgi'))
         IDs = [_uparse.parse_qs(_uparse.urlparse(a.attrs['href']).query)['ID'][0] \
                                                                  for a in refs]
         lost = 'due to the large number of matching species' in soup.text.lower()
@@ -50,12 +50,12 @@ def is_compound_page(soup: _bs4.BeautifulSoup) -> bool:
         bool: True for a single compound page
     
     '''
-    header = soup.findAll('h1', {'id': 'Top'})
+    header = soup.find_all('h1', {'id': 'Top'})
     if not header:
         return False
     # get info
     header = header[0]
-    info = header.findNext('ul')
+    info = header.find_next('ul')
     if not info:
         return False
     
@@ -75,7 +75,7 @@ def get_compound_id_from_comment(soup: _bs4.BeautifulSoup) -> _tp.Optional[str]:
         _tp.Optional[str]: NIST compound ID, None if not detected
     
     '''
-    for comment in soup.findAll(string = lambda text: isinstance(text, _bs4.Comment)):
+    for comment in soup.find_all(string = lambda text: isinstance(text, _bs4.Comment)):
         comment = str(comment).replace('\r\n', '').replace('\n', '')
         match = _re.search(r'/cgi/.*\?Form=(.*?)&', comment)
         if not match:
@@ -96,15 +96,15 @@ def get_compound_id_from_units_switch(soup: _bs4.BeautifulSoup) -> _tp.Optional[
     
     '''
     # get info block
-    header = soup.findAll('h1', {'id': 'Top'})[0]
-    info = header.findNext('ul')
+    header = soup.find_all('h1', {'id': 'Top'})[0]
+    info = header.find_next('ul')
     # get switch link
-    refs = info.findChildren(name = 'a', string = _re.compile('witch to'))
+    refs = info.find_all(name = 'a', string = _re.compile('witch to'))
     if not refs:
         return None
     # extract ID
     for ref in refs:
-        match = _re.search('/cgi/.*\?ID=(.*)&', str(ref))
+        match = _re.search(r'/cgi/.*\?ID=(.*)&', str(ref))
         if match:
             return match.group(1)
     
@@ -122,18 +122,18 @@ def get_compound_id_from_data_refs(soup: _bs4.BeautifulSoup) -> _tp.Optional[str
     
     '''
     # get info block
-    header = soup.findAll('h1', {'id': 'Top'})[0]
-    info = header.findNext('ul')
-    others = info.findNext(string = _re.compile('Other data available'))
+    header = soup.find_all('h1', {'id': 'Top'})[0]
+    info = header.find_next('ul')
+    others = info.find_next(string = _re.compile('Other data available'))
     if not others:
         return None
-    others = others.findNext('ul')
+    others = others.find_next('ul')
     if not others:
         return None
     # extract ID
-    refs = others.findChildren(name = 'a', attrs = {'href': _re.compile('/cgi/.*\?ID=')})
+    refs = others.find_all(name = 'a', attrs = {'href': _re.compile(r'/cgi/.*\?ID=')})
     for ref in refs:
-        match = _re.search('/cgi/.*\?ID=(.*)&', str(ref))
+        match = _re.search(r'/cgi/.*\?ID=(.*)&', str(ref))
         if match:
             return match.group(1)
     
@@ -171,7 +171,7 @@ def get_compound_name(soup: _bs4.BeautifulSoup) -> str:
         str: chemical name of a NIST compound
     
     '''
-    header = soup.findAll('h1', {'id': 'Top'})[0]
+    header = soup.find_all('h1', {'id': 'Top'})[0]
     name = header.text.strip()
     
     return name
@@ -188,13 +188,13 @@ def get_compound_synonyms(soup: _bs4.BeautifulSoup) -> _tp.List[str]:
     
     '''
     # prepare
-    header = soup.findAll('h1', {'id': 'Top'})[0]
-    info = header.findNext('ul')
+    header = soup.find_all('h1', {'id': 'Top'})[0]
+    info = header.find_next('ul')
     synonyms = []
     # find synonyms
-    hits = info.findChildren(string = _re.compile('Other names'))
+    hits = info.find_all(string = _re.compile('Other names'))
     if hits:
-        text = hits[0].findParent('li').text.replace('Other names:', '').strip()
+        text = hits[0].find_parent('li').text.replace('Other names:', '').strip()
         synonyms = [_.strip(';').strip() for _ in text.split('\n')]
         synonyms = [_ for _ in synonyms if _]
     
@@ -212,13 +212,13 @@ def get_compound_formula(soup: _bs4.BeautifulSoup) -> _tp.Optional[str]:
     
     '''
     # prepare
-    header = soup.findAll('h1', {'id': 'Top'})[0]
-    info = header.findNext('ul')
+    header = soup.find_all('h1', {'id': 'Top'})[0]
+    info = header.find_next('ul')
     formula = None
     # find chemical formula
-    hits = info.findChildren(string = _re.compile('Formula'))
+    hits = info.find_all(string = _re.compile('Formula'))
     if hits:
-        formula = hits[0].findParent('li').text.replace('Formula:', '').strip()
+        formula = hits[0].find_parent('li').text.replace('Formula:', '').strip()
         formula = _re.sub('Monomer', '', formula).strip()
         formula = _re.sub(r'\s+', ' ', formula)
         #formula = _re.sub(r'(\d)([a-zA-Z])', r'\1 \2', formula)
@@ -238,22 +238,23 @@ def get_compound_mol_weight(soup: _bs4.BeautifulSoup) -> _tp.Optional[float]:
     
     '''
     # prepare
-    header = soup.findAll('h1', {'id': 'Top'})[0]
-    info = header.findNext('ul')
+    header = soup.find_all('h1', {'id': 'Top'})[0]
+    info = header.find_next('ul')
     mw = None
     # find chemical formula
-    hits = info.findChildren(string = _re.compile('Molecular weight'))
+    hits = info.find_all(string = _re.compile('Molecular weight'))
     if hits:
-        text = hits[0].findParent('li').text.replace('Molecular weight:', '')
-        text = _re.sub('[^0-9\.]', ' ', text).strip().split()[0]
+        text = hits[0].find_parent('li').text.replace('Molecular weight:', '')
+        text = _re.sub(r'[^0-9\.]', ' ', text).strip().split()[0]
         try:
             mw = float(text)
         except ValueError:
-            try:
-                text = _re.search('\d+\.\d+', text).group(0)
-                mw = float(text)
-            except ValueError:
-                pass
+            match = _re.search(r'\d+\.\d+', text)
+            if match is not None:
+                try:
+                    mw = float(match.group(0))
+                except ValueError:
+                    pass
     
     return mw
 
@@ -269,11 +270,11 @@ def get_compound_inchi(soup: _bs4.BeautifulSoup) -> _tp.Optional[str]:
     
     '''
     # prepare
-    header = soup.findAll('h1', {'id': 'Top'})[0]
-    info = header.findNext('ul')
+    header = soup.find_all('h1', {'id': 'Top'})[0]
+    info = header.find_next('ul')
     inchi = None
     # find chemical formula
-    hits = info.findChildren(attrs = {'class': 'inchi-text'})
+    hits = info.find_all(attrs = {'class': 'inchi-text'})
     if hits:
         for hit in hits:
             if 'InChI:' in hit.find_previous().text:
@@ -293,11 +294,11 @@ def get_compound_inchi_key(soup: _bs4.BeautifulSoup) -> _tp.Optional[str]:
     
     '''
     # prepare
-    header = soup.findAll('h1', {'id': 'Top'})[0]
-    info = header.findNext('ul')
+    header = soup.find_all('h1', {'id': 'Top'})[0]
+    info = header.find_next('ul')
     inchi_key = None
     # find chemical formula
-    hits = info.findChildren(attrs = {'class': 'inchi-text'})
+    hits = info.find_all(attrs = {'class': 'inchi-text'})
     if hits:
         for hit in hits:
             if 'InChIKey:' in hit.find_previous().text:
@@ -317,13 +318,13 @@ def get_compound_casrn(soup: _bs4.BeautifulSoup) -> _tp.Optional[str]:
     
     '''
     # prepare
-    header = soup.findAll('h1', {'id': 'Top'})[0]
-    info = header.findNext('ul')
+    header = soup.find_all('h1', {'id': 'Top'})[0]
+    info = header.find_next('ul')
     cas = None
     # find chemical formula
-    hits = info.findChildren(string = _re.compile('CAS Registry Number'))
+    hits = info.find_all(string = _re.compile('CAS Registry Number'))
     if hits:
-        text = hits[0].findParent('li').text.replace('CAS Registry Number:', '')
+        text = hits[0].find_parent('li').text.replace('CAS Registry Number:', '')
         cas = text.strip()
     
     return cas
@@ -341,15 +342,15 @@ def get_compound_mol_refs(soup: _bs4.BeautifulSoup) -> _tp.Dict[str, str]:
     
     '''
     # preparations
-    header = soup.findAll('h1', {'id': 'Top'})[0]
-    info = header.findNext('ul')
+    header = soup.find_all('h1', {'id': 'Top'})[0]
+    info = header.find_next('ul')
     mol_refs = {}
     # 2D mol
-    hits = info.findChildren(attrs = {'href': _re.compile('Str2File')})
+    hits = info.find_all(attrs = {'href': _re.compile('Str2File')})
     if hits:
         mol_refs['mol2D'] = _ncpr.BASE_URL + hits[0].attrs['href']
     # 3D mol
-    hits = info.findChildren(attrs = {'href': _re.compile('Str3File')})
+    hits = info.find_all(attrs = {'href': _re.compile('Str3File')})
     if hits:
         mol_refs['mol3D'] = _ncpr.BASE_URL + hits[0].attrs['href']
     
@@ -372,23 +373,23 @@ def get_compound_data_refs(soup: _bs4.BeautifulSoup) -> _tp.Dict[str, str]:
              '100': 'cTZ', '200': 'cMS', '400': 'cUV', '800': 'cES',
              '1000': 'cDI', '2000': 'cGC'}
     # preparations
-    header = soup.findAll('h1', {'id': 'Top'})[0]
-    info = header.findNext('ul')
+    header = soup.find_all('h1', {'id': 'Top'})[0]
+    info = header.find_next('ul')
     data_refs = {}
     # localize other data
-    hits = info.findChildren(string = _re.compile('Other data available'))
+    hits = info.find_all(string = _re.compile('Other data available'))
     if not hits:
         return {}
     hit = hits[0].find_parent('li')
     if not hit:
         return {}
     # extract refs
-    for item in hit.findChildren('li'):
-        refs = [(a.text.strip(), a.attrs['href']) for a in item.findChildren('a')]
+    for item in hit.find_all('li'):
+        refs = [(a.text.strip(), a.attrs['href']) for a in item.find_all('a')]
         if not refs:
             continue
         text, ref = refs[0]
-        mask = _re.search('Mask=(\d+)', ref)
+        mask = _re.search(r'Mask=(\d+)', ref)
         key = MASKS.get(mask.group(1), text) if mask else text
         data_refs[key] = _ncpr.BASE_URL + ref
     
@@ -408,19 +409,19 @@ def get_compound_nist_public_refs(soup: _bs4.BeautifulSoup) -> _tp.Dict[str, str
     
     '''
     # preparations
-    header = soup.findAll('h1', {'id': 'Top'})[0]
-    info = header.findNext('ul')
+    header = soup.find_all('h1', {'id': 'Top'})[0]
+    info = header.find_next('ul')
     data_refs = {}
     # localize other data
-    hits = info.findChildren(string = _re.compile('other public NIST sites'))
+    hits = info.find_all(string = _re.compile('other public NIST sites'))
     if not hits:
         return {}
     hit = hits[0].find_parent('li')
     if not hit:
         return {}
     # extract refs
-    for item in hit.findChildren('li'):
-        refs = [(a.text.strip(), a.attrs['href']) for a in item.findChildren('a')]
+    for item in hit.find_all('li'):
+        refs = [(a.text.strip(), a.attrs['href']) for a in item.find_all('a')]
         if not refs:
             continue
         text, ref = refs[0]
@@ -443,7 +444,7 @@ def get_compound_nist_subscription_refs(soup: _bs4.BeautifulSoup) -> _tp.Dict[st
     '''
     data_refs = {}
     # prepare
-    headers = soup.findAll('h2', string = _re.compile('NIST subscription'))
+    headers = soup.find_all('h2', string = _re.compile('NIST subscription'))
     if not headers:
         return {}
     header = headers[0]
@@ -452,8 +453,8 @@ def get_compound_nist_subscription_refs(soup: _bs4.BeautifulSoup) -> _tp.Dict[st
     if not hit:
         return {}
     # iterate
-    for item in hit.findChildren('li'):
-        refs = [(a.text.strip(), a.attrs['href']) for a in item.findChildren('a')]
+    for item in hit.find_all('li'):
+        refs = [(a.text.strip(), a.attrs['href']) for a in item.find_all('a')]
         if not refs:
             continue
         text, ref = refs[0]

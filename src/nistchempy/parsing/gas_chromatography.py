@@ -27,7 +27,7 @@ def get_chromatography_table_refs(soup: _bs4.BeautifulSoup) -> _tp.List[str]:
         _tp.List[str]: list of URLs
     
     '''
-    refs = soup.findChildren('a', string = _re.compile('View large format table', _re.IGNORECASE))
+    refs = soup.find_all('a', string = _re.compile('View large format table', _re.IGNORECASE))
     refs = [_ncpr.BASE_URL + ref['href'] for ref in refs]
     
     return refs
@@ -44,12 +44,12 @@ def get_literature_references(soup: _bs4.BeautifulSoup) -> _tp.Dict[str, str]:
     
     '''
     refs = {}
-    for entry in soup.findChildren('span', attrs = {'id': _re.compile('ref-\d+')}):
+    for entry in soup.find_all('span', attrs = {'id': _re.compile(r'ref-\d+')}):
         idx = entry['id']
-        p = _deepcopy(entry.findParent())
+        p = _deepcopy(entry.find_parent())
         for child in p.select('span'):
             child.extract()
-        for child in p.findChildren(string = _re.compile('all data')):
+        for child in p.find_all(string = _re.compile('all data')):
             child.extract()
         text = p.text.replace('\n', ' ').strip(' .[]')
         text = _re.sub(' +', ' ', text)
@@ -70,7 +70,7 @@ def parse_chromatography_table(soup: _bs4.BeautifulSoup) -> dict:
     
     '''
     # get title info
-    h2 = [h2 for h2 in soup.findChildren('h2') if h2.get('id', None)][0]
+    h2 = [h2 for h2 in soup.find_all('h2') if h2.get('id', None)][0]
     ps = [p.strip() for p in h2.text.split(',')]
     info = {
         'ri_type': ps[0],
@@ -80,22 +80,22 @@ def parse_chromatography_table(soup: _bs4.BeautifulSoup) -> dict:
     # get tables
     data = {}
     refs = get_literature_references(soup)
-    tables = h2.findAllNext('table', attrs = {'class': 'data'})
+    tables = h2.find_all_next('table', attrs = {'class': 'data'})
     for table in tables:
-        rows = table.findChildren('tr')
+        rows = table.find_all('tr')
         for row in rows:
-            colname = row.findChild('th').text
+            colname = row.find('th').text
             if colname == 'Reference':
                 values = []
-                for elem in row.findChildren('td'):
-                    if not elem.findChild('a'):
+                for elem in row.find_all('td'):
+                    if not elem.find('a'):
                         val = elem.text.strip()
                     else:
-                        href = elem.findChild('a')['href']
+                        href = elem.find('a')['href']
                         val = refs[href.replace('#', '')]
                     values.append(val)
             else:
-                values = [elem.text.strip() for elem in row.findChildren('td')]
+                values = [elem.text.strip() for elem in row.find_all('td')]
             if colname not in data:
                 data[colname] = values
             else:

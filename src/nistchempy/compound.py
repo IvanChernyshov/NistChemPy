@@ -275,7 +275,7 @@ class NistCompound():
         if not nr.ok:
             return None
         # extract spectra indexes
-        refs = nr.soup.findAll(attrs = {'href': _re.compile('Index=')})
+        refs = nr.soup.find_all(attrs = {'href': _re.compile('Index=')})
         refs = [ref.attrs['href'] for ref in refs]
         idxs = [parse_qs(urlparse(ref).query)['Index'][0] for ref in refs]
         idxs = sorted(list(set(idxs)))
@@ -384,7 +384,7 @@ class NistCompound():
         
         '''
         self.save_ir_spectra(path_dir)
-        self.save_tz_spectra(path_dir)
+        self.save_thz_spectra(path_dir)
         self.save_ms_spectra(path_dir)
         self.save_uv_spectra(path_dir)
     
