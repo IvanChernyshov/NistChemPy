@@ -44,6 +44,24 @@ dependencies = [
 requires-python = ">= 3.7"
 dynamic = ["version"]
 
+[project.optional-dependencies]
+docs = [
+  "sphinx",
+  "sphinx-gallery",
+  "sphinx-rtd-theme",
+  "notebook",
+  "nbsphinx",
+]
+dev = [
+  "build",
+  "pytest",
+  "sphinx",
+  "sphinx-gallery",
+  "sphinx-rtd-theme",
+  "notebook",
+  "nbsphinx",
+]
+
 [project.urls]
 Documentation = "https://ivanchernyshov.github.io/NistChemPy/"
 Repository = "https://github.com/IvanChernyshov/NistChemPy.git"

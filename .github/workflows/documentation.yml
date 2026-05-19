@@ -14,7 +14,8 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt-get install pandoc
-          pip install -r ./docs/requirements.txt
+          python -m pip install --upgrade pip
+          python -m pip install -e ".[docs]"
       - name: Sphinx build
         run: |
           cd ./docs/

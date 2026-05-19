@@ -17,16 +17,16 @@ import nistchempy as nist
 
 def get_compounds_info(dir_root: str) -> None:
     '''Extracts compound info from HTML-files
-    
+
     Arguments:
         dir_root (str): root data dump directory
-    
+
     '''
-    
+
     # get list of htmls
     dir_html = os.path.join(dir_root, 'htmls')
     fs = [os.path.join(dir_html, f) for f in os.listdir(dir_html)]
-    
+
     # run extraction
     data = []
     for f in tqdm(fs):
@@ -38,25 +38,25 @@ def get_compounds_info(dir_root: str) -> None:
         info = nist.parsing.parse_compound_page(soup)
         info = {'path': f, **info}
         data.append(info)
-    
+
     # save data
     path_out = os.path.join(dir_root, 'compounds_data.json')
     with open(path_out, 'w') as outf:
         json.dump(data, outf, indent = 2)
-    
+
     return
 
 
 
 def get_columns(data: list) -> dict:
     '''Extracts columns from compound data
-    
+
     Arguments:
         data (list): contents of compounds_data.json
-    
+
     Returns:
         list: column names
-    
+
     '''
     cols = [k for k in data[0].keys() if '_refs' not in k and k != 'path']
     # get unique ref keys
@@ -74,31 +74,31 @@ def get_columns(data: list) -> dict:
     # final columns
     for k, v in keys.items():
         cols += v
-    
+
     return cols
 
 
 
 def prepare_dataset(dir_root: str) -> None:
-    '''Transforms extracted data to nist_data.csv
-    
+    '''Transforms extracted data to index.csv
+
     Arguments:
         dir_root (str): root data dump directory
-    
+
     '''
-    
+
     # load data
     path_json = os.path.join(dir_root, 'compounds_data.json')
     with open(path_json, 'r') as inpf:
         data = json.load(inpf)
-    
+
     # prepare
     ref_keys = [k for k in data[0].keys() if '_refs' in k]
     ps = nist.search.get_search_parameters()
     ps = {k: v for k, v in ps.items() if len(k) == 3}
     cols = get_columns(data)
     df = []
-    
+
     # get rows
     for item in data:
         add = {k: v for k, v in item.items() if '_refs' not in k}
@@ -106,7 +106,7 @@ def prepare_dataset(dir_root: str) -> None:
         for k in ref_keys:
             add.update(item[k])
         df.append(add)
-    
+
     # process dataframe
     df = pd.DataFrame(df)
     df = df.rename(columns = ps)
@@ -116,11 +116,11 @@ def prepare_dataset(dir_root: str) -> None:
             df[col] = None
     df = df[cols]
     df = df.drop_duplicates().sort_values('ID', ignore_index = True)
-    
+
     # save
-    path_out = os.path.join(dir_root, 'nist_data.csv')
+    path_out = os.path.join(dir_root, 'index.csv')
     df.to_csv(path_out, index = None)
-    
+
     return
 
 
@@ -129,25 +129,25 @@ def prepare_dataset(dir_root: str) -> None:
 
 def get_arguments() -> argparse.Namespace:
     '''CLI wrapper
-    
+
     Returns:
         argparse.Namespace: CLI arguments
-    
+
     '''
     parser = argparse.ArgumentParser(description = 'Downloads HTML-pages of NIST Chemistry WebBook compounds')
     parser.add_argument('dir_root',
                         help = 'directory containing compound.csv file created by get_nist_compounds.py script')
     args = parser.parse_args()
-    
+
     return args
 
 
 def check_arguments(args: argparse.Namespace) -> None:
     '''Tries to create dir_root if it does not exist and raizes error if dir_root is a file
-    
+
     Arguments:
         args (argparse.Namespace): input parameters
-    
+
     '''
     # check root dir
     if not os.path.exists(args.dir_root):
@@ -162,28 +162,28 @@ def check_arguments(args: argparse.Namespace) -> None:
     dir_stereo = os.path.join(args.dir_root, 'htmls_stereo')
     if not os.path.exists(dir_stereo):
         os.mkdir(dir_stereo)
-    
+
     return
 
 
 def main() -> None:
     '''Updates the list of NIST compounds via downloaded HTML pages'''
-    
+
     # prepare arguments
     args = get_arguments()
     check_arguments(args)
-    
+
     # extract info
     print('\nExtracting info from HTML-files ...')
     path_json = os.path.join(args.dir_root, 'compounds_data.json')
     if not os.path.exists(path_json):
         get_compounds_info(args.dir_root)
-    
+
     # transform to dataframes
     print('\nTransforming to dataframe ...')
     prepare_dataset(args.dir_root)
     print()
-    
+
     return
 
 
@@ -191,7 +191,7 @@ def main() -> None:
 #%% Main
 
 if __name__ == '__main__':
-    
+
     main()
 
 

@@ -1,10 +1,10 @@
 # NistChemPy Update Scripts
 
-This directory contains maintainer-oriented scripts for refreshing package-internal metadata derived from NIST Chemistry WebBook compound pages.
+This directory contains legacy maintainer-oriented scripts and experiments for reconstructing user-local metadata derived from NIST Chemistry WebBook compound pages.
 
 
 > [!WARNING]
-> These scripts are provided to support maintenance of NistChemPy's internal compound metadata. They are not guidance for bulk redistribution of NIST Chemistry WebBook data. Users are responsible for checking the original NIST Chemistry WebBook pages, applicable NIST terms, crawl-delay / service-use expectations, and source-reference provenance before reusing extracted data files.
+> These scripts are transitional maintenance helpers. They are not guidance for bulk redistribution of NIST Chemistry WebBook data and should not be used to create package-bundled data files. Users are responsible for checking the original NIST Chemistry WebBook pages, applicable NIST terms, crawl-delay / service-use expectations, and source-reference provenance before reusing extracted data files.
 
 
 ## Requirements
@@ -38,14 +38,14 @@ Alternative to the sitemap-based approach.
 > Since WebBook's sitemaps were last updated in 2018, one can safely ignore this script.
 
 3. [3_get_compound_htmls.py](3_get_compound_htmls.py): downloads HTML-pages of found compounds.
-Compound list is generated from results of the 1st (`compounds_formula.csv`) and the 2nd (`compounds_sitemaps.csv`) scripts along with already stored in the `nistchempy.get_all_data` function.
-Those sources are combined and saved to the `compounds_combined.csv`.
+Compound list is generated from results of the 1st (`compounds_formula.csv`) and the 2nd (`compounds_sitemaps.csv`) scripts. If a user-local NistChemPy index is already available, it can also be used as an additional known-ID source.
+Those sources are combined and saved to `compounds_combined.csv`.
 
 4. [4_check_compound_initialization.py](4_check_compound_initialization.py): initializes Compound object from downloaded HTML-files.
 Possible errors must be manually verified to fix bugs in NistChemPy code.
 
 5. [5_get_compounds_from_refs.py](5_get_compounds_from_refs.py): extracts info on stereoisomers for each pre-downloaded compounds.
 
-6. [6_extract_info_from_htmls.py](6_extract_info_from_htmls.py): extracts info on compounds from prepared compound HTMLs and saves it as if final nist_data.csv final required for the package.
+6. [6_extract_info_from_htmls.py](6_extract_info_from_htmls.py): extracts info on compounds from prepared compound HTMLs and saves it as `index.csv` for a user-local reconstruction workflow.
 
 
