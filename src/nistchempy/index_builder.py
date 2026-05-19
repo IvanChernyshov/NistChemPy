@@ -13,12 +13,14 @@ from pathlib import Path as _Path
 
 import pandas as _pd
 
+import nistchempy.discovery as _discovery
 from nistchempy.cache import resolve_index_path as _resolve_index_path
 from nistchempy.exceptions import NistChemPyDataTermsError
 from nistchempy.exceptions import NistChemPyIndexBuildError
 from nistchempy.index import INDEX_FILENAME
 from nistchempy.index import MANIFEST_FILENAME
 from nistchempy.index import WebBookIndex
+from nistchempy.requests import RequestConfig as _RequestConfig
 
 STATE_FILENAME = 'state.jsonl'
 ERRORS_FILENAME = 'errors.jsonl'
@@ -268,6 +270,63 @@ class LocalIndexBuilder:
         )
         return dataframe
 
+    def discover_formula_browser(
+            self, request_delay=3.0, timeout=30.0, max_attempts=3,
+            limit=None, max_pages=None, replace=True, start_url=None,
+            request_func=None):
+        '''Discover intermediate seeds from the WebBook formula browser.
+
+        Args:
+            request_delay: Delay between NIST WebBook requests in seconds.
+            timeout: Request timeout in seconds.
+            max_attempts: Maximum attempts for each request.
+            limit: Optional maximum number of seeds to collect.
+            max_pages: Optional maximum number of formula-browser pages to
+                visit.
+            replace: If False, raise an error when seeds.csv already exists.
+            start_url: Optional formula-browser URL to start from.
+            request_func: Optional request function for tests.
+
+        Returns:
+            pandas.DataFrame: Written discovery seed table.
+        '''
+        if self.strategy != DEFAULT_DISCOVERY_STRATEGY:
+            raise NistChemPyIndexBuildError(
+                'Formula-browser discovery requires strategy='
+                f'{DEFAULT_DISCOVERY_STRATEGY!r}.'
+            )
+
+        request_config = _RequestConfig(
+            delay=request_delay,
+            max_attempts=max_attempts,
+            kwargs={'timeout': timeout},
+        )
+        self.append_state(
+            'formula_browser_discovery_started',
+            {
+                'limit': limit,
+                'max_pages': max_pages,
+                'request_delay': request_delay,
+                'timeout': timeout,
+                'max_attempts': max_attempts,
+                'start_url': start_url,
+            },
+        )
+        seeds = _discovery.discover_formula_browser(
+            start_url=start_url,
+            request_config=request_config,
+            limit=limit,
+            max_pages=max_pages,
+            request_func=request_func,
+        )
+        return self.write_seeds(
+            seeds,
+            replace=replace,
+            source='NIST Chemistry WebBook formula browser',
+            source_path=start_url or _discovery.FORMULA_BROWSER_ROOT,
+            status='seeds_complete',
+        )
+
     def append_state(self, event: str, payload=None) -> None:
         '''Append one JSON record to the local build state log.
 
@@ -382,6 +441,44 @@ class LocalIndexBuilder:
         tmp_manifest.replace(self.manifest_path)
 
 
+def discover_formula_browser(
+        path=None, accept_data_terms=False, request_delay=3.0, timeout=30.0,
+        max_attempts=3, limit=None, max_pages=None, replace=True,
+        start_url=None):
+    '''Discover formula-browser seeds into a local cache directory.
+
+    Args:
+        path: Optional local index directory.
+        accept_data_terms: Explicit acknowledgement that generated local data
+            are local user artifacts.
+        request_delay: Delay between NIST WebBook requests in seconds.
+        timeout: Request timeout in seconds.
+        max_attempts: Maximum attempts for each request.
+        limit: Optional maximum number of seeds to collect.
+        max_pages: Optional maximum number of formula-browser pages to visit.
+        replace: If False, raise an error when seeds.csv exists.
+        start_url: Optional formula-browser URL to start from.
+
+    Returns:
+        pandas.DataFrame: Written discovery seed table.
+    '''
+    builder = LocalIndexBuilder(
+        path=path,
+        strategy=DEFAULT_DISCOVERY_STRATEGY,
+        capabilities=('compound_discovery_seeds',),
+        accept_data_terms=accept_data_terms,
+    )
+    return builder.discover_formula_browser(
+        request_delay=request_delay,
+        timeout=timeout,
+        max_attempts=max_attempts,
+        limit=limit,
+        max_pages=max_pages,
+        replace=replace,
+        start_url=start_url,
+    )
+
+
 def import_index_csv(
         csv_path, path=None, include_cas=False, accept_data_terms=False,
         replace=True):
@@ -420,9 +517,9 @@ def unavailable_network_build_message() -> str:
 def unavailable_discovery_message() -> str:
     '''Return the current message for unavailable discovery-only builders.'''
     return (
-        'Discovery-only seed generation is not implemented in this '
-        'development step yet. Future patches will add formula-browser, '
-        'formula-search, and sitemap discovery strategies.'
+        'Formula-browser discovery is available through the discover command. '
+        'Formula-search and sitemap discovery strategies are not implemented '
+        'in this development step yet.'
     )
 
 

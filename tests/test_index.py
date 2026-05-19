@@ -251,7 +251,94 @@ def test_cli_status_reports_discovery_seeds(capsys, tmp_path):
     assert 'Seed rows: 1' in output
 
 
-def test_cli_discover_is_declared_but_unavailable(capsys, tmp_path):
+
+class _FakeResponse:
+    def __init__(self, html):
+        from bs4 import BeautifulSoup
+        self.ok = True
+        self.text = html
+        self.soup = BeautifulSoup(html, features='html.parser')
+
+
+def test_parse_formula_browser_page_extracts_prefixes_and_seeds():
+    from nistchempy.discovery import parse_formula_browser_page
+
+    html = '''
+    <html><body><ul>
+      <li><a href="/cgi/formula/C">C______</a> (10 species)</li>
+      <li><a href="/cgi/formula?ID=C71432">C 6 H 6</a> (benzene)</li>
+      <li><a href="/cgi/inchi/InChI%3D1S/CH4/h1H4">CH 4</a> (methane)</li>
+      <li><a href="/cgi/cbook.cgi?ID=C64175">C 2 H 6 O</a> (ethanol)</li>
+    </ul></body></html>
+    '''
+
+    page = parse_formula_browser_page(
+        html, page_url='https://webbook.nist.gov/cgi/formula/'
+    )
+
+    assert page.prefix_urls == ['https://webbook.nist.gov/cgi/formula/C']
+    assert [seed['webbook_id'] for seed in page.seeds] == [
+        'C71432',
+        '',
+        'C64175',
+    ]
+    assert [seed['name_hint'] for seed in page.seeds] == [
+        'benzene',
+        'methane',
+        'ethanol',
+    ]
+
+
+def test_formula_browser_discovery_traverses_prefix_pages():
+    from nistchempy.discovery import discover_formula_browser
+
+    pages = {
+        'https://webbook.nist.gov/cgi/formula/': '''
+            <ul>
+              <li><a href="/cgi/formula/C">C______</a> (10 species)</li>
+            </ul>
+        ''',
+        'https://webbook.nist.gov/cgi/formula/C': '''
+            <ul>
+              <li><a href="/cgi/formula?ID=C71432">C 6 H 6</a> (benzene)</li>
+              <li><a href="/cgi/formula?ID=C64175">C 2 H 6 O</a> (ethanol)</li>
+            </ul>
+        ''',
+    }
+
+    def fake_request(url, config=None):
+        _ = config
+        return _FakeResponse(pages[url])
+
+    seeds = discover_formula_browser(request_func=fake_request)
+
+    assert [seed['webbook_id'] for seed in seeds] == ['C71432', 'C64175']
+
+
+def test_cli_discover_writes_formula_browser_seeds(capsys, monkeypatch, tmp_path):
+    from nistchempy import discovery as discovery_module
+
+    def fake_discover_formula_browser(**kwargs):
+        _ = kwargs
+        return [
+            {
+                'lookup_key': 'C71432',
+                'lookup_url': 'https://webbook.nist.gov/cgi/formula?ID=C71432',
+                'webbook_id': 'C71432',
+                'name_hint': 'benzene',
+                'formula_hint': 'C 6 H 6',
+                'source': 'formula-browser',
+                'source_query': 'C',
+                'needs_page_enrichment': True,
+            }
+        ]
+
+    monkeypatch.setattr(
+        discovery_module,
+        'discover_formula_browser',
+        fake_discover_formula_browser,
+    )
+
     status = cli_main([
         'index',
         'discover',
@@ -259,10 +346,16 @@ def test_cli_discover_is_declared_but_unavailable(capsys, tmp_path):
         str(tmp_path / 'cache'),
         '--strategy',
         'formula-browser',
+        '--limit',
+        '1',
+        '--max-pages',
+        '2',
         '--accept-data-terms',
     ])
 
-    assert status == 2
-    assert 'Discovery-only seed generation is not implemented' in (
-        capsys.readouterr().err
-    )
+    assert status == 0
+    assert 'Seed rows: 1' in capsys.readouterr().out
+    seeds_path = tmp_path / 'cache' / 'seeds.csv'
+    assert seeds_path.exists()
+    seeds = pd.read_csv(seeds_path, dtype='str')
+    assert list(seeds['webbook_id']) == ['C71432']

@@ -161,6 +161,55 @@ class WebBookIndex:
         return cls(index_path, data, manifest)
 
     @classmethod
+    def discover(
+            cls, path=None, strategy='formula-browser',
+            accept_data_terms=False, request_delay=3.0, timeout=30.0,
+            max_attempts=3, limit=None, max_pages=None, replace=True,
+            start_url=None):
+        '''Discover intermediate seeds for a user-local WebBook index.
+
+        Discovery creates ``seeds.csv`` and does not create a final local
+        ``index.csv``. Compound-page enrichment is implemented separately.
+
+        Args:
+            path: Optional destination local index directory.
+            strategy: Compound-discovery strategy. This development step
+                implements only ``formula-browser``.
+            accept_data_terms: Explicit acknowledgement that generated local
+                data are local user artifacts.
+            request_delay: Delay between NIST WebBook requests in seconds.
+            timeout: Request timeout in seconds.
+            max_attempts: Maximum attempts for each request.
+            limit: Optional maximum number of seeds to collect.
+            max_pages: Optional maximum number of formula-browser pages to
+                visit.
+            replace: If False, raise an error when seeds.csv exists.
+            start_url: Optional formula-browser URL to start from.
+
+        Returns:
+            pandas.DataFrame: Written discovery seed table.
+        '''
+        from nistchempy.exceptions import NistChemPyIndexBuildError
+        from nistchempy.index_builder import DEFAULT_DISCOVERY_STRATEGY
+        from nistchempy.index_builder import discover_formula_browser
+        from nistchempy.index_builder import unavailable_discovery_message
+
+        if strategy != DEFAULT_DISCOVERY_STRATEGY:
+            raise NistChemPyIndexBuildError(unavailable_discovery_message())
+
+        return discover_formula_browser(
+            path=path,
+            accept_data_terms=accept_data_terms,
+            request_delay=request_delay,
+            timeout=timeout,
+            max_attempts=max_attempts,
+            limit=limit,
+            max_pages=max_pages,
+            replace=replace,
+            start_url=start_url,
+        )
+
+    @classmethod
     def build(
             cls, path=None, strategy='formula-browser', source_csv=None,
             include_cas=False, accept_data_terms=False, replace=True):

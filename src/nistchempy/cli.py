@@ -14,7 +14,6 @@ from nistchempy.index import MANIFEST_FILENAME
 from nistchempy.index import WebBookIndex
 from nistchempy.index_builder import SEEDS_FILENAME
 from nistchempy.index_builder import VALID_DISCOVERY_STRATEGIES
-from nistchempy.index_builder import unavailable_discovery_message
 from nistchempy.index_builder import unavailable_network_build_message
 
 
@@ -150,9 +149,26 @@ def _cmd_index_update(args) -> int:
 
 
 def _cmd_index_discover(args) -> int:
-    _ = args
-    print(unavailable_discovery_message(), file=_sys.stderr)
-    return 2
+    try:
+        seeds = WebBookIndex.discover(
+            path=args.path,
+            strategy=args.strategy,
+            accept_data_terms=args.accept_data_terms,
+            request_delay=args.request_delay,
+            timeout=args.timeout,
+            max_attempts=args.max_attempts,
+            limit=args.limit,
+            max_pages=args.max_pages,
+            replace=not args.no_replace,
+            start_url=args.start_url,
+        )
+    except (NistChemPyDataTermsError, NistChemPyIndexBuildError) as exc:
+        print(str(exc), file=_sys.stderr)
+        return 1
+
+    print(f'Local discovery seeds written to {_resolve_index_path(args.path)}.')
+    print(f'Seed rows: {len(seeds)}')
+    return 0
 
 
 def _add_strategy_argument(parser):
@@ -251,6 +267,46 @@ def _build_parser():
         '--accept-data-terms',
         action='store_true',
         help='Acknowledge local data-generation terms.',
+    )
+    discover_parser.add_argument(
+        '--request-delay',
+        type=float,
+        default=3.0,
+        help='Delay between NIST WebBook requests in seconds.',
+    )
+    discover_parser.add_argument(
+        '--timeout',
+        type=float,
+        default=30.0,
+        help='Request timeout in seconds.',
+    )
+    discover_parser.add_argument(
+        '--max-attempts',
+        type=int,
+        default=3,
+        help='Maximum request attempts per formula-browser page.',
+    )
+    discover_parser.add_argument(
+        '--limit',
+        type=int,
+        default=None,
+        help='Maximum number of unique discovery seeds to collect.',
+    )
+    discover_parser.add_argument(
+        '--max-pages',
+        type=int,
+        default=None,
+        help='Maximum number of formula-browser pages to visit.',
+    )
+    discover_parser.add_argument(
+        '--start-url',
+        default=None,
+        help='Optional formula-browser URL to start from.',
+    )
+    discover_parser.add_argument(
+        '--no-replace',
+        action='store_true',
+        help='Fail if the destination seeds.csv already exists.',
     )
     discover_parser.set_defaults(func=_cmd_index_discover)
 
