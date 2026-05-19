@@ -189,8 +189,10 @@ class WebBookIndex:
             replace: If False, raise an error when seeds.csv exists.
             start_url: Optional formula-browser, robots.txt, or sitemap URL to
                 start from.
-            max_queries: Optional maximum number of formula-search queries to run.
-            carbon_start: First carbon count to scan for formula-search discovery.
+            max_queries: Optional maximum number of formula-search queries
+                to run.
+            carbon_start: First carbon count to scan for formula-search
+                discovery.
             carbon_end: Last carbon count to scan for formula-search discovery.
             hydrogen_max: Maximum hydrogen count for formula-search refinement.
             heteroatom_max: Maximum one-heteroelement count for formula-search
@@ -263,7 +265,7 @@ class WebBookIndex:
         from ``index.partial.jsonl``.
 
         Args:
-            path: Optional local index directory.
+            path: Optional local index directory or CSV file.
             seeds_path: Optional explicit seed CSV file. If omitted, use the
                 cache-local ``seeds.csv``.
             accept_data_terms: Explicit acknowledgement that generated local
@@ -326,8 +328,10 @@ class WebBookIndex:
             resume: If True, reuse existing partial enrichment rows.
             start_url: Optional formula-browser, robots.txt, or sitemap URL to
                 start from.
-            max_queries: Optional maximum number of formula-search queries to run.
-            carbon_start: First carbon count to scan for formula-search discovery.
+            max_queries: Optional maximum number of formula-search queries
+                to run.
+            carbon_start: First carbon count to scan for formula-search
+                discovery.
             carbon_end: Last carbon count to scan for formula-search discovery.
             hydrogen_max: Maximum hydrogen count for formula-search refinement.
             heteroatom_max: Maximum one-heteroelement count for formula-search
@@ -394,8 +398,10 @@ class WebBookIndex:
             resume: If True, reuse existing partial enrichment rows.
             start_url: Optional formula-browser, robots.txt, or sitemap URL to
                 start from.
-            max_queries: Optional maximum number of formula-search queries to run.
-            carbon_start: First carbon count to scan for formula-search discovery.
+            max_queries: Optional maximum number of formula-search queries
+                to run.
+            carbon_start: First carbon count to scan for formula-search
+                discovery.
             carbon_end: Last carbon count to scan for formula-search discovery.
             hydrogen_max: Maximum hydrogen count for formula-search refinement.
             heteroatom_max: Maximum one-heteroelement count for formula-search

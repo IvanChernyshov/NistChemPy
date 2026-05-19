@@ -6,7 +6,17 @@ Unreleased
 
 * Removes the packaged WebBook-derived compound index from NistChemPy distributions.
 
-* Adds the initial user-local WebBook index loading/search API and CLI status/search helpers.
+* Adds a user-local WebBook index API via :py:class:`nistchempy.index.WebBookIndex` and :py:func:`nistchempy.index.get_local_index`.
+
+* Adds local index CLI commands for path resolution, status, search, importing local CSV files, discovery, enrichment, and full index builds.
+
+* Adds formula-browser, formula-search, and sitemap discovery strategies that create intermediate ``seeds.csv`` files before compound-page enrichment.
+
+* Adds compound-page enrichment from ``seeds.csv`` into final ``index.csv`` files, with resumable ``index.partial.jsonl`` state.
+
+* Keeps CAS RN in locally generated indexes by default while keeping generated local data outside the NistChemPy software license.
+
+* Adds a package-artifact release check to prevent generated WebBook-derived index/cache files from being shipped in wheels or source distributions.
 
 * Deprecates :py:func:`nistchempy.compound_list.get_all_data` as a local-cache-only compatibility wrapper.
 

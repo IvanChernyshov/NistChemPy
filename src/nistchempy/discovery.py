@@ -394,7 +394,9 @@ def parse_robots_sitemaps(text: str, page_url=ROBOTS_URL):
             continue
         sitemap_url = stripped.split(':', 1)[1].strip()
         if sitemap_url:
-            urls.append(_normalize_url(_urlparse.urljoin(page_url, sitemap_url)))
+            urls.append(
+                _normalize_url(_urlparse.urljoin(page_url, sitemap_url))
+            )
     return _deduplicate(urls)
 
 
@@ -416,7 +418,9 @@ def parse_sitemap_xml(text: str, page_url=ROBOTS_URL):
         raw_url = _normalise_text(loc.get_text(' ', strip=True))
         if not raw_url:
             continue
-        url = _normalize_url(_urlparse.urljoin(page_url, _urlparse.unquote(raw_url)))
+        url = _normalize_url(
+            _urlparse.urljoin(page_url, _urlparse.unquote(raw_url))
+        )
         parent = loc.find_parent()
         parent_name = getattr(parent, 'name', '')
         if parent_name == 'sitemap':
@@ -510,7 +514,9 @@ def _validate_formula_search_bounds(
     if int(carbon_start) < 1:
         raise ValueError('carbon_start must be at least 1.')
     if int(carbon_end) < int(carbon_start):
-        raise ValueError('carbon_end must be greater than or equal to carbon_start.')
+        raise ValueError(
+            'carbon_end must be greater than or equal to carbon_start.'
+        )
     if max_queries is not None:
         if int(max_queries) != max_queries or int(max_queries) < 1:
             raise ValueError('max_queries must be a positive integer.')

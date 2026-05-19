@@ -163,6 +163,23 @@ def test_build_local_index_from_csv_writes_cache_layout(tmp_path):
     assert (tmp_path / 'cache' / 'state.jsonl').exists()
 
 
+def test_build_local_index_from_csv_can_exclude_cas(tmp_path):
+    csv_path = tmp_path / 'source.csv'
+    pd.DataFrame([
+        {'ID': 'C71432', 'name': 'benzene', 'cas_rn': '71-43-2'}
+    ]).to_csv(csv_path, index=False)
+
+    index = nist.WebBookIndex.build(
+        path=tmp_path / 'cache',
+        source_csv=csv_path,
+        include_cas=False,
+        accept_data_terms=True,
+    )
+
+    assert 'cas_rn' not in index.data.columns
+    assert index.manifest['include_cas'] is False
+
+
 def test_cli_build_from_csv(capsys, tmp_path):
     csv_path = tmp_path / 'source.csv'
     pd.DataFrame([{'ID': 'C71432', 'name': 'benzene'}]).to_csv(
@@ -442,7 +459,9 @@ def test_parse_sitemap_xml_extracts_nested_sitemaps_and_seeds():
     ]
     assert [seed['webbook_id'] for seed in parsed.seeds] == ['C71432', '']
     assert [seed['source'] for seed in parsed.seeds] == ['sitemap', 'sitemap']
-    assert parsed.seeds[1]['lookup_url'].endswith('/cgi/inchi/InChI=1S/CH4/h1H4')
+    assert parsed.seeds[1]['lookup_url'].endswith(
+        '/cgi/inchi/InChI=1S/CH4/h1H4'
+    )
 
 
 def test_sitemap_discovery_traverses_robots_and_sitemaps():
@@ -481,7 +500,8 @@ def test_sitemap_discovery_traverses_robots_and_sitemaps():
     assert [seed['webbook_id'] for seed in seeds] == ['C71432', 'C64175']
 
 
-def test_cli_discover_writes_formula_browser_seeds(capsys, monkeypatch, tmp_path):
+def test_cli_discover_writes_formula_browser_seeds(
+        capsys, monkeypatch, tmp_path):
     from nistchempy import discovery as discovery_module
 
     def fake_discover_formula_browser(**kwargs):
@@ -535,7 +555,9 @@ def test_cli_discover_writes_sitemap_seeds(capsys, monkeypatch, tmp_path):
         return [
             {
                 'lookup_key': 'C71432',
-                'lookup_url': 'https://webbook.nist.gov/cgi/cbook.cgi?ID=C71432',
+                'lookup_url': (
+                    'https://webbook.nist.gov/cgi/cbook.cgi?ID=C71432'
+                ),
                 'webbook_id': 'C71432',
                 'name_hint': '',
                 'formula_hint': '',
@@ -644,6 +666,18 @@ def test_flatten_compound_info_keeps_cas_and_renames_data_refs():
     )
     assert row['mol2D'].endswith('Str2File=C71432')
     assert row['mol3D'].endswith('Str3File=C71432')
+
+
+def test_flatten_compound_info_can_omit_cas():
+    from bs4 import BeautifulSoup
+    from nistchempy.index_builder import flatten_compound_info
+    from nistchempy.parsing import parse_compound_page
+
+    soup = BeautifulSoup(_compound_page_html(), features='html.parser')
+    row = flatten_compound_info(parse_compound_page(soup), include_cas=False)
+
+    assert 'cas_rn' not in row
+    assert row['ID'] == 'C71432'
 
 
 def test_enrich_from_seeds_writes_final_index(tmp_path):
@@ -871,7 +905,6 @@ def test_cli_build_formula_browser_runs_full_pipeline(
     assert 'Rows: 1' in capsys.readouterr().out
     index = nist.get_local_index(tmp_path / 'cache')
     assert index.get('C71432')['cas_rn'] == '71-43-2'
-
 
 
 

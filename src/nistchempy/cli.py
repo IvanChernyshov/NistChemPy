@@ -199,7 +199,8 @@ def _cmd_index_discover(args) -> int:
         print(str(exc), file=_sys.stderr)
         return 1
 
-    print(f'Local discovery seeds written to {_resolve_index_path(args.path)}.')
+    path = _resolve_index_path(args.path)
+    print(f'Local discovery seeds written to {path}.')
     print(f'Seed rows: {len(seeds)}')
     return 0
 
@@ -337,7 +338,10 @@ def _add_build_arguments(parser):
     parser.add_argument(
         '--start-url',
         default=None,
-        help='Optional formula-browser, robots.txt, or sitemap URL to start from.',
+        help=(
+            'Optional formula-browser, robots.txt, or sitemap URL to '
+            'start from.'
+        ),
     )
     _add_formula_search_arguments(parser)
     parser.add_argument(
@@ -441,7 +445,10 @@ def _build_parser():
     discover_parser.add_argument(
         '--start-url',
         default=None,
-        help='Optional formula-browser, robots.txt, or sitemap URL to start from.',
+        help=(
+            'Optional formula-browser, robots.txt, or sitemap URL to '
+            'start from.'
+        ),
     )
     _add_formula_search_arguments(discover_parser)
     discover_parser.add_argument(

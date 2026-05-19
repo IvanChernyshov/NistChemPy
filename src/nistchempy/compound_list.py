@@ -14,7 +14,7 @@ def get_all_data(path=None):
         ``nistchempy.WebBookIndex.from_cache(path).to_dataframe()`` instead.
 
     Args:
-        path: Optional local index directory.
+        path: Optional local index directory or CSV file.
 
     Returns:
         pandas.DataFrame: User-local WebBook index table.

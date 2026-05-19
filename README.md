@@ -3,7 +3,7 @@
 Unofficial Python tools for querying NIST Chemistry WebBook pages and extracting molecular-property records.
 
 
-> **Status:** development branch / index cleanup in progress.
+> **Status:** development branch.
 > NistChemPy is an unofficial Python package for querying NIST Chemistry WebBook pages and extracting selected molecular-property records. It is not affiliated with, maintained by, or endorsed by NIST. Because the Chemistry WebBook does not provide a stable public web API for this package, functionality may depend on the current structure and behavior of the external web service.
 >
 > **Important index change:** NistChemPy no longer ships a prebuilt NIST Chemistry WebBook compound index. Live WebBook search and individual compound-page parsing remain separate functionality, but local index search now requires a user-generated local index/cache. Rebuilding a full section-availability index can require visiting one WebBook page per compound; with a polite 3 second delay and roughly 100,000-150,000 pages, the initial rebuild can take about 3.5-5+ days before retries and network overhead.
@@ -72,9 +72,9 @@ index = nist.get_local_index('/path/to/webbook-index')
 index = nist.get_local_index('/path/to/nist_data.csv')
 ```
 
-The current cleanup branch can also build a user-local index by discovering
-candidate compounds through the WebBook formula browser, formula search, or
-sitemaps and then enriching discovered seeds from individual compound pages:
+NistChemPy can also build a user-local index by discovering candidate
+compounds through the WebBook formula browser, formula search, or sitemaps
+and then enriching discovered seeds from individual compound pages:
 
 ```bash
 nistchempy index build \
@@ -85,8 +85,8 @@ nistchempy index build \
 ```
 
 The `sitemap` strategy is available as a secondary/audit discovery source.
-The `formula-search` strategy promotes the legacy carbon-formula search
-prototype into a bounded discovery strategy and therefore requires an explicit
+The `formula-search` strategy wraps the legacy carbon-formula search
+prototype as a bounded discovery strategy and therefore requires an explicit
 carbon range, for example:
 
 ```bash
@@ -98,8 +98,10 @@ nistchempy index discover \
 ```
 
 A full page-enriched build may need to visit many compound pages and can take
-several days with a polite request delay. For migration/testing, an existing
-local CSV can also be imported into the new cache layout:
+several days with a polite request delay. Generated local index/cache files
+are user-local artifacts and are not covered by the NistChemPy software
+license. For migration/testing, an existing local CSV can also be imported
+into the new cache layout:
 
 ```bash
 nistchempy index build \

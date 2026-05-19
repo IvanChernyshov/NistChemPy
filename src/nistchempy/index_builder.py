@@ -40,7 +40,6 @@ VALID_DISCOVERY_STRATEGIES = (
     'formula-browser',
     'formula-search',
     'sitemap',
-    'combined',
 )
 VALID_MANIFEST_STRATEGIES = VALID_DISCOVERY_STRATEGIES + (
     LOCAL_CSV_STRATEGY,
@@ -108,15 +107,14 @@ class LocalIndexBuilder:
 
     This class contains the local cache writing layer used by index builders.
     Discovery sources first write ``seeds.csv`` records, and page-enrichment
-    code later writes the final ``index.csv`` table. It does not itself
-    implement WebBook traversal yet.
+    code later writes the final ``index.csv`` table. The class also provides
+    the orchestration methods used by network builders.
 
     Args:
         path: Optional local index directory.
         strategy: Compound-discovery strategy stored in the manifest. Supported
             network strategies are ``formula-browser``, ``formula-search``,
-            ``sitemap``, and ``combined``. Local CSV imports use
-            ``local-csv``.
+            and ``sitemap``. Local CSV imports use ``local-csv``.
         capabilities: Optional capability names to store in the manifest. If
             omitted, the builder records the standard page-enriched index
             capabilities.
@@ -205,7 +203,7 @@ class LocalIndexBuilder:
                 f'Local WebBook index already exists at {self.index_path}.'
             )
 
-        dataframe = _as_dataframe(data)
+        dataframe = _drop_cas_if_needed(_as_dataframe(data), self.include_cas)
         tmp_index = self._temporary_path(INDEX_FILENAME)
         dataframe.to_csv(tmp_index, index=False)
         tmp_index.replace(self.index_path)
@@ -603,7 +601,9 @@ class LocalIndexBuilder:
 
             try:
                 info = _parsing.parse_compound_page(soup)
-                row = flatten_compound_info(info)
+                row = flatten_compound_info(
+                    info, include_cas=self.include_cas
+                )
             except Exception as exc:
                 self.append_error(
                     'enrichment_parse',
@@ -627,7 +627,9 @@ class LocalIndexBuilder:
                 },
             )
 
-        final_dataframe = _final_index_dataframe(rows)
+        final_dataframe = _final_index_dataframe(
+            rows, include_cas=self.include_cas
+        )
         index = self.write_index(
             final_dataframe,
             replace=replace,
@@ -999,7 +1001,8 @@ def discover_formula_browser(
         timeout: Request timeout in seconds.
         max_attempts: Maximum attempts for each request.
         limit: Optional maximum number of seeds to collect.
-        max_pages: Optional maximum number of discovery pages/documents to visit.
+        max_pages: Optional maximum number of discovery pages/documents to
+            visit.
         replace: If False, raise an error when seeds.csv exists.
         start_url: Optional formula-browser URL to start from.
 
@@ -1038,13 +1041,15 @@ def discover_formula_search(
         timeout: Request timeout in seconds.
         max_attempts: Maximum attempts for each request.
         limit: Optional maximum number of seeds to collect.
-        max_queries: Optional maximum number of formula-search queries to run.
+        max_queries: Optional maximum number of formula-search queries to
+            run.
         replace: If False, raise an error when seeds.csv exists.
         carbon_start: First carbon count to scan, inclusive.
         carbon_end: Last carbon count to scan, inclusive.
         hydrogen_max: Maximum hydrogen count used for refinement.
         heteroatom_max: Maximum one-heteroelement count used for refinement.
-        elements: Optional iterable or comma-separated string of element symbols.
+        elements: Optional iterable or comma-separated string of element
+            symbols.
 
     Returns:
         pandas.DataFrame: Written discovery seed table.
@@ -1174,12 +1179,15 @@ def build_index(
         timeout: Request timeout in seconds.
         max_attempts: Maximum attempts for each request.
         limit: Optional maximum number of seeds to discover/enrich.
-        max_pages: Optional maximum number of discovery pages/documents to visit.
+        max_pages: Optional maximum number of discovery pages/documents to
+            visit.
         resume: If True, reuse existing partial enrichment rows.
         start_url: Optional formula-browser, robots.txt, or sitemap URL to
             start from.
-        max_queries: Optional maximum number of formula-search queries to run.
-        carbon_start: First carbon count to scan for formula-search discovery.
+        max_queries: Optional maximum number of formula-search queries to
+            run.
+        carbon_start: First carbon count to scan for formula-search
+            discovery.
         carbon_end: Last carbon count to scan for formula-search discovery.
         hydrogen_max: Maximum hydrogen count for formula-search refinement.
         heteroatom_max: Maximum one-heteroelement count for formula-search
@@ -1270,21 +1278,19 @@ def import_index_csv(
 
 
 def unavailable_network_build_message() -> str:
-    '''Return the current message for unavailable network index builders.'''
+    '''Return the message for unsupported network index builders.'''
     return (
-        'Formula-browser, formula-search, and sitemap network builds are '
-        'implemented in this development step. Use --strategy formula-browser, '
-        '--strategy formula-search, --strategy sitemap, or --from-csv to '
-        'import an existing local CSV index.'
+        'Supported network build strategies are formula-browser, '
+        'formula-search, and sitemap. Use --from-csv to import an existing '
+        'local CSV index.'
     )
 
 
 def unavailable_discovery_message() -> str:
-    '''Return the current message for unavailable discovery-only builders.'''
+    '''Return the message for unsupported discovery-only builders.'''
     return (
-        'Formula-browser, formula-search, and sitemap discovery are available '
-        'through the discover command. Combined discovery is not implemented '
-        'in this development step yet.'
+        'Supported discovery strategies are formula-browser, formula-search, '
+        'and sitemap.'
     )
 
 
@@ -1314,11 +1320,12 @@ def resolve_seed_url(seed) -> str:
     raise ValueError('Discovery seed has neither lookup_url nor webbook_id.')
 
 
-def flatten_compound_info(info: dict) -> dict:
+def flatten_compound_info(info: dict, include_cas=True) -> dict:
     '''Flatten parsed compound-page information into one index row.
 
     Args:
         info: Dictionary returned by ``parse_compound_page``.
+        include_cas: If False, omit the ``cas_rn`` column.
 
     Returns:
         dict: Flat local-index row with old-index-compatible columns.
@@ -1332,8 +1339,9 @@ def flatten_compound_info(info: dict) -> dict:
         'mol_weight': _clean_scalar(info.get('mol_weight', '')),
         'inchi': _clean_scalar(info.get('inchi', '')),
         'inchi_key': _clean_scalar(info.get('inchi_key', '')),
-        'cas_rn': _clean_scalar(info.get('cas_rn', '')),
     }
+    if include_cas:
+        row['cas_rn'] = _clean_scalar(info.get('cas_rn', ''))
 
     for key, value in (info.get('mol_refs') or {}).items():
         row[_clean_scalar(key)] = _clean_scalar(value)
@@ -1348,6 +1356,12 @@ def flatten_compound_info(info: dict) -> dict:
             row[_clean_scalar(key)] = _clean_scalar(value)
 
     return row
+
+
+def _drop_cas_if_needed(dataframe: _pd.DataFrame, include_cas: bool):
+    if include_cas or 'cas_rn' not in dataframe.columns:
+        return dataframe
+    return dataframe.drop(columns=['cas_rn'])
 
 
 def _read_partial_index_rows(path: _Path) -> _tp.List[dict]:
@@ -1370,11 +1384,14 @@ def _append_jsonl(path: _Path, row: dict) -> None:
         outfile.write(_json.dumps(row, sort_keys=True) + '\n')
 
 
-def _final_index_dataframe(rows: _tp.List[dict]) -> _pd.DataFrame:
+def _final_index_dataframe(
+        rows: _tp.List[dict], include_cas=True) -> _pd.DataFrame:
     base_columns = [
         'ID', 'name', 'synonyms', 'formula', 'mol_weight', 'inchi',
-        'inchi_key', 'cas_rn',
+        'inchi_key',
     ]
+    if include_cas:
+        base_columns.append('cas_rn')
     dataframe = _pd.DataFrame(rows)
     if dataframe.empty:
         return _pd.DataFrame(columns=base_columns)

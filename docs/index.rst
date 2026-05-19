@@ -95,7 +95,9 @@ Requirements
 
 4. pandas;
 
-5. importlib_resources (for Python 3.7 and 3.8).
+5. platformdirs;
+
+6. importlib_resources (for Python 3.7 and 3.8).
 
 
 Citation
@@ -110,7 +112,7 @@ Useful links
 1. `NIST Chemistry WebBook`_: web application for accessing NIST Chemistry WebBook records.
 2. `GitHub`_: GitHub page of the package.
 3. `PyPI package`_: PyPI page of the package.
-4. `Update tools`_: maintainer-oriented scripts for local index reconstruction experiments.
+4. `Update tools`_: transitional maintainer scripts for local index reconstruction experiments.
 5. `NistChemData`_: historical companion repository with extracted files and provenance-sensitive data-use caveats.
 
 
