@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import datetime as _datetime
+import hashlib as _hashlib
 import json as _json
 import shutil as _shutil
 import typing as _tp
@@ -180,7 +181,7 @@ class LocalIndexBuilder:
 
     def write_index(
             self, data, replace=True, source=None, source_path=None,
-            status='complete'):
+            status='complete', seed_count=None, extra_manifest=None):
         '''Write a final local index CSV and manifest atomically.
 
         Args:
@@ -189,6 +190,9 @@ class LocalIndexBuilder:
             source: Optional source description stored in the manifest.
             source_path: Optional source file/path stored in the manifest.
             status: Build status stored in the manifest.
+            seed_count: Optional number of discovery seed rows used to create
+                the index.
+            extra_manifest: Optional additional manifest fields.
 
         Returns:
             WebBookIndex: Loaded local index object.
@@ -210,10 +214,12 @@ class LocalIndexBuilder:
 
         manifest = self._make_manifest(
             row_count=len(dataframe),
+            seed_count=seed_count,
             source=source,
             source_path=source_path,
             status=status,
             artifact='index',
+            extra=extra_manifest,
         )
         self._write_manifest(manifest)
 
@@ -260,6 +266,14 @@ class LocalIndexBuilder:
         dataframe.to_csv(tmp_seeds, index=False)
         tmp_seeds.replace(self.seeds_path)
 
+        if replace and self.partial_index_path.exists():
+            self.partial_index_path.unlink()
+            self.append_state(
+                'partial_index_cleared',
+                {'reason': 'discovery seeds were replaced'},
+            )
+
+        seed_fingerprint = _file_sha256(self.seeds_path)
         manifest = self._make_manifest(
             row_count=0,
             seed_count=len(dataframe),
@@ -267,6 +281,7 @@ class LocalIndexBuilder:
             source_path=source_path,
             status=status,
             artifact='seeds',
+            extra={'seed_fingerprint': seed_fingerprint},
         )
         self._write_manifest(manifest)
 
@@ -323,13 +338,19 @@ class LocalIndexBuilder:
                 'start_url': start_url,
             },
         )
-        seeds = _discovery.discover_formula_browser(
-            start_url=start_url,
-            request_config=request_config,
-            limit=limit,
-            max_pages=max_pages,
-            request_func=request_func,
-        )
+        try:
+            seeds = _discovery.discover_formula_browser(
+                start_url=start_url,
+                request_config=request_config,
+                limit=limit,
+                max_pages=max_pages,
+                request_func=request_func,
+            )
+        except Exception as exc:
+            raise NistChemPyIndexBuildError(
+                f'Formula-browser discovery failed: {exc}'
+            ) from exc
+
         return self.write_seeds(
             seeds,
             replace=replace,
@@ -411,6 +432,10 @@ class LocalIndexBuilder:
             )
         except ValueError as exc:
             raise NistChemPyIndexBuildError(str(exc)) from exc
+        except Exception as exc:
+            raise NistChemPyIndexBuildError(
+                f'Formula-search discovery failed: {exc}'
+            ) from exc
 
         return self.write_seeds(
             seeds,
@@ -466,13 +491,19 @@ class LocalIndexBuilder:
                 'start_url': start_url,
             },
         )
-        seeds = _discovery.discover_sitemap(
-            start_url=start_url,
-            request_config=request_config,
-            limit=limit,
-            max_pages=max_pages,
-            request_func=request_func,
-        )
+        try:
+            seeds = _discovery.discover_sitemap(
+                start_url=start_url,
+                request_config=request_config,
+                limit=limit,
+                max_pages=max_pages,
+                request_func=request_func,
+            )
+        except Exception as exc:
+            raise NistChemPyIndexBuildError(
+                f'Sitemap discovery failed: {exc}'
+            ) from exc
+
         return self.write_seeds(
             seeds,
             replace=replace,
@@ -527,11 +558,26 @@ class LocalIndexBuilder:
                 f'Failed to read local discovery seeds from {source_path}.'
             ) from exc
 
+        seed_fingerprint = _file_sha256(source_path)
+        seed_manifest = _read_json_file(self.manifest_path)
+        manifest_fingerprint = seed_manifest.get('seed_fingerprint', '')
+        if self.partial_index_path.exists() and (
+                not resume
+                or not manifest_fingerprint
+                or manifest_fingerprint != seed_fingerprint):
+            self.partial_index_path.unlink()
+            self.append_state(
+                'partial_index_cleared',
+                {
+                    'reason': 'resume disabled or seed fingerprint changed',
+                    'resume': bool(resume),
+                    'manifest_seed_fingerprint': manifest_fingerprint,
+                    'current_seed_fingerprint': seed_fingerprint,
+                },
+            )
+
         if limit is not None:
             seeds = seeds.head(limit)
-
-        if not resume and self.partial_index_path.exists():
-            self.partial_index_path.unlink()
 
         rows = _read_partial_index_rows(self.partial_index_path)
         completed_keys = {
@@ -636,6 +682,8 @@ class LocalIndexBuilder:
             source='NIST Chemistry WebBook compound pages',
             source_path=str(source_path),
             status='complete',
+            seed_count=len(seeds),
+            extra_manifest={'seed_fingerprint': seed_fingerprint},
         )
         self.append_state(
             'enrichment_finished',
@@ -942,7 +990,8 @@ class LocalIndexBuilder:
 
     def _make_manifest(
             self, row_count: int, source=None, source_path=None,
-            status='complete', artifact='index', seed_count=None) -> dict:
+            status='complete', artifact='index', seed_count=None,
+            extra=None) -> dict:
         now = _utc_timestamp()
         manifest = {
             'schema_version': 1,
@@ -964,6 +1013,8 @@ class LocalIndexBuilder:
         }
         if seed_count is not None:
             manifest['seed_count'] = int(seed_count)
+        if extra:
+            manifest.update(extra)
         return manifest
 
     def _make_log_record(self, event: str, payload=None) -> dict:
@@ -1117,7 +1168,8 @@ def discover_sitemap(
 def enrich_index_from_seeds(
         path=None, seeds_path=None, accept_data_terms=False,
         request_delay=3.0, timeout=30.0, max_attempts=3, limit=None,
-        resume=True, replace=True, request_func=None):
+        resume=True, replace=True, request_func=None, strategy=None,
+        include_cas=None):
     '''Enrich local discovery seeds into a final local index.
 
     Args:
@@ -1132,14 +1184,27 @@ def enrich_index_from_seeds(
         resume: If True, reuse existing partial enrichment rows.
         replace: If False, raise an error when index.csv exists.
         request_func: Optional request function for tests.
+        strategy: Optional strategy override. If omitted, use the existing
+            local manifest when available.
+        include_cas: Optional CAS RN inclusion override. If omitted, use the
+            existing local manifest when available.
 
     Returns:
         WebBookIndex: Loaded final local index object.
     '''
+    resolved_path = _resolve_index_path(path)
+    manifest = _read_json_file(resolved_path / MANIFEST_FILENAME)
+    inferred_strategy = strategy or manifest.get(
+        'strategy', DEFAULT_DISCOVERY_STRATEGY
+    )
+    inferred_include_cas = include_cas
+    if inferred_include_cas is None:
+        inferred_include_cas = manifest.get('include_cas', True)
+
     builder = LocalIndexBuilder(
-        path=path,
-        strategy=DEFAULT_DISCOVERY_STRATEGY,
-        include_cas=True,
+        path=resolved_path,
+        strategy=inferred_strategy,
+        include_cas=bool(inferred_include_cas),
         accept_data_terms=accept_data_terms,
     )
     return builder.enrich_from_seeds(
@@ -1362,6 +1427,23 @@ def _drop_cas_if_needed(dataframe: _pd.DataFrame, include_cas: bool):
     if include_cas or 'cas_rn' not in dataframe.columns:
         return dataframe
     return dataframe.drop(columns=['cas_rn'])
+
+
+def _file_sha256(path: _Path) -> str:
+    hasher = _hashlib.sha256()
+    with open(path, 'rb') as infile:
+        for chunk in iter(lambda: infile.read(1024 * 1024), b''):
+            hasher.update(chunk)
+    return hasher.hexdigest()
+
+
+def _read_json_file(path: _Path) -> dict:
+    if not path.exists():
+        return {}
+    try:
+        return _json.loads(path.read_text(encoding='utf-8'))
+    except Exception:
+        return {}
 
 
 def _read_partial_index_rows(path: _Path) -> _tp.List[dict]:

@@ -1006,3 +1006,93 @@ def test_cli_build_sitemap_runs_full_pipeline(capsys, monkeypatch, tmp_path):
     assert 'Rows: 1' in capsys.readouterr().out
     index = nist.get_local_index(tmp_path / 'sitemap-cache')
     assert index.get('C71432')['cas_rn'] == '71-43-2'
+
+
+def test_write_seeds_records_fingerprint_and_clears_stale_partial(tmp_path):
+    builder = LocalIndexBuilder(
+        path=tmp_path / 'cache',
+        strategy='formula-browser',
+        accept_data_terms=True,
+    )
+    builder.path.mkdir(parents=True, exist_ok=True)
+    builder.partial_index_path.write_text(
+        '{"_seed_lookup_key": "old"}\n', encoding='utf-8'
+    )
+
+    builder.write_seeds([DiscoverySeed(lookup_key='C71432')])
+
+    manifest = json.loads(builder.manifest_path.read_text(encoding='utf-8'))
+    assert manifest['seed_fingerprint']
+    assert not builder.partial_index_path.exists()
+
+
+def test_enrich_convenience_preserves_seed_manifest_strategy(
+        monkeypatch, tmp_path):
+    import nistchempy.index_builder as builder_module
+
+    builder = LocalIndexBuilder(
+        path=tmp_path / 'cache',
+        strategy='sitemap',
+        accept_data_terms=True,
+    )
+    builder.write_seeds([
+        DiscoverySeed(
+            lookup_key='C71432',
+            lookup_url='/cgi/cbook.cgi?ID=C71432',
+            webbook_id='C71432',
+            source='sitemap',
+        )
+    ])
+
+    original = builder_module.LocalIndexBuilder.enrich_from_seeds
+
+    def fake_enrich(self, **kwargs):
+        kwargs['request_func'] = lambda url, config=None: _FakeResponse(
+            _compound_page_html()
+        )
+        return original(self, **kwargs)
+
+    monkeypatch.setattr(
+        builder_module.LocalIndexBuilder,
+        'enrich_from_seeds',
+        fake_enrich,
+    )
+
+    index = nist.WebBookIndex.enrich(
+        path=tmp_path / 'cache',
+        accept_data_terms=True,
+    )
+
+    assert index.manifest['strategy'] == 'sitemap'
+    assert index.manifest['seed_fingerprint']
+
+
+def test_discovery_errors_are_wrapped_as_build_errors(monkeypatch, tmp_path):
+    from nistchempy import discovery as discovery_module
+
+    def failing_discovery(**kwargs):
+        _ = kwargs
+        raise ConnectionError('network down')
+
+    monkeypatch.setattr(
+        discovery_module,
+        'discover_formula_browser',
+        failing_discovery,
+    )
+
+    with pytest.raises(nist.NistChemPyIndexBuildError, match='network down'):
+        nist.WebBookIndex.discover(
+            path=tmp_path / 'cache',
+            strategy='formula-browser',
+            accept_data_terms=True,
+        )
+
+
+def test_default_search_fields_include_cas_rn(tmp_path):
+    _write_index(tmp_path)
+    index = nist.WebBookIndex.from_cache(tmp_path)
+    index.data['cas_rn'] = ['71-43-2', '64-17-5']
+
+    result = index.search('71-43-2')
+
+    assert list(result['ID']) == ['C71432']

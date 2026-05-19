@@ -22,6 +22,7 @@ DEFAULT_SEARCH_FIELDS = (
     'formula',
     'inchi',
     'inchi_key',
+    'cas_rn',
 )
 
 
@@ -257,7 +258,7 @@ class WebBookIndex:
     def enrich(
             cls, path=None, seeds_path=None, accept_data_terms=False,
             request_delay=3.0, timeout=30.0, max_attempts=3, limit=None,
-            resume=True, replace=True):
+            resume=True, replace=True, strategy=None, include_cas=None):
         '''Enrich discovery seeds into a final local WebBook index.
 
         This method visits compound pages listed in ``seeds.csv`` and writes
@@ -276,6 +277,10 @@ class WebBookIndex:
             limit: Optional maximum number of seeds to process.
             resume: If True, reuse existing partial enrichment rows.
             replace: If False, raise an error when index.csv exists.
+            strategy: Optional discovery strategy override. If omitted, use
+                the existing local manifest when available.
+            include_cas: Optional CAS RN inclusion override. If omitted, use
+                the existing local manifest when available.
 
         Returns:
             WebBookIndex: Loaded final local index object.
@@ -292,6 +297,8 @@ class WebBookIndex:
             limit=limit,
             resume=resume,
             replace=replace,
+            strategy=strategy,
+            include_cas=include_cas,
         )
 
     @classmethod
