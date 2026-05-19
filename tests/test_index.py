@@ -6,10 +6,10 @@ import pandas as pd
 import pytest
 
 import nistchempy as nist
-from nistchempy.cache import resolve_index_path
+from nistchempy.indexing.cache import resolve_index_path
 from nistchempy.cli import main as cli_main
-from nistchempy.index_builder import DiscoverySeed
-from nistchempy.index_builder import LocalIndexBuilder
+from nistchempy.indexing.builder import DiscoverySeed
+from nistchempy.indexing.builder import LocalIndexBuilder
 
 
 def _write_index(path):
@@ -502,7 +502,7 @@ def test_sitemap_discovery_traverses_robots_and_sitemaps():
 
 def test_cli_discover_writes_formula_browser_seeds(
         capsys, monkeypatch, tmp_path):
-    from nistchempy import discovery as discovery_module
+    from nistchempy.indexing import discovery as discovery_module
 
     def fake_discover_formula_browser(**kwargs):
         _ = kwargs
@@ -548,7 +548,7 @@ def test_cli_discover_writes_formula_browser_seeds(
 
 
 def test_cli_discover_writes_sitemap_seeds(capsys, monkeypatch, tmp_path):
-    from nistchempy import discovery as discovery_module
+    from nistchempy.indexing import discovery as discovery_module
 
     def fake_discover_sitemap(**kwargs):
         _ = kwargs
@@ -638,7 +638,7 @@ def _compound_page_html(compound_id='C71432', name='Benzene'):
 
 
 def test_resolve_seed_url_supports_url_and_webbook_id():
-    from nistchempy.index_builder import resolve_seed_url
+    from nistchempy.indexing.builder import resolve_seed_url
 
     assert resolve_seed_url({'lookup_url': '/cgi/cbook.cgi?ID=C71432'}) == (
         'https://webbook.nist.gov/cgi/cbook.cgi?ID=C71432'
@@ -650,7 +650,7 @@ def test_resolve_seed_url_supports_url_and_webbook_id():
 
 def test_flatten_compound_info_keeps_cas_and_renames_data_refs():
     from bs4 import BeautifulSoup
-    from nistchempy.index_builder import flatten_compound_info
+    from nistchempy.indexing.builder import flatten_compound_info
     from nistchempy.parsing import parse_compound_page
 
     soup = BeautifulSoup(_compound_page_html(), features='html.parser')
@@ -670,7 +670,7 @@ def test_flatten_compound_info_keeps_cas_and_renames_data_refs():
 
 def test_flatten_compound_info_can_omit_cas():
     from bs4 import BeautifulSoup
-    from nistchempy.index_builder import flatten_compound_info
+    from nistchempy.indexing.builder import flatten_compound_info
     from nistchempy.parsing import parse_compound_page
 
     soup = BeautifulSoup(_compound_page_html(), features='html.parser')
@@ -741,7 +741,7 @@ def test_enrich_from_seeds_logs_bad_seed_and_continues(tmp_path):
 
 
 def test_cli_enrich_from_seeds(capsys, monkeypatch, tmp_path):
-    import nistchempy.index_builder as builder_module
+    import nistchempy.indexing.builder as builder_module
 
     builder = LocalIndexBuilder(
         path=tmp_path / 'cache',
@@ -785,8 +785,8 @@ def test_cli_enrich_from_seeds(capsys, monkeypatch, tmp_path):
 
 
 def _patch_formula_browser_build(monkeypatch):
-    from nistchempy import discovery as discovery_module
-    import nistchempy.index_builder as builder_module
+    from nistchempy.indexing import discovery as discovery_module
+    import nistchempy.indexing.builder as builder_module
 
     def fake_discover_formula_browser(**kwargs):
         _ = kwargs
@@ -825,8 +825,8 @@ def _patch_formula_browser_build(monkeypatch):
 
 
 def _patch_sitemap_build(monkeypatch):
-    from nistchempy import discovery as discovery_module
-    import nistchempy.index_builder as builder_module
+    from nistchempy.indexing import discovery as discovery_module
+    import nistchempy.indexing.builder as builder_module
 
     def fake_discover_sitemap(**kwargs):
         _ = kwargs
@@ -909,8 +909,8 @@ def test_cli_build_formula_browser_runs_full_pipeline(
 
 
 def _patch_formula_search_build(monkeypatch):
-    from nistchempy import discovery as discovery_module
-    import nistchempy.index_builder as builder_module
+    from nistchempy.indexing import discovery as discovery_module
+    import nistchempy.indexing.builder as builder_module
 
     def fake_discover_formula_search(**kwargs):
         _ = kwargs
@@ -1028,7 +1028,7 @@ def test_write_seeds_records_fingerprint_and_clears_stale_partial(tmp_path):
 
 def test_enrich_convenience_preserves_seed_manifest_strategy(
         monkeypatch, tmp_path):
-    import nistchempy.index_builder as builder_module
+    import nistchempy.indexing.builder as builder_module
 
     builder = LocalIndexBuilder(
         path=tmp_path / 'cache',
@@ -1068,7 +1068,7 @@ def test_enrich_convenience_preserves_seed_manifest_strategy(
 
 
 def test_discovery_errors_are_wrapped_as_build_errors(monkeypatch, tmp_path):
-    from nistchempy import discovery as discovery_module
+    from nistchempy.indexing import discovery as discovery_module
 
     def failing_discovery(**kwargs):
         _ = kwargs

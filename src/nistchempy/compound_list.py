@@ -2,7 +2,7 @@
 
 import warnings as _warnings
 
-from nistchempy.index import get_local_index as _get_local_index
+from nistchempy.indexing.core import get_local_index as _get_local_index
 
 
 def get_all_data(path=None):

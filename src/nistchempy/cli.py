@@ -6,15 +6,15 @@ import argparse as _argparse
 import json as _json
 import sys as _sys
 
-from nistchempy.cache import resolve_index_path as _resolve_index_path
+from nistchempy.indexing.cache import resolve_index_path as _resolve_index_path
 from nistchempy.exceptions import NistChemPyDataTermsError
 from nistchempy.exceptions import NistChemPyIndexBuildError
 from nistchempy.exceptions import NistChemPyIndexNotFoundError
-from nistchempy.index import MANIFEST_FILENAME
-from nistchempy.index import WebBookIndex
-from nistchempy.index_builder import PARTIAL_INDEX_FILENAME
-from nistchempy.index_builder import SEEDS_FILENAME
-from nistchempy.index_builder import VALID_DISCOVERY_STRATEGIES
+from nistchempy.indexing.core import MANIFEST_FILENAME
+from nistchempy.indexing.core import WebBookIndex
+from nistchempy.indexing.builder import PARTIAL_INDEX_FILENAME
+from nistchempy.indexing.builder import SEEDS_FILENAME
+from nistchempy.indexing.builder import VALID_DISCOVERY_STRATEGIES
 
 
 _NOTICE = '''NistChemPy does not ship a prebuilt NIST Chemistry WebBook index.
