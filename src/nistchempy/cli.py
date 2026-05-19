@@ -3,13 +3,18 @@
 from __future__ import annotations
 
 import argparse as _argparse
+import json as _json
 import sys as _sys
 
 from nistchempy.cache import resolve_index_path as _resolve_index_path
 from nistchempy.exceptions import NistChemPyDataTermsError
 from nistchempy.exceptions import NistChemPyIndexBuildError
 from nistchempy.exceptions import NistChemPyIndexNotFoundError
+from nistchempy.index import MANIFEST_FILENAME
 from nistchempy.index import WebBookIndex
+from nistchempy.index_builder import SEEDS_FILENAME
+from nistchempy.index_builder import VALID_DISCOVERY_STRATEGIES
+from nistchempy.index_builder import unavailable_discovery_message
 from nistchempy.index_builder import unavailable_network_build_message
 
 
@@ -43,19 +48,35 @@ def _cmd_index_notice(args) -> int:
 
 def _cmd_index_status(args) -> int:
     path = _resolve_index_path(args.path)
-    if not WebBookIndex.exists(path):
-        print(f'No local WebBook index found at {path}.', file=_sys.stderr)
-        return 1
+    if WebBookIndex.exists(path):
+        index = WebBookIndex.from_cache(path)
+        print(f'Path: {index.path}')
+        print(f'Rows: {len(index.data)}')
+        strategy = index.manifest.get(
+            'strategy', index.manifest.get('mode', 'unknown')
+        )
+        print(f'Strategy: {strategy}')
+        capabilities = index.manifest.get('capabilities', [])
+        if capabilities:
+            print('Capabilities: ' + ', '.join(capabilities))
+        return 0
 
-    index = WebBookIndex.from_cache(path)
-    print(f'Path: {index.path}')
-    print(f'Rows: {len(index.data)}')
-    mode = index.manifest.get('mode', 'unknown')
-    print(f'Mode: {mode}')
-    capabilities = index.manifest.get('capabilities', [])
-    if capabilities:
-        print('Capabilities: ' + ', '.join(capabilities))
-    return 0
+    manifest = _read_manifest_if_available(path)
+    seeds_path = path / SEEDS_FILENAME
+    if seeds_path.exists():
+        print(f'Path: {path}')
+        print(f'Seeds: {seeds_path}')
+        if manifest:
+            strategy = manifest.get('strategy', 'unknown')
+            print(f'Strategy: {strategy}')
+            seed_count = manifest.get('seed_count', 'unknown')
+            print(f'Seed rows: {seed_count}')
+            print(f'Status: {manifest.get("status", "unknown")}')
+        print('Final index: missing')
+        return 0
+
+    print(f'No local WebBook index found at {path}.', file=_sys.stderr)
+    return 1
 
 
 def _cmd_index_search(args) -> int:
@@ -91,7 +112,7 @@ def _cmd_index_build(args) -> int:
     try:
         index = WebBookIndex.build(
             path=args.path,
-            mode=args.mode,
+            strategy=args.strategy,
             source_csv=args.from_csv,
             include_cas=args.include_cas,
             accept_data_terms=args.accept_data_terms,
@@ -114,7 +135,7 @@ def _cmd_index_update(args) -> int:
     try:
         index = WebBookIndex.update(
             path=args.path,
-            mode=args.mode,
+            strategy=args.strategy,
             source_csv=args.from_csv,
             include_cas=args.include_cas,
             accept_data_terms=args.accept_data_terms,
@@ -128,14 +149,24 @@ def _cmd_index_update(args) -> int:
     return 0
 
 
+def _cmd_index_discover(args) -> int:
+    _ = args
+    print(unavailable_discovery_message(), file=_sys.stderr)
+    return 2
+
+
+def _add_strategy_argument(parser):
+    parser.add_argument(
+        '--strategy',
+        choices=VALID_DISCOVERY_STRATEGIES,
+        default='formula-browser',
+        help='Compound-ID discovery strategy for future network builds.',
+    )
+
+
 def _add_build_arguments(parser):
     _add_path_argument(parser)
-    parser.add_argument(
-        '--mode',
-        choices=('discovery', 'availability', 'full'),
-        default='discovery',
-        help='Local index mode to record in the manifest.',
-    )
+    _add_strategy_argument(parser)
     parser.add_argument(
         '--from-csv',
         default=None,
@@ -159,6 +190,13 @@ def _add_build_arguments(parser):
         ),
     )
 
+
+def _read_manifest_if_available(path):
+    manifest_path = path / MANIFEST_FILENAME
+    if not manifest_path.exists():
+        return {}
+    with open(manifest_path, 'r', encoding='utf-8') as infile:
+        return _json.load(infile)
 
 
 def _build_parser():
@@ -203,6 +241,18 @@ def _build_parser():
     )
     _add_build_arguments(update_parser)
     update_parser.set_defaults(func=_cmd_index_update)
+
+    discover_parser = index_subparsers.add_parser(
+        'discover', help='Create intermediate discovery seeds.'
+    )
+    _add_path_argument(discover_parser)
+    _add_strategy_argument(discover_parser)
+    discover_parser.add_argument(
+        '--accept-data-terms',
+        action='store_true',
+        help='Acknowledge local data-generation terms.',
+    )
+    discover_parser.set_defaults(func=_cmd_index_discover)
 
     search_parser = index_subparsers.add_parser(
         'search', help='Search a local WebBook index.'

@@ -79,12 +79,13 @@ existing local CSV into the new cache layout:
 nistchempy index build \
   --from-csv /path/to/nist_data.csv \
   --path /path/to/webbook-index \
-  --mode availability \
   --accept-data-terms
 ```
 
-Network-based rebuilding of discovery/availability indexes is intentionally a
-separate next step and is not implemented by this import command yet.
+Network-based rebuilding is intentionally a separate next step and is not
+implemented by this import command yet. Future builds will use a discovery
+strategy, such as `formula-browser`, `formula-search`, or `sitemap`, to collect
+compound seeds before enriching them from individual compound pages.
 
 
 ## How To

@@ -8,6 +8,8 @@ import pytest
 import nistchempy as nist
 from nistchempy.cache import resolve_index_path
 from nistchempy.cli import main as cli_main
+from nistchempy.index_builder import DiscoverySeed
+from nistchempy.index_builder import LocalIndexBuilder
 
 
 def _write_index(path):
@@ -41,7 +43,7 @@ def _write_index(path):
     df.to_csv(path / 'index.csv', index=False)
     manifest = {
         'schema_version': 1,
-        'mode': 'availability',
+        'strategy': 'local-csv',
         'capabilities': ['compound_discovery', 'section_availability'],
     }
     (path / 'manifest.json').write_text(json.dumps(manifest), encoding='utf-8')
@@ -64,7 +66,7 @@ def test_load_local_index(tmp_path):
     index = nist.WebBookIndex.from_cache(tmp_path)
     df = index.to_dataframe()
     assert len(df) == 2
-    assert index.manifest['mode'] == 'availability'
+    assert index.manifest['strategy'] == 'local-csv'
     assert index.has_capability('section_availability')
     assert df.loc[0, 'mol_weight'] == pytest.approx(78.11)
 
@@ -78,7 +80,7 @@ def test_load_local_index_from_csv_file(tmp_path):
     index = nist.get_local_index(csv_path)
 
     assert list(index.search('benz', fields='name')['ID']) == ['C71432']
-    assert index.manifest['mode'] == 'legacy_csv'
+    assert index.manifest['strategy'] == 'legacy-csv'
     assert index.has_capability('compound_discovery')
     assert index.has_capability('section_availability')
 
@@ -137,7 +139,6 @@ def test_build_local_index_requires_data_terms(tmp_path):
         nist.WebBookIndex.build(
             path=tmp_path / 'cache',
             source_csv=csv_path,
-            mode='availability',
         )
 
 
@@ -150,12 +151,11 @@ def test_build_local_index_from_csv_writes_cache_layout(tmp_path):
     index = nist.WebBookIndex.build(
         path=tmp_path / 'cache',
         source_csv=csv_path,
-        mode='availability',
         accept_data_terms=True,
     )
 
     assert index.path == (tmp_path / 'cache').resolve()
-    assert index.manifest['mode'] == 'availability'
+    assert index.manifest['strategy'] == 'local-csv'
     assert index.manifest['row_count'] == 1
     assert index.has_capability('section_availability')
     assert (tmp_path / 'cache' / 'index.csv').exists()
@@ -176,8 +176,6 @@ def test_cli_build_from_csv(capsys, tmp_path):
         str(tmp_path / 'cache'),
         '--from-csv',
         str(csv_path),
-        '--mode',
-        'availability',
         '--accept-data-terms',
     ])
 
@@ -197,6 +195,74 @@ def test_cli_build_without_source_is_unavailable(capsys, tmp_path):
     ])
 
     assert status == 2
-    assert 'Network-based local index building is not implemented' in (
+    assert 'Network-based local index discovery and enrichment are not implemented' in (
+        capsys.readouterr().err
+    )
+
+
+def test_local_index_builder_writes_discovery_seeds(tmp_path):
+    builder = LocalIndexBuilder(
+        path=tmp_path / 'cache',
+        strategy='formula-browser',
+        accept_data_terms=True,
+    )
+
+    seeds = builder.write_seeds([
+        DiscoverySeed(
+            lookup_key='C71432',
+            lookup_url='/cgi/cbook.cgi?ID=C71432',
+            webbook_id='C71432',
+            name_hint='benzene',
+            formula_hint='C6H6',
+            source='formula-browser',
+            source_query='C6H6',
+        )
+    ])
+
+    assert list(seeds['webbook_id']) == ['C71432']
+    assert (tmp_path / 'cache' / 'seeds.csv').exists()
+    assert (tmp_path / 'cache' / 'manifest.json').exists()
+    manifest = json.loads(
+        (tmp_path / 'cache' / 'manifest.json').read_text(encoding='utf-8')
+    )
+    assert manifest['artifact'] == 'seeds'
+    assert manifest['strategy'] == 'formula-browser'
+    assert manifest['seed_count'] == 1
+
+
+def test_cli_status_reports_discovery_seeds(capsys, tmp_path):
+    builder = LocalIndexBuilder(
+        path=tmp_path / 'cache',
+        strategy='formula-browser',
+        accept_data_terms=True,
+    )
+    builder.write_seeds([DiscoverySeed(lookup_key='C71432')])
+
+    status = cli_main([
+        'index',
+        'status',
+        '--path',
+        str(tmp_path / 'cache'),
+    ])
+
+    assert status == 0
+    output = capsys.readouterr().out
+    assert 'Final index: missing' in output
+    assert 'Seed rows: 1' in output
+
+
+def test_cli_discover_is_declared_but_unavailable(capsys, tmp_path):
+    status = cli_main([
+        'index',
+        'discover',
+        '--path',
+        str(tmp_path / 'cache'),
+        '--strategy',
+        'formula-browser',
+        '--accept-data-terms',
+    ])
+
+    assert status == 2
+    assert 'Discovery-only seed generation is not implemented' in (
         capsys.readouterr().err
     )

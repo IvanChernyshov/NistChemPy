@@ -63,7 +63,8 @@ def _infer_manifest(data: _pd.DataFrame, csv_path: _Path) -> dict:
 
     return {
         'schema_version': 1,
-        'mode': 'legacy_csv',
+        'artifact': 'index',
+        'strategy': 'legacy-csv',
         'capabilities': capabilities,
         'source_path': str(csv_path),
     }
@@ -161,17 +162,19 @@ class WebBookIndex:
 
     @classmethod
     def build(
-            cls, path=None, mode='discovery', source_csv=None,
+            cls, path=None, strategy='formula-browser', source_csv=None,
             include_cas=False, accept_data_terms=False, replace=True):
         '''Build or import a user-local WebBook index.
 
         This development-step implementation supports importing an existing
-        local CSV into the cache layout. Network-based WebBook traversal is
-        implemented in a later builder patch.
+        local CSV into the cache layout. Network-based WebBook discovery and
+        page enrichment are implemented in later builder patches.
 
         Args:
             path: Optional destination local index directory.
-            mode: Local index mode stored in the manifest.
+            strategy: Compound-discovery strategy for network builds. The
+                current implementation records this API but only supports
+                ``source_csv`` imports.
             source_csv: Optional existing local CSV file to import.
             include_cas: Whether the local index intentionally includes CAS RN
                 values.
@@ -192,13 +195,13 @@ class WebBookIndex:
         from nistchempy.index_builder import unavailable_network_build_message
 
         if source_csv is None:
+            _ = strategy
             message = unavailable_network_build_message()
             raise NistChemPyIndexBuildError(message)
 
         return import_index_csv(
             source_csv,
             path=path,
-            mode=mode,
             include_cas=include_cas,
             accept_data_terms=accept_data_terms,
             replace=replace,
@@ -206,7 +209,7 @@ class WebBookIndex:
 
     @classmethod
     def update(
-            cls, path=None, mode='discovery', source_csv=None,
+            cls, path=None, strategy='formula-browser', source_csv=None,
             include_cas=False, accept_data_terms=False):
         '''Update a user-local WebBook index.
 
@@ -216,7 +219,7 @@ class WebBookIndex:
 
         Args:
             path: Optional destination local index directory.
-            mode: Local index mode stored in the manifest.
+            strategy: Compound-discovery strategy for future network builds.
             source_csv: Optional existing local CSV file to import.
             include_cas: Whether the local index intentionally includes CAS RN
                 values.
@@ -228,7 +231,7 @@ class WebBookIndex:
         '''
         return cls.build(
             path=path,
-            mode=mode,
+            strategy=strategy,
             source_csv=source_csv,
             include_cas=include_cas,
             accept_data_terms=accept_data_terms,
