@@ -63,6 +63,9 @@ dev = [
   "nbconvert",
   "nbsphinx",
 ]
+structure = [
+  "rdkit",
+]
 
 [project.urls]
 Documentation = "https://mucommons.github.io/NistChemPy/"
