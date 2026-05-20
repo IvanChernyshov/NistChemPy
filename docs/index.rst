@@ -2,7 +2,7 @@
 Welcome to the NistChemPy documentation!
 =========================================
 
-.. image:: https://zenodo.org/badge/DOI/10.5281/zenodo.20235917.svg
+.. image:: https://img.shields.io/badge/DOI-10.5281%2Fzenodo.20235917-blue.svg
    :target: https://doi.org/10.5281/zenodo.20235917
    :alt: DOI
 

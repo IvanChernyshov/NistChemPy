@@ -1,9 +1,16 @@
 # NistChemPy
 
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.20235917.svg)](https://doi.org/10.5281/zenodo.20235917)
-
+[![DOI](https://img.shields.io/badge/DOI-10.5281%2Fzenodo.20235917-blue.svg)](https://doi.org/10.5281/zenodo.20235917)
 
 Unofficial Python tools for querying NIST Chemistry WebBook pages and extracting molecular-property records.
+
+
+> [!WARNING]
+> **Old PyPI releases scheduled for removal.**
+>
+> NistChemPy versions earlier than 2.0.0 may contain bundled WebBook-derived index data, including `nist_data.csv` / `nist_data.zip`. Starting with NistChemPy 2.0.0, the project follows a software-only distribution model and no longer redistributes prebuilt NIST Chemistry WebBook / SRD 69 indexes or bulk extracted WebBook-derived data.
+>
+> Affected old PyPI release files are scheduled to be removed on **June 1, 2026**. Please migrate to `nistchempy>=2.0.0` and build/import local indexes using the documented local-index workflows.
 
 
 > **Project notice:** NistChemPy is an unofficial Python package for querying NIST Chemistry WebBook pages and extracting selected molecular-property records. It is not affiliated with, maintained by, or endorsed by NIST. Because the Chemistry WebBook does not provide a stable public web API for this package, functionality may depend on the current structure and behavior of the external web service.
