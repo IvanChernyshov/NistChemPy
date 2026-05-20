@@ -4,8 +4,6 @@ import os, tempfile
 
 import pytest
 
-Chem = pytest.importorskip('rdkit.Chem')
-
 import nistchempy as nist
 
 
@@ -54,9 +52,8 @@ class TestSearch:
 
 
 
+@pytest.mark.rdkit
 class TestStructuralSearch():
-    
-    molblock = Chem.MolToMolBlock(Chem.MolFromSmiles('CC(=O)OCC'))
     
     def test_missing_mol(self):
         with pytest.raises(ValueError) as _:
@@ -68,19 +65,25 @@ class TestStructuralSearch():
     
     def test_search_molfile(self):
         with tempfile.NamedTemporaryFile(delete=False, mode='wt') as fp:
-            fp.write(self.molblock)
+            fp.write(nist.molblock_from_smiles('CC(=O)OCC'))
             fp.close()
         s = nist.run_structural_search(molfile=fp.name, search_type='struct')
         os.remove(fp.name)
         assert s.compound_ids
     
     def test_search_molblock(self):
-        s = nist.run_structural_search(molblock=self.molblock,
+        s = nist.run_structural_search(molblock=nist.molblock_from_smiles('CC(=O)OCC'),
+                                       search_type='struct')
+        assert s.compound_ids
+    
+    def test_search_smiles(self):
+        pytest.importorskip('rdkit.Chem')
+        s = nist.run_structural_search(smiles='CC(=O)OCC',
                                        search_type='struct')
         assert s.compound_ids
     
     def test_search_substructure(self):
-        s = nist.run_structural_search(molblock=self.molblock,
+        s = nist.run_structural_search(molblock=nist.molblock_from_smiles('CC(=O)OCC'),
                                        search_type='sub')
         assert s.num_compounds > 100
     

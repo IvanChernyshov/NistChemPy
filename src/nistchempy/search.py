@@ -9,6 +9,7 @@ import typing as _tp
 import nistchempy.requests as _ncpr
 import nistchempy.compound as _compound
 import nistchempy.parsing as _parsing
+import nistchempy.structure as _structure
 
 
 #%% Search parameters helper
@@ -352,71 +353,96 @@ def run_structural_search(
         search_parameters: _tp.Optional[NistSearchParameters] = None,
         request_config: _tp.Optional[_ncpr.RequestConfig] = None,
         use_SI: bool = True, cTG: bool = False, cTC: bool = False,
-        cTP: bool = False, cTR: bool = False, cIE: bool = False, 
-        cIC: bool = False, cIR: bool = False, cTZ: bool = False, 
-        cMS: bool = False, cUV: bool = False, cGC: bool = False, 
-        cES: bool = False, cDI: bool = False, cSO: bool = False
+        cTP: bool = False, cTR: bool = False, cIE: bool = False,
+        cIC: bool = False, cIR: bool = False, cTZ: bool = False,
+        cMS: bool = False, cUV: bool = False, cGC: bool = False,
+        cES: bool = False, cDI: bool = False, cSO: bool = False,
+        smiles: _tp.Optional[str] = None, inchi: _tp.Optional[str] = None
     ) -> NistSearch:
-    '''Runs (sub)structural search for compounds in NIST Chemistry WebBook
-    
-    Arguments:
-        molfile (_tp.Optional[str]): path to the MOL-file of the structure to search; if specified, molblock is ignored
-        molblock (_tp.Optional[str]): text of the MOL-file of the structure to search
-        search_type (str): type of structural search, available options are:
-            - 'struct': exact match
-            - 'sub': substructure search (default) 
-        search_parameters (_tp.Optional[NistSearchParameters]): search parameters; if provided, the following search parameter arguments are ignored
-        request_config (_tp.Optional[_ncpr.RequestConfig]): additional requests.get parameters
-        use_SI (bool): if True, returns results in SI units. otherwise calories are used
-        cTG (bool): if True, returns entries containing gas-phase thermodynamic data
-        cTC (bool): if True, returns entries containing condensed-phase thermodynamic data
-        cTP (bool): if True, returns entries containing phase-change thermodynamic data
-        cTR (bool): if True, returns entries containing reaction thermodynamic data
-        cIE (bool): if True, returns entries containing ion energetics thermodynamic data
-        cIC (bool): if True, returns entries containing ion cluster thermodynamic data
-        cIR (bool): if True, returns entries containing IR data
-        cTZ (bool): if True, returns entries containing THz IR data
-        cMS (bool): if True, returns entries containing MS data
-        cUV (bool): if True, returns entries containing UV/Vis data
-        cGC (bool): if True, returns entries containing gas chromatography data
-        cES (bool): if True, returns entries containing vibrational and electronic energy levels
-        cDI (bool): if True, returns entries containing constants of diatomic molecules
-        cSO (bool): if True, returns entries containing info on Henry\'s law
-    
+    '''Runs (sub)structural search in NIST Chemistry WebBook.
+
+    RDKit is required only when ``smiles`` or ``inchi`` is supplied and
+    NistChemPy must convert that structure into a MOL block. Passing
+    ``molfile`` or ``molblock`` directly does not require RDKit.
+
+    Args:
+        molfile: Optional path to a MOL file.
+        molblock: Optional MOL block text.
+        search_type: Structural search type: ``struct`` for exact match or
+            ``sub`` for substructure search.
+        search_parameters: Optional search parameters. If provided, the
+            individual boolean search-parameter arguments are ignored.
+        request_config: Optional request configuration.
+        use_SI: If True, returns thermodynamic values in SI units.
+        cTG: Return entries containing gas-phase thermodynamic data.
+        cTC: Return entries containing condensed-phase thermodynamic data.
+        cTP: Return entries containing phase-change thermodynamic data.
+        cTR: Return entries containing reaction thermodynamic data.
+        cIE: Return entries containing ion energetics thermodynamic data.
+        cIC: Return entries containing ion cluster thermodynamic data.
+        cIR: Return entries containing IR data.
+        cTZ: Return entries containing THz IR data.
+        cMS: Return entries containing MS data.
+        cUV: Return entries containing UV/Vis data.
+        cGC: Return entries containing gas chromatography data.
+        cES: Return entries containing vibrational/electronic energy levels.
+        cDI: Return entries containing constants of diatomic molecules.
+        cSO: Return entries containing Henry's law data.
+        smiles: Optional SMILES string converted to a MOL block with RDKit.
+        inchi: Optional InChI string converted to a MOL block with RDKit.
+
     Returns:
-        NistSearch: search object containing info on found compounds
-    
+        NistSearch: Search object containing found compounds.
+
+    Raises:
+        ValueError: If the search type or structural input selection is
+            invalid.
+        NistChemPyOptionalDependencyError: If RDKit is required but missing.
     '''
-    # check search_type
     if search_type.lower() not in ('sub', 'struct'):
-        raise ValueError(f'search_type must be one of "sub" or "struct": {search_type}')
-    
-    # check molfile
-    if molfile:
+        raise ValueError(
+            f'search_type must be one of "sub" or "struct": {search_type}'
+        )
+
+    provided = [
+        value is not None for value in (molfile, molblock, smiles, inchi)
+    ]
+    if sum(provided) != 1:
+        raise ValueError(
+            'Exactly one of molfile, molblock, smiles, or inchi must be '
+            'provided.'
+        )
+
+    if molfile is not None:
         with open(molfile, 'rb') as inpf:
             fmol = _io.BytesIO(inpf.read())
-    elif molblock:
-        fmol = _io.BytesIO(molblock.encode('utf-8'))
     else:
-        raise ValueError('Both molfile and molblock parameters are None')
+        if smiles is not None:
+            molblock = _structure.molblock_from_smiles(smiles)
+        elif inchi is not None:
+            molblock = _structure.molblock_from_inchi(inchi)
+        fmol = _io.BytesIO(molblock.encode('utf-8'))
     files = {'MolFile': ('example.mol', fmol)}
-    
-    # prepare search parameters
+
     if search_parameters is None:
         search_parameters = NistSearchParameters(
-            use_SI = use_SI, match_isotopes = False, allow_other = False,
-            allow_extra = False, no_ion = False, cTG = cTG, cTC = cTC,
-            cTP = cTP, cTR = cTR, cIE = cIE, cIC = cIC, cIR = cIR, cTZ = cTZ,
-            cMS = cMS, cUV = cUV, cGC = cGC, cES = cES, cDI = cDI, cSO = cSO
+            use_SI=use_SI, match_isotopes=False, allow_other=False,
+            allow_extra=False, no_ion=False, cTG=cTG, cTC=cTC, cTP=cTP,
+            cTR=cTR, cIE=cIE, cIC=cIC, cIR=cIR, cTZ=cTZ, cMS=cMS,
+            cUV=cUV, cGC=cGC, cES=cES, cDI=cDI, cSO=cSO,
         )
-    # prepare POST parameters
-    params = {'StrSave': 'File', 'Type': search_type.capitalize(),
-              **search_parameters.get_request_parameters()}
-    
-    # load webpage
+
+    params = {
+        'StrSave': 'File',
+        'Type': search_type.capitalize(),
+        **search_parameters.get_request_parameters(),
+    }
+
     config = request_config or _ncpr.RequestConfig()
-    nr = _ncpr.make_nist_post_request(_ncpr.SEARCH_URL, data=params,
-                                      files=files, config=config)
-    search = search_from_response(nr, search_parameters, config)
-    
-    return search
+    nr = _ncpr.make_nist_post_request(
+        _ncpr.SEARCH_URL,
+        data=params,
+        files=files,
+        config=config,
+    )
+    return search_from_response(nr, search_parameters, config)

@@ -224,3 +224,48 @@ def query_mol_from_input(
     if molblock is not None:
         return mol_from_molblock(molblock)
     return mol_from_molfile(molfile)
+
+
+def morgan_fingerprint(mol, radius: int = 2, fp_size: int = 2048):
+    """Return an RDKit Morgan fingerprint bit vector.
+
+    Args:
+        mol: RDKit molecule.
+        radius: Morgan fingerprint radius.
+        fp_size: Fingerprint size in bits.
+
+    Returns:
+        ExplicitBitVect: RDKit fingerprint.
+    """
+    try:
+        generator_module = _importlib.import_module(
+            'rdkit.Chem.rdFingerprintGenerator'
+        )
+    except ImportError as exc:
+        raise NistChemPyOptionalDependencyError(
+            _RDKIT_INSTALL_MESSAGE
+        ) from exc
+    generator = generator_module.GetMorganGenerator(
+        radius=radius,
+        fpSize=fp_size,
+    )
+    return generator.GetFingerprint(mol)
+
+
+def tanimoto_similarity(fp1, fp2) -> float:
+    """Return Tanimoto similarity between two RDKit fingerprints.
+
+    Args:
+        fp1: First RDKit fingerprint.
+        fp2: Second RDKit fingerprint.
+
+    Returns:
+        float: Tanimoto similarity.
+    """
+    try:
+        data_structs = _importlib.import_module('rdkit.DataStructs')
+    except ImportError as exc:
+        raise NistChemPyOptionalDependencyError(
+            _RDKIT_INSTALL_MESSAGE
+        ) from exc
+    return float(data_structs.TanimotoSimilarity(fp1, fp2))

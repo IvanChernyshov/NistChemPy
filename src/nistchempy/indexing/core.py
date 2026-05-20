@@ -108,6 +108,16 @@ class WebBookIndex:
         _, csv_path = _resolve_index_files(path)
         return csv_path.exists()
 
+
+    @classmethod
+    def default_path(cls):
+        '''Return the default user-local WebBook index directory.
+
+        Returns:
+            pathlib.Path: Resolved default local index cache directory.
+        '''
+        return _resolve_index_path(None)
+
     @classmethod
     def from_cache(cls, path=None, require=True):
         '''Load a user-local WebBook index.
@@ -583,6 +593,98 @@ class WebBookIndex:
             return False
         return property_name in self.available_properties(compound_id)
 
+
+
+    def structural_search(
+            self, *, smiles=None, inchi=None, molblock=None, molfile=None,
+            mode='substructure', threshold=0.7, limit=None, errors='ignore'):
+        '''Run RDKit-assisted structural search over the local index.
+
+        Local structural search is a lightweight linear scan over the
+        index ``inchi`` / ``inchi_key`` columns. It is useful for small and
+        medium local indexes, but it is not a persistent fingerprint database.
+
+        Args:
+            smiles: Optional SMILES query.
+            inchi: Optional InChI query.
+            molblock: Optional MOL block query.
+            molfile: Optional path to a MOL file query.
+            mode: Search mode: ``exact``, ``substructure``, or ``similarity``.
+            threshold: Minimum Tanimoto similarity for ``similarity`` mode.
+            limit: Optional maximum number of rows to return.
+            errors: Error policy for invalid indexed InChI values: ``ignore``
+                or ``raise``.
+
+        Returns:
+            pandas.DataFrame: Matching local index rows. Similarity results
+            include a ``similarity`` column sorted from highest to lowest.
+
+        Raises:
+            ValueError: If mode/errors are invalid or the query is invalid.
+            NistChemPyOptionalDependencyError: If RDKit is unavailable.
+        '''
+        if mode not in {'exact', 'substructure', 'similarity'}:
+            raise ValueError(
+                'mode must be one of exact, substructure, or similarity'
+            )
+        if errors not in {'ignore', 'raise'}:
+            raise ValueError('errors must be one of ignore or raise')
+
+        import nistchempy.structure as _structure
+
+        query_mol = _structure.query_mol_from_input(
+            smiles=smiles,
+            inchi=inchi,
+            molblock=molblock,
+            molfile=molfile,
+        )
+
+        if mode == 'exact':
+            if 'inchi_key' not in self.data.columns:
+                return self.data.iloc[0:0].copy()
+            query_key = _structure.mol_to_inchi_key(query_mol)
+            values = self.data['inchi_key'].fillna('').astype(str).str.strip()
+            result = self.data[values == query_key].copy()
+            if limit is not None:
+                result = result.head(limit)
+            return result
+
+        if 'inchi' not in self.data.columns:
+            return self.data.iloc[0:0].copy()
+
+        if mode == 'similarity':
+            query_fp = _structure.morgan_fingerprint(query_mol)
+
+        matches = []
+        for idx, row in self.data.iterrows():
+            row_inchi = row.get('inchi', '')
+            if _pd.isna(row_inchi) or not str(row_inchi).strip():
+                continue
+            try:
+                row_mol = _structure.mol_from_inchi(str(row_inchi).strip())
+            except Exception:
+                if errors == 'raise':
+                    raise
+                continue
+
+            if mode == 'substructure':
+                if row_mol.HasSubstructMatch(query_mol):
+                    matches.append((idx, None))
+            else:
+                row_fp = _structure.morgan_fingerprint(row_mol)
+                similarity = _structure.tanimoto_similarity(query_fp, row_fp)
+                if similarity >= threshold:
+                    matches.append((idx, similarity))
+
+        indices = [idx for idx, _ in matches]
+        result = self.data.loc[indices].copy()
+        if mode == 'similarity':
+            scores = [score for _, score in matches]
+            result['similarity'] = scores
+            result = result.sort_values('similarity', ascending=False)
+        if limit is not None:
+            result = result.head(limit)
+        return result
 
     def search(
             self, query: str, fields=None, case=False, regex=False,

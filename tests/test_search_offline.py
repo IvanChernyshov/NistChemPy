@@ -132,3 +132,37 @@ def test_run_structural_search_rejects_missing_structure():
         search_module.run_structural_search(search_type='sub')
     with pytest.raises(ValueError):
         search_module.run_structural_search(molblock='dummy', search_type='bad')
+
+
+def test_run_structural_search_accepts_smiles(monkeypatch):
+    calls = []
+
+    def fake_post(url, data=None, files=None, config=None):
+        calls.append((url, data, files, config))
+        return nist_response_from_html('search_results.html')
+
+    monkeypatch.setattr(search_module._ncpr, 'make_nist_post_request', fake_post)
+    monkeypatch.setattr(
+        search_module._structure,
+        'molblock_from_smiles',
+        lambda smiles: 'dummy molblock from smiles',
+    )
+
+    result = search_module.run_structural_search(
+        smiles='c1ccccc1',
+        search_type='struct',
+    )
+
+    assert result.compound_ids == ['C111111', 'C222222']
+    assert 'MolFile' in calls[0][2]
+    assert calls[0][1]['Type'] == 'Struct'
+
+
+def test_run_structural_search_rejects_multiple_inputs():
+    import pytest
+
+    with pytest.raises(ValueError):
+        search_module.run_structural_search(
+            molblock='dummy',
+            smiles='CCO',
+        )
