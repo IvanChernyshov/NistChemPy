@@ -112,18 +112,6 @@ nistchempy.utils
 
 
 
-nistchempy.cache
-----------------
-
-.. automodule:: nistchempy.cache
-   :imported-members:
-   :members:
-   :undoc-members:
-   :show-inheritance:
-   :member-order: bysource
-   :noindex:
-
-
 nistchempy.exceptions
 ----------------------
 

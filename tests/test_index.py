@@ -278,7 +278,7 @@ class _FakeResponse:
 
 
 def test_parse_formula_browser_page_extracts_prefixes_and_seeds():
-    from nistchempy.discovery import parse_formula_browser_page
+    from nistchempy.indexing.discovery import parse_formula_browser_page
 
     html = '''
     <html><body><ul>
@@ -307,7 +307,7 @@ def test_parse_formula_browser_page_extracts_prefixes_and_seeds():
 
 
 def test_formula_browser_discovery_traverses_prefix_pages():
-    from nistchempy.discovery import discover_formula_browser
+    from nistchempy.indexing.discovery import discover_formula_browser
 
     pages = {
         'https://webbook.nist.gov/cgi/formula/': '''
@@ -342,7 +342,7 @@ class _FakeSearchResult:
 
 
 def test_formula_search_discovery_refines_lost_queries():
-    from nistchempy.discovery import discover_formula_search
+    from nistchempy.indexing.discovery import discover_formula_search
 
     responses = {
         'C1': _FakeSearchResult(['C1ROOT'], lost=True),
@@ -381,7 +381,7 @@ def test_formula_search_discovery_refines_lost_queries():
 
 
 def test_formula_search_discovery_records_unresolved_lost_queries():
-    from nistchempy.discovery import discover_formula_search
+    from nistchempy.indexing.discovery import discover_formula_search
 
     def fake_search(formula, params, config):
         _ = params, config
@@ -412,7 +412,7 @@ def test_formula_search_discovery_records_unresolved_lost_queries():
 
 
 def test_formula_search_discovery_requires_explicit_carbon_end():
-    from nistchempy.discovery import discover_formula_search
+    from nistchempy.indexing.discovery import discover_formula_search
 
     with pytest.raises(ValueError, match='explicit carbon_end'):
         discover_formula_search()
@@ -472,7 +472,7 @@ def test_local_index_builder_logs_lost_formula_search_queries(tmp_path):
 
 
 def test_parse_robots_sitemaps_extracts_sitemap_urls():
-    from nistchempy.discovery import parse_robots_sitemaps
+    from nistchempy.indexing.discovery import parse_robots_sitemaps
 
     text = '''
     User-agent: *
@@ -492,7 +492,7 @@ def test_parse_robots_sitemaps_extracts_sitemap_urls():
 
 
 def test_parse_sitemap_xml_extracts_nested_sitemaps_and_seeds():
-    from nistchempy.discovery import parse_sitemap_xml
+    from nistchempy.indexing.discovery import parse_sitemap_xml
 
     xml = '''
     <sitemapindex>
@@ -526,7 +526,7 @@ def test_parse_sitemap_xml_extracts_nested_sitemaps_and_seeds():
 
 
 def test_parse_sitemap_xml_handles_namespaces_without_lxml():
-    from nistchempy.discovery import parse_sitemap_xml
+    from nistchempy.indexing.discovery import parse_sitemap_xml
 
     xml = '''
     <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
@@ -544,7 +544,7 @@ def test_parse_sitemap_xml_handles_namespaces_without_lxml():
 
 
 def test_sitemap_discovery_traverses_robots_and_sitemaps():
-    from nistchempy.discovery import discover_sitemap
+    from nistchempy.indexing.discovery import discover_sitemap
 
     pages = {
         'https://webbook.nist.gov/robots.txt': (
