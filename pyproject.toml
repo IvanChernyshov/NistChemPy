@@ -35,13 +35,12 @@ classifiers = [
     "Topic :: Scientific/Engineering :: Chemistry",
 ]
 dependencies = [
-  "importlib-resources>=1.1.0; python_version<'3.9'",
   "requests",
   "pandas",
   "beautifulsoup4",
   "platformdirs"
 ]
-requires-python = ">= 3.7"
+requires-python = ">= 3.9"
 dynamic = ["version"]
 
 [project.optional-dependencies]

@@ -10,8 +10,12 @@
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 #
-import sys, os
+import os
+import sys
+
 sys.path.insert(0, os.path.abspath('../src/'))
+
+import nistchempy
 
 
 # -- Project information -----------------------------------------------------
@@ -21,7 +25,7 @@ copyright = '2023-2026, Ivan Yu. Chernyshov'
 author = 'Ivan Yu. Chernyshov'
 
 # The full version, including alpha/beta/rc tags
-release = '1.0.6'
+release = nistchempy.__version__
 
 
 # -- General configuration ---------------------------------------------------
@@ -70,6 +74,6 @@ html_theme = 'sphinx_rtd_theme'
 # -- Options for exts ----------------------------------------------
 
 # myst-nb
-nb_execution_mode = "off"
+nbsphinx_execute = 'never'
 #nb_execution_cache_path = "source/cache"
 

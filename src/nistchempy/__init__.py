@@ -5,8 +5,8 @@ WebBook pages for research workflows. It is not affiliated with,
 maintained by, or endorsed by NIST.
 '''
 
-__version__ = '1.1.0.dev0'
-__updated__ = 'May 19, 2026'
+__version__ = '2.0.0.dev0'
+__updated__ = 'May 20, 2026'
 __license__ = 'MIT'
 
 

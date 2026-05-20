@@ -22,6 +22,10 @@ Unreleased
 
 * Removes legacy ``update/`` reconstruction scripts in favor of the supported ``nistchempy index`` CLI workflow.
 
+* Targets Python 3.9+ for the 2.0 development line.
+
+* Adds ``DATA_NOTICE.md`` and configures Sphinx to render pregenerated notebooks without live execution during documentation builds.
+
 1.0.6
 -----
 

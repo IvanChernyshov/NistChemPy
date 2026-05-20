@@ -3,8 +3,7 @@
 Unofficial Python tools for querying NIST Chemistry WebBook pages and extracting molecular-property records.
 
 
-> **Status:** development branch.
-> NistChemPy is an unofficial Python package for querying NIST Chemistry WebBook pages and extracting selected molecular-property records. It is not affiliated with, maintained by, or endorsed by NIST. Because the Chemistry WebBook does not provide a stable public web API for this package, functionality may depend on the current structure and behavior of the external web service.
+> **Project notice:** NistChemPy is an unofficial Python package for querying NIST Chemistry WebBook pages and extracting selected molecular-property records. It is not affiliated with, maintained by, or endorsed by NIST. Because the Chemistry WebBook does not provide a stable public web API for this package, functionality may depend on the current structure and behavior of the external web service.
 >
 > **Important index change:** NistChemPy no longer ships a prebuilt NIST Chemistry WebBook compound index. Live WebBook search and individual compound-page parsing remain separate functionality, but local index search now requires a user-generated local index/cache. Rebuilding a full section-availability index can require visiting one WebBook page per compound; with a polite 3 second delay and roughly 100,000-150,000 pages, the initial rebuild can take about 3.5-5+ days before retries and network overhead.
 
@@ -56,7 +55,7 @@ pip install nistchempy
 
 > [!WARNING]
 > Please note that versions starting with 1.0.0 are not backward compatible with the older alpha versions due to significant changes in the code structure.
-> Development versions after 1.0.6 remove the packaged WebBook-derived index. Code that previously used the old bundled index should migrate to a user-local index loaded with `nistchempy.WebBookIndex.from_cache()` or `nistchempy.get_local_index()`.
+> Version 2.0.0 removes the packaged WebBook-derived index. Code that previously used the old bundled index should migrate to a user-local index loaded with `nistchempy.WebBookIndex.from_cache()` or `nistchempy.get_local_index()`.
 
 
 ## Local WebBook index
@@ -100,7 +99,7 @@ nistchempy index discover \
 A full page-enriched build may need to visit many compound pages and can take
 several days with a polite request delay. Generated local index/cache files
 are user-local artifacts and are not covered by the NistChemPy software
-license. For migration/testing, an existing local CSV can also be imported
+license. See [DATA_NOTICE.md](DATA_NOTICE.md) for the repository-level data notice. For migration/testing, an existing local CSV can also be imported
 into the new cache layout:
 
 ```bash
