@@ -1,122 +1,92 @@
 NistChemPy API
 ==============
 
+The public API is organized around four tasks: live WebBook search, compound
+page parsing, user-local index access, and low-level request/parsing helpers.
+Internal local-index implementation modules under ``nistchempy.indexing`` are
+not documented here as public API.
 
-nistchempy
-----------
+Top-level package
+-----------------
 
 .. automodule:: nistchempy
-   :imported-members:
    :members:
    :undoc-members:
    :show-inheritance:
    :member-order: bysource
    :noindex:
 
-
-nistchempy.compound
--------------------
-
-.. automodule:: nistchempy.compound
-   :imported-members:
-   :members:
-   :undoc-members:
-   :show-inheritance:
-   :member-order: bysource
-   :noindex:
-
-
-nistchempy.search
------------------------
+Search
+------
 
 .. automodule:: nistchempy.search
-   :imported-members:
    :members:
    :undoc-members:
    :show-inheritance:
    :member-order: bysource
    :noindex:
 
+Compounds
+---------
 
-nistchempy.index
-----------------
+.. automodule:: nistchempy.compound
+   :members:
+   :undoc-members:
+   :show-inheritance:
+   :member-order: bysource
+   :noindex:
+
+Local indexes
+-------------
 
 .. automodule:: nistchempy.index
-   :imported-members:
    :members:
    :undoc-members:
    :show-inheritance:
    :member-order: bysource
    :noindex:
 
-
-nistchempy.requests
--------------------
+Requests
+--------
 
 .. automodule:: nistchempy.requests
-   :imported-members:
    :members:
    :undoc-members:
    :show-inheritance:
    :member-order: bysource
    :noindex:
 
+Parsing helpers
+---------------
 
-nistchempy.parsing
-------------------
-
-.. automodule:: nistchempy.parsing
-   :imported-members:
-   :members:
-   :undoc-members:
-   :show-inheritance:
-   :member-order: bysource
-   :noindex:
-
-
-nistchempy.parsing.compound
-^^^^^^^^^^^^^^^^^^^^^^^^^^^
+The parsing modules are useful for maintainers and advanced users who need to
+inspect or adapt WebBook HTML parsing behavior.
 
 .. automodule:: nistchempy.parsing.compound
-   :imported-members:
    :members:
    :undoc-members:
    :show-inheritance:
    :member-order: bysource
    :noindex:
-
-
-nistchempy.parsing.gas_chromatography
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. automodule:: nistchempy.parsing.gas_chromatography
-   :imported-members:
    :members:
    :undoc-members:
    :show-inheritance:
    :member-order: bysource
    :noindex:
 
-
-nistchempy.utils
-----------------
+Utilities and exceptions
+------------------------
 
 .. automodule:: nistchempy.utils
-   :imported-members:
    :members:
    :undoc-members:
    :show-inheritance:
    :member-order: bysource
    :noindex:
 
-
-
-
-nistchempy.exceptions
-----------------------
-
 .. automodule:: nistchempy.exceptions
-   :imported-members:
    :members:
    :undoc-members:
    :show-inheritance:

@@ -49,15 +49,18 @@ docs = [
   "sphinx-gallery",
   "sphinx-rtd-theme",
   "notebook",
+  "nbconvert",
   "nbsphinx",
 ]
 dev = [
   "build",
   "pytest",
+  "coverage[toml]",
   "sphinx",
   "sphinx-gallery",
   "sphinx-rtd-theme",
   "notebook",
+  "nbconvert",
   "nbsphinx",
 ]
 

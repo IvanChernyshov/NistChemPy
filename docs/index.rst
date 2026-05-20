@@ -9,7 +9,7 @@ Welcome to the NistChemPy documentation!
 
    Basic Search <source/basic_search.ipynb>
    Compound Properties <source/compound_properties.ipynb>
-   Advanced Search <source/advanced_search.ipynb>
+   Local WebBook Index <source/advanced_search.ipynb>
    Requests Configuration <source/requests_config.ipynb>
 
 
@@ -19,6 +19,8 @@ Welcome to the NistChemPy documentation!
    :caption: Package details:
 
    Package API <source/api>
+   Data notice <source/data_notice>
+   Maintainer workflows <source/maintainer_workflows>
    Changelog <source/changelog>
 
 

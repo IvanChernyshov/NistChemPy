@@ -1,0 +1,94 @@
+Maintainer workflows
+====================
+
+This page records the recommended local checks for maintainers. The default
+workflow is offline and deterministic. Live NIST Chemistry WebBook checks are
+kept separate because failures may reflect network availability or upstream
+HTML changes rather than a package regression.
+
+Offline tests
+-------------
+
+Install development dependencies and run the default suite:
+
+.. code-block:: bash
+
+   python -m pip install -e ".[dev]"
+   pytest -q
+
+The default suite uses synthetic/sanitized fixtures and does not contact the
+NIST Chemistry WebBook.
+
+Coverage
+--------
+
+For a coverage report:
+
+.. code-block:: bash
+
+   coverage run -m pytest -q
+   coverage report -m
+
+The index subsystem, request wrappers, search parsing, compound objects, and
+implemented property parsers should remain covered by offline tests. New parser
+features should normally add synthetic or sanitized fixture pages under
+``tests/fixtures/``.
+
+Online tests
+------------
+
+Live integration tests are stored under ``tests/online`` and marked with
+``network``. Run them explicitly:
+
+.. code-block:: bash
+
+   NISTCHEMPY_RUN_NETWORK=1 pytest -q -m network
+
+Long-running or broad WebBook reconstruction tests should not be added to the
+normal online suite. Prefer small smoke tests with known stable pages. If a live
+test fails, first check whether the upstream WebBook page or network behavior
+changed before treating it as a package bug.
+
+Notebook regeneration
+---------------------
+
+Documentation notebooks are committed with pregenerated outputs, while Sphinx is
+configured with ``nbsphinx_execute = 'never'``. Regenerate notebooks manually
+when examples or public APIs change:
+
+.. code-block:: bash
+
+   python -m pip install -e ".[docs]"
+   jupyter nbconvert --execute docs/source/basic_search.ipynb --inplace
+   jupyter nbconvert --execute docs/source/compound_properties.ipynb --inplace
+   jupyter nbconvert --execute docs/source/advanced_search.ipynb --inplace
+   jupyter nbconvert --execute docs/source/requests_config.ipynb --inplace
+
+The committed notebooks should avoid live WebBook requests. Use synthetic local
+examples for deterministic docs and put live commands in commented cells or
+prose.
+
+Documentation build
+-------------------
+
+Build the documentation locally with:
+
+.. code-block:: bash
+
+   python -m pip install -e ".[docs]"
+   cd docs
+   make html
+
+Release artifact check
+----------------------
+
+Before publishing a release, build the package and verify that no generated
+WebBook-derived artifacts are included:
+
+.. code-block:: bash
+
+   python -m build
+   python tools/check_package_artifacts.py dist/*
+
+The release check rejects files such as ``nist_data.zip``, ``nist_data.csv``,
+``compounds_data.json``, and package-internal ``nistchempy/data/`` contents.

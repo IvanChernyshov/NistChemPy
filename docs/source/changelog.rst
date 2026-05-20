@@ -26,6 +26,8 @@ Unreleased
 
 * Adds ``DATA_NOTICE.md`` and configures Sphinx to render pregenerated notebooks without live execution during documentation builds.
 
+* Rewrites documentation notebooks around synthetic/offline examples and adds maintainer workflow documentation for tests, notebook regeneration, docs builds, and release artifact checks.
+
 1.0.6
 -----
 
