@@ -1,10 +1,10 @@
-Maintainer workflows
-====================
+Development workflows
+=====================
 
-This page records the recommended local checks for maintainers. The default
-workflow is offline and deterministic. Live NIST Chemistry WebBook checks are
-kept separate because failures may reflect network availability or upstream
-HTML changes rather than a package regression.
+This page records the recommended local checks for contributors and release
+preparation. The default workflow is offline and deterministic. Live NIST
+Chemistry WebBook checks are kept separate because failures may reflect network
+availability or upstream HTML changes rather than a package regression.
 
 Offline tests
 -------------

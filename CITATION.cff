@@ -26,7 +26,7 @@ keywords:
   - scientific Python
   - physical chemistry
 license: MIT
-repository-code: "https://github.com/IvanChernyshov/NistChemPy"
-url: "https://ivanchernyshov.github.io/NistChemPy/"
+repository-code: "https://github.com/muCommons/NistChemPy"
+url: "https://mucommons.github.io/NistChemPy/"
 version: 2.0.0.dev0
 date-released: "2026-05-20"

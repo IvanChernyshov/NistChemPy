@@ -65,9 +65,9 @@ dev = [
 ]
 
 [project.urls]
-Documentation = "https://ivanchernyshov.github.io/NistChemPy/"
-Repository = "https://github.com/IvanChernyshov/NistChemPy.git"
-Issues = "https://github.com/IvanChernyshov/NistChemPy/issues"
+Documentation = "https://mucommons.github.io/NistChemPy/"
+Repository = "https://github.com/muCommons/NistChemPy.git"
+Issues = "https://github.com/muCommons/NistChemPy/issues"
 
 [project.scripts]
 nistchempy = "nistchempy.cli:main"

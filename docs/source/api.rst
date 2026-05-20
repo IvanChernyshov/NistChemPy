@@ -105,7 +105,7 @@ Requests
 Parsing helpers
 ---------------
 
-The parsing modules are useful for maintainers and advanced users who need to
+The parsing modules are useful for contributors and advanced users who need to
 inspect or adapt WebBook HTML parsing behavior.
 
 .. automodule:: nistchempy.parsing.compound

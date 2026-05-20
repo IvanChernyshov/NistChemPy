@@ -1,12 +1,22 @@
 Changelog
 =========
 
-Unreleased
-----------
+Unreleased (2.0.0 development)
+------------------------------
+
+Index and data-distribution policy
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 * Removes the packaged WebBook-derived compound index from NistChemPy distributions.
 
-* Adds a user-local WebBook index API via :py:class:`nistchempy.index.WebBookIndex` and :py:func:`nistchempy.index.get_local_index`.
+* Removes the legacy ``get_all_data`` API. Local indexes are now loaded through :py:func:`nistchempy.get_local_index` or :py:class:`nistchempy.WebBookIndex`.
+
+* Adds a user-local WebBook index/cache workflow. Generated local indexes, caches, CSV files, JSON exports, and related artifacts are user-local data artifacts and are not covered by the NistChemPy software license.
+
+* Adds ``DATA_NOTICE.md`` and a documentation data-notice page to clarify the software/data boundary.
+
+Local index functionality
+~~~~~~~~~~~~~~~~~~~~~~~~~
 
 * Adds local index CLI commands for path resolution, status, search, importing local CSV files, discovery, enrichment, and full index builds.
 
@@ -14,29 +24,47 @@ Unreleased
 
 * Adds compound-page enrichment from ``seeds.csv`` into final ``index.csv`` files, with resumable ``index.partial.jsonl`` state.
 
-* Keeps CAS RN in locally generated indexes by default while keeping generated local data outside the NistChemPy software license.
+* Keeps CAS RN in locally generated indexes by default.
 
-* Adds a package-artifact release check to prevent generated WebBook-derived index/cache files from being shipped in wheels or source distributions.
+* Adds local-index availability helpers such as ``available_properties()``, ``property_columns()``, and ``has_property()``.
 
-* Removes the legacy ``get_all_data`` compatibility API; local indexes are loaded through :py:func:`nistchempy.get_local_index` or :py:class:`nistchempy.WebBookIndex`.
-
-* Removes legacy ``update/`` reconstruction scripts in favor of the supported ``nistchempy index`` CLI workflow.
-
-* Targets Python 3.9+ for the 2.0 development line.
-
-* Adds ``DATA_NOTICE.md`` and configures Sphinx to render pregenerated notebooks without live execution during documentation builds.
+Structured records and export helpers
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 * Adds lightweight structured records for compound metadata, molfiles, spectra, and gas chromatography outputs.
 
+* Adds ``to_record()``, ``to_dict()``, ``iter_records()``, and ``to_records()`` helpers for compound and loaded property objects.
+
 * Adds JSON and JSON Lines export helpers for structured record collections.
 
-* Adds ``to_record()``, ``to_dict()``, and ``to_records()`` helpers for compound and loaded property objects.
+Search, parsing, and request handling
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-* Adds local-index availability helpers such as ``available_properties()`` and ``has_property()``.
+* Hardens compound-page parsing, request handling, search error reporting, and gas chromatography parsing against malformed pages and non-HTML responses.
+
+* Fixes parser warnings and deprecated BeautifulSoup API usage.
+
+* Makes live WebBook tests opt-in and keeps the default test suite offline.
+
+Project structure and release safeguards
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* Moves local-index implementation into the ``nistchempy.indexing`` support package and removes legacy ``update/`` reconstruction scripts.
+
+* Targets Python 3.9+ for the 2.0 development line.
+
+* Adds a package-artifact release check to prevent generated WebBook-derived index/cache files from being shipped in wheels or source distributions.
+
+Documentation and development workflow
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 * Restores user-facing notebooks to real online WebBook workflows with pregenerated outputs, while Sphinx still does not execute notebooks during documentation builds.
 
-* Adds maintainer workflow documentation for tests, notebook regeneration, docs builds, and release artifact checks.
+* Adds a tiny local-index CSV documentation fixture so users can see the generated-index schema without building a full cache.
+
+* Adds development workflow documentation for offline tests, online tests, notebook regeneration, docs builds, and release artifact checks.
+
+* Adds a public note on AI-assisted development.
 
 1.0.6
 -----
@@ -49,19 +77,17 @@ Unreleased
 
 * Updates PyPI-facing metadata, project description, keywords, and project links.
 
-* Prepares the repository metadata for the post-DOI PyPI release.
-
 No runtime API changes are intended in this release.
 
 
 1.0.5
 -------------------------
 
-* Updates internal compound list returned by :py:func:`nistchempy.compound_list.get_all_data`.
+* Updates the historical bundled compound list returned by ``nistchempy.compound_list.get_all_data``.
 
 * Adds structural search via :py:func:`nistchempy.search.run_structural_search`.
 
-* Fixes missing BeautifulSoup dependence - thanks to [stanleyjs](https://github.com/stanleyjs)!
+* Fixes missing BeautifulSoup dependency - thanks to `stanleyjs <https://github.com/stanleyjs>`_!
 
 
 1.0.4
@@ -73,7 +99,7 @@ No runtime API changes are intended in this release.
 
 * Adds :py:meth:`nistchempy.requests.RequestConfig.max_attempts` attribute to soften impact from potential server response errors.
 
-* Adds update script scrawling compounds vis formula search.
+* Adds update scripts for crawling compounds via formula search.
 
 * Refactors all update scripts.
 
@@ -81,7 +107,7 @@ No runtime API changes are intended in this release.
 1.0.3
 -----
 
-* Adds functionality to extract gas chromatogaraphy data via :py:meth:`nistchempy.compound.Compound.get_gas_chromatography`.
+* Adds functionality to extract gas chromatography data via ``NistCompound.get_gas_chromatography``.
 
 * Adds functionality to set up requests kwargs via :py:class:`nistchempy.requests.RequestConfig`.
 
@@ -93,13 +119,13 @@ No runtime API changes are intended in this release.
 1.0.2
 -----
 
-* Adds c.a. 10 000 of missing InChI strings to the pre-saved data on compounds (:py:func:`nistchempy.compound_list.get_all_data`).
+* Adds approximately 10,000 missing InChI strings to the historical pre-saved compound data returned by ``nistchempy.compound_list.get_all_data``.
 
-* Fixes bug in update resulted in c.a. 10 000 of missing InChI strings.
+* Fixes an update bug that resulted in approximately 10,000 missing InChI strings.
 
 * Fixes chemical formula parser.
 
-* Adds reference to repo containing data extracted from NIST Chemistry WebBook (`NistChemData <https://github.com/IvanChernyshov/NistChemData>`_).
+* Adds reference to repo containing data extracted from NIST Chemistry WebBook (`NistChemData <https://github.com/muCommons/NistChemData>`_).
 
 
 1.0.1
