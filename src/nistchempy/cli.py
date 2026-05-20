@@ -20,8 +20,9 @@ from nistchempy.indexing.schema import VALID_DISCOVERY_STRATEGIES
 _NOTICE = '''NistChemPy does not ship a prebuilt NIST Chemistry WebBook index.
 Local index files are user-generated artifacts and are not covered by the
 NistChemPy software license. Full section-availability indexes may require
-visiting one WebBook compound page per compound and can take several days with
-a polite request delay.'''
+visiting one WebBook compound page per compound and can take about
+3.5-5+ days with a polite 3 second request delay before retries and
+network overhead.'''
 
 
 def _add_path_argument(parser):

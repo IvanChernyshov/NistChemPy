@@ -10,6 +10,7 @@ Welcome to the NistChemPy documentation!
    Basic Search <source/basic_search.ipynb>
    Compound Properties <source/compound_properties.ipynb>
    Local WebBook Index <source/advanced_search.ipynb>
+   Local Index Workflow <source/local_index_workflow>
    Requests Configuration <source/requests_config.ipynb>
 
 
