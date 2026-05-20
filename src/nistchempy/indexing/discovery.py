@@ -131,7 +131,7 @@ def discover_formula_search(
         failed_queries=None):
     '''Discover compound seeds with bounded formula-search subdivision.
 
-    This strategy promotes the legacy carbon-formula search prototype into a
+    This strategy promotes the bounded carbon-formula search strategy into a
     reusable discovery source. It searches ``C<n>`` formula spaces, refines
     searches that hit the WebBook result cutoff by hydrogen count, then by one
     heteroelement wildcard/count. The strategy discovers candidate WebBook IDs
@@ -146,7 +146,7 @@ def discover_formula_search(
         heteroatom_max: Maximum count for one heteroelement refinement.
         elements: Optional iterable or comma-separated string of element
             symbols used for heteroelement refinement. If omitted, use the
-            same non-H/non-C element list as the legacy updater prototype.
+            same non-H/non-C element list as the historical updater strategy.
         request_config: Optional NistChemPy request configuration.
         limit: Optional maximum number of unique seed rows to collect.
         max_queries: Optional maximum number of formula-search queries to run.

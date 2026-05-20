@@ -183,9 +183,13 @@ class NistSearch():
         Returns:
             list: Loaded NistCompound objects.
         '''
+        loaded_ids = [compound.ID for compound in self.compounds]
+        if loaded_ids == self.compound_ids:
+            return self.compounds
+
         self.compounds = []
         for ID in self.compound_ids:
-            X = _compound.get_compound(ID, request_config = self._request_config)
+            X = _compound.get_compound(ID, request_config=self._request_config)
             self.compounds.append(X)
         return self.compounds
 

@@ -166,3 +166,23 @@ def test_run_structural_search_rejects_multiple_inputs():
             molblock='dummy',
             smiles='CCO',
         )
+
+
+def test_load_found_compounds_reuses_cached_compounds(monkeypatch):
+    search = search_module.NistSearch(
+        _request_config=search_module._ncpr.RequestConfig(),
+        _nist_response=nist_response_from_html('search_results.html'),
+        search_parameters=search_module.NistSearchParameters(),
+        compound_ids=['C111111'],
+        success=True,
+        lost=False,
+    )
+    compound = type('DummyCompound', (), {'ID': 'C111111'})()
+    search.compounds = [compound]
+
+    def fail_get_compound(*args, **kwargs):
+        raise AssertionError('get_compound should not be called')
+
+    monkeypatch.setattr(search_module._compound, 'get_compound', fail_get_compound)
+
+    assert search.load_found_compounds() == [compound]

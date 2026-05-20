@@ -309,7 +309,7 @@ class LocalIndexBuilder:
             elements=None, search_func=None):
         '''Discover intermediate seeds from formula-search results.
 
-        This method wraps the legacy carbon-formula search prototype as a
+        This method wraps the bounded carbon-formula search strategy as a
         bounded discovery strategy. It writes seed rows only; final metadata
         still requires compound-page enrichment.
 
@@ -747,7 +747,7 @@ class LocalIndexBuilder:
         '''Build a page-enriched local index through formula-search seeds.
 
         Formula-search discovery is a bounded carbon-formula strategy promoted
-        from the legacy updater prototype. It discovers seed IDs first and then
+        from the historical updater strategy. It discovers seed IDs first and then
         uses the shared compound-page enrichment stage to build ``index.csv``.
 
         Args:
