@@ -9,7 +9,8 @@ Welcome to the NistChemPy documentation!
 
    Basic Search <source/basic_search.ipynb>
    Compound Properties <source/compound_properties.ipynb>
-   Local WebBook Index <source/advanced_search.ipynb>
+   Structural Search <source/structural_search.ipynb>
+   Local WebBook Index <source/local_index.ipynb>
    Local Index Workflow <source/local_index_workflow>
    Requests Configuration <source/requests_config.ipynb>
 
@@ -52,7 +53,7 @@ Main features
 
     * Search by `name <https://webbook.nist.gov/chemistry/name-ser/>`_, `chemical formula <https://webbook.nist.gov/chemistry/form-ser/>`_, `CAS RN <https://webbook.nist.gov/chemistry/cas-ser/>`_, `InChI / InChI Key <https://webbook.nist.gov/chemistry/inchi-ser/>`_: `nistchempy.run_search`.
 
-    * Search by `structure <https://webbook.nist.gov/chemistry/str-file/>`_, including substructural search: `nistchempy.run_structural_search`.
+    * Search by `structure <https://webbook.nist.gov/chemistry/str-file/>`_, including substructural search: `nistchempy.run_structural_search`. RDKit is optional and is used for SMILES/InChI-to-MOL conversion helpers and local index structural search.
 
     * Search over a user-local compound index/cache with ``nistchempy.WebBookIndex.from_cache()`` or ``nistchempy.get_local_index()``. NistChemPy does not redistribute a prebuilt WebBook-derived index.
 

@@ -20,7 +20,7 @@ For serious scientific use, users should verify retrieved records against the or
 
     - Search by [name](https://webbook.nist.gov/chemistry/name-ser/), [chemical formula](https://webbook.nist.gov/chemistry/form-ser/), [CAS RN](https://webbook.nist.gov/chemistry/cas-ser/), [InChI / InChI Key](https://webbook.nist.gov/chemistry/inchi-ser/): `nistchempy.run_search`.
 
-    - Search by [structure](https://webbook.nist.gov/chemistry/str-file/), including substructural search: `nistchempy.run_structural_search`.
+    - Search by [structure](https://webbook.nist.gov/chemistry/str-file/), including substructural search: `nistchempy.run_structural_search`. RDKit is optional and is used for SMILES/InChI-to-MOL conversion helpers and local index structural search.
 
     - Search over a user-local compound index/cache with `nistchempy.WebBookIndex.from_cache()` or `nistchempy.get_local_index()`. NistChemPy does not redistribute a prebuilt WebBook-derived index.
 
@@ -139,8 +139,8 @@ executed by Sphinx. Regenerate them manually after example/API changes:
 ```bash
 jupyter nbconvert --execute docs/source/basic_search.ipynb --inplace
 jupyter nbconvert --execute docs/source/compound_properties.ipynb --inplace
-jupyter nbconvert --execute docs/source/local_index.ipynb --inplace
 jupyter nbconvert --execute docs/source/structural_search.ipynb --inplace
+jupyter nbconvert --execute docs/source/local_index.ipynb --inplace
 jupyter nbconvert --execute docs/source/requests_config.ipynb --inplace
 ```
 
