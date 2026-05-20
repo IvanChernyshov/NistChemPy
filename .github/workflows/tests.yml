@@ -36,8 +36,6 @@ jobs:
       - name: Install package
         run: |
           python -m pip install --upgrade pip
-          python -m pip install -e ".[dev]"
+          python -m pip install -e ".[dev,structure]"
       - name: Run online tests
-        env:
-          NISTCHEMPY_RUN_NETWORK: '1'
         run: pytest -q -m network

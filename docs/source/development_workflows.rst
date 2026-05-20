@@ -38,11 +38,16 @@ Online tests
 ------------
 
 Live integration tests are stored under ``tests/online`` and marked with
-``network``. Run them explicitly:
+``network``. RDKit-dependent structural tests are additionally marked with
+``rdkit``. Offline tests run by default; select live or RDKit-specific subsets
+with pytest marker expressions:
 
 .. code-block:: bash
 
-   NISTCHEMPY_RUN_NETWORK=1 pytest -q -m network
+   pytest -q -m network
+   pytest -q -m "network and not rdkit"
+   pytest -q -m "network and rdkit"
+   pytest -q -m "rdkit and not network"
 
 Long-running or broad WebBook reconstruction tests should not be added to the
 normal online suite. Prefer small smoke tests with known stable pages. If a live
@@ -58,10 +63,11 @@ when examples or public APIs change:
 
 .. code-block:: bash
 
-   python -m pip install -e ".[docs]"
+   python -m pip install -e ".[docs,structure]"
    jupyter nbconvert --execute docs/source/basic_search.ipynb --inplace
    jupyter nbconvert --execute docs/source/compound_properties.ipynb --inplace
-   jupyter nbconvert --execute docs/source/advanced_search.ipynb --inplace
+   jupyter nbconvert --execute docs/source/local_index.ipynb --inplace
+   jupyter nbconvert --execute docs/source/structural_search.ipynb --inplace
    jupyter nbconvert --execute docs/source/requests_config.ipynb --inplace
 
 User-facing notebooks may contain pregenerated live WebBook outputs. Sphinx
@@ -77,7 +83,7 @@ Build the documentation locally with:
 
 .. code-block:: bash
 
-   python -m pip install -e ".[docs]"
+   python -m pip install -e ".[docs,structure]"
    cd docs
    make html
 

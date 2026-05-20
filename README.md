@@ -129,7 +129,8 @@ pytest -q
 Live WebBook integration tests are opt-in:
 
 ```bash
-NISTCHEMPY_RUN_NETWORK=1 pytest -q -m network
+pytest -q -m network
+pytest -q -m "network and rdkit"
 ```
 
 Documentation notebooks are committed with pregenerated outputs and are not
@@ -138,7 +139,8 @@ executed by Sphinx. Regenerate them manually after example/API changes:
 ```bash
 jupyter nbconvert --execute docs/source/basic_search.ipynb --inplace
 jupyter nbconvert --execute docs/source/compound_properties.ipynb --inplace
-jupyter nbconvert --execute docs/source/advanced_search.ipynb --inplace
+jupyter nbconvert --execute docs/source/local_index.ipynb --inplace
+jupyter nbconvert --execute docs/source/structural_search.ipynb --inplace
 jupyter nbconvert --execute docs/source/requests_config.ipynb --inplace
 ```
 
