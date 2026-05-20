@@ -1,0 +1,154 @@
+{
+ "cells": [
+  {
+   "cell_type": "markdown",
+   "id": "bd71bfd0",
+   "metadata": {},
+   "source": [
+    "# Request configuration\n",
+    "\n",
+    "`RequestConfig` controls request delay, retry count, timeout, and other `requests` keyword arguments. This notebook uses a live WebBook call with conservative settings."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 1,
+   "id": "4f58335f",
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2026-05-20T17:38:29.351604Z",
+     "iopub.status.busy": "2026-05-20T17:38:29.351419Z",
+     "iopub.status.idle": "2026-05-20T17:38:29.683819Z",
+     "shell.execute_reply": "2026-05-20T17:38:29.683216Z"
+    }
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "RequestConfig(delay=0.5, max_attempts=2, kwargs={'timeout': 30.0})"
+      ]
+     },
+     "execution_count": 1,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "import nistchempy as nist\n",
+    "\n",
+    "config = nist.RequestConfig(\n",
+    "    delay=0.5,\n",
+    "    max_attempts=2,\n",
+    "    kwargs={'timeout': 30.0},\n",
+    ")\n",
+    "config"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 2,
+   "id": "1f407042",
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2026-05-20T17:38:29.685103Z",
+     "iopub.status.busy": "2026-05-20T17:38:29.684844Z",
+     "iopub.status.idle": "2026-05-20T17:38:30.861220Z",
+     "shell.execute_reply": "2026-05-20T17:38:30.860768Z"
+    }
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "{'record_type': 'compound',\n",
+       " 'compound_id': 'C7732185',\n",
+       " 'source_url': 'https://webbook.nist.gov/cgi/cbook.cgi?ID=C7732185',\n",
+       " 'retrieved_at': '',\n",
+       " 'ID': 'C7732185',\n",
+       " 'name': 'Water',\n",
+       " 'synonyms': ['Water vapor',\n",
+       "  'Distilled water',\n",
+       "  'Ice',\n",
+       "  'H2O',\n",
+       "  'Dihydrogen oxide',\n",
+       "  'steam',\n",
+       "  'Tritiotope'],\n",
+       " 'formula': 'H 2 O',\n",
+       " 'mol_weight': 18.0153,\n",
+       " 'inchi': 'InChI=1S/H2O/h1H2',\n",
+       " 'inchi_key': 'XLYOFNOQVPJJNP-UHFFFAOYSA-N',\n",
+       " 'cas_rn': '7732-18-5',\n",
+       " 'mol_refs': {'mol2D': 'https://webbook.nist.gov/cgi/cbook.cgi?Str2File=C7732185',\n",
+       "  'mol3D': 'https://webbook.nist.gov/cgi/cbook.cgi?Str3File=C7732185'},\n",
+       " 'data_refs': {'cTG': 'https://webbook.nist.gov/cgi/cbook.cgi?ID=C7732185&Mask=1#Thermo-Gas',\n",
+       "  'cTC': 'https://webbook.nist.gov/cgi/cbook.cgi?ID=C7732185&Mask=2#Thermo-Condensed',\n",
+       "  'cTP': 'https://webbook.nist.gov/cgi/cbook.cgi?ID=C7732185&Mask=4#Thermo-Phase',\n",
+       "  'cTR': 'https://webbook.nist.gov/cgi/cbook.cgi?ID=C7732185&Mask=8#Thermo-React',\n",
+       "  'cIE': 'https://webbook.nist.gov/cgi/cbook.cgi?ID=C7732185&Mask=20#Ion-Energetics',\n",
+       "  'cIC': 'https://webbook.nist.gov/cgi/cbook.cgi?ID=C7732185&Mask=40#Ion-Cluster',\n",
+       "  'cIR': 'https://webbook.nist.gov/cgi/cbook.cgi?ID=C7732185&Mask=80#IR-Spec',\n",
+       "  'cMS': 'https://webbook.nist.gov/cgi/cbook.cgi?ID=C7732185&Mask=200#Mass-Spec',\n",
+       "  'cES': 'https://webbook.nist.gov/cgi/cbook.cgi?ID=C7732185&Mask=800#Electronic-Spec',\n",
+       "  'cGC': 'https://webbook.nist.gov/cgi/cbook.cgi?ID=C7732185&Mask=2000#Gas-Chrom',\n",
+       "  'Fluid Properties': 'https://webbook.nist.gov/cgi/fluid.cgi?ID=C7732185&Action=Page'},\n",
+       " 'nist_public_refs': {'Microwave spectra (on physics lab web site)': 'https://physics.nist.gov/cgi-bin/MolSpec/mole.pl?prefix=tri&molecule=H2O&type=fancy&clear=1',\n",
+       "  'Electron-Impact Ionization Cross Sections (on physics web site)': 'https://physics.nist.gov/cgi-bin/Ionization/table.pl?ionization=H2O',\n",
+       "  'Gas Phase Kinetics Database': 'https://kinetics.nist.gov/kinetics/rpSearch?cas=7732185',\n",
+       "  'Reference simulation:  SPC/E Water': 'http://www.cstl.nist.gov/srs/SPCE_WATER/index.htm',\n",
+       "  'X-ray Photoelectron Spectroscopy Database, version 5.0': 'https://srdata.nist.gov/xps/SpectralByCompdDd/1778'},\n",
+       " 'nist_subscription_refs': {'NIST / TRC Web Thermo Tables, \"lite\" edition (thermophysical and thermochemical data)': 'https://wtt-lite.nist.gov/wtt-lite/index.html?cmp=water',\n",
+       "  'NIST / TRC Web Thermo Tables, professional edition (thermophysical and thermochemical data)': 'https://wtt-pro.nist.gov/wtt-pro/index.html?cmp=water'}}"
+      ]
+     },
+     "execution_count": 2,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "compound = nist.get_compound('C7732185', request_config=config)  # water\n",
+    "compound.to_dict()"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 3,
+   "id": "5decacee",
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2026-05-20T17:38:30.862346Z",
+     "iopub.status.busy": "2026-05-20T17:38:30.862226Z",
+     "iopub.status.idle": "2026-05-20T17:38:30.864605Z",
+     "shell.execute_reply": "2026-05-20T17:38:30.864093Z"
+    }
+   },
+   "outputs": [],
+   "source": [
+    "# Optional: inspect the WebBook crawl-delay directive.\n",
+    "# nist.get_crawl_delay(config=config)"
+   ]
+  }
+ ],
+ "metadata": {
+  "kernelspec": {
+   "display_name": "Python 3",
+   "language": "python",
+   "name": "python3"
+  },
+  "language_info": {
+   "codemirror_mode": {
+    "name": "ipython",
+    "version": 3
+   },
+   "file_extension": ".py",
+   "mimetype": "text/x-python",
+   "name": "python",
+   "nbconvert_exporter": "python",
+   "pygments_lexer": "ipython3",
+   "version": "3.13.13"
+  }
+ },
+ "nbformat": 4,
+ "nbformat_minor": 5
+}

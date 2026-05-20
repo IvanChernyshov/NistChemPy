@@ -1,0 +1,274 @@
+{
+ "cells": [
+  {
+   "cell_type": "markdown",
+   "id": "2dd1652d",
+   "metadata": {},
+   "source": [
+    "# Local index usage\n",
+    "\n",
+    "NistChemPy no longer ships a full WebBook-derived index. This notebook uses a tiny CSV fixture with the same column structure as a generated local index."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 1,
+   "id": "6a0b7a5d",
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2026-05-20T17:38:24.598660Z",
+     "iopub.status.busy": "2026-05-20T17:38:24.598538Z",
+     "iopub.status.idle": "2026-05-20T17:38:24.947874Z",
+     "shell.execute_reply": "2026-05-20T17:38:24.947374Z"
+    }
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/html": [
+       "<div>\n",
+       "<style scoped>\n",
+       "    .dataframe tbody tr th:only-of-type {\n",
+       "        vertical-align: middle;\n",
+       "    }\n",
+       "\n",
+       "    .dataframe tbody tr th {\n",
+       "        vertical-align: top;\n",
+       "    }\n",
+       "\n",
+       "    .dataframe thead th {\n",
+       "        text-align: right;\n",
+       "    }\n",
+       "</style>\n",
+       "<table border=\"1\" class=\"dataframe\">\n",
+       "  <thead>\n",
+       "    <tr style=\"text-align: right;\">\n",
+       "      <th></th>\n",
+       "      <th>ID</th>\n",
+       "      <th>name</th>\n",
+       "      <th>formula</th>\n",
+       "      <th>mol_weight</th>\n",
+       "    </tr>\n",
+       "  </thead>\n",
+       "  <tbody>\n",
+       "    <tr>\n",
+       "      <th>0</th>\n",
+       "      <td>C7732185</td>\n",
+       "      <td>Water</td>\n",
+       "      <td>H2O</td>\n",
+       "      <td>18.0153</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>1</th>\n",
+       "      <td>C71432</td>\n",
+       "      <td>Benzene</td>\n",
+       "      <td>C6H6</td>\n",
+       "      <td>78.1118</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>2</th>\n",
+       "      <td>C64175</td>\n",
+       "      <td>Ethanol</td>\n",
+       "      <td>C2H6O</td>\n",
+       "      <td>46.0684</td>\n",
+       "    </tr>\n",
+       "  </tbody>\n",
+       "</table>\n",
+       "</div>"
+      ],
+      "text/plain": [
+       "         ID     name formula  mol_weight\n",
+       "0  C7732185    Water     H2O     18.0153\n",
+       "1    C71432  Benzene    C6H6     78.1118\n",
+       "2    C64175  Ethanol   C2H6O     46.0684"
+      ]
+     },
+     "execution_count": 1,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "from pathlib import Path\n",
+    "\n",
+    "import nistchempy as nist\n",
+    "\n",
+    "index_path = Path('example_index.csv')\n",
+    "if not index_path.exists():\n",
+    "    index_path = Path('docs/source/example_index.csv')\n",
+    "\n",
+    "index = nist.get_local_index(index_path)\n",
+    "index.to_dataframe().loc[:, ['ID', 'name', 'formula', 'mol_weight']]"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 2,
+   "id": "1507a636",
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2026-05-20T17:38:24.949366Z",
+     "iopub.status.busy": "2026-05-20T17:38:24.949166Z",
+     "iopub.status.idle": "2026-05-20T17:38:24.954461Z",
+     "shell.execute_reply": "2026-05-20T17:38:24.953954Z"
+    }
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/html": [
+       "<div>\n",
+       "<style scoped>\n",
+       "    .dataframe tbody tr th:only-of-type {\n",
+       "        vertical-align: middle;\n",
+       "    }\n",
+       "\n",
+       "    .dataframe tbody tr th {\n",
+       "        vertical-align: top;\n",
+       "    }\n",
+       "\n",
+       "    .dataframe thead th {\n",
+       "        text-align: right;\n",
+       "    }\n",
+       "</style>\n",
+       "<table border=\"1\" class=\"dataframe\">\n",
+       "  <thead>\n",
+       "    <tr style=\"text-align: right;\">\n",
+       "      <th></th>\n",
+       "      <th>ID</th>\n",
+       "      <th>name</th>\n",
+       "      <th>formula</th>\n",
+       "    </tr>\n",
+       "  </thead>\n",
+       "  <tbody>\n",
+       "    <tr>\n",
+       "      <th>1</th>\n",
+       "      <td>C71432</td>\n",
+       "      <td>Benzene</td>\n",
+       "      <td>C6H6</td>\n",
+       "    </tr>\n",
+       "  </tbody>\n",
+       "</table>\n",
+       "</div>"
+      ],
+      "text/plain": [
+       "       ID     name formula\n",
+       "1  C71432  Benzene    C6H6"
+      ]
+     },
+     "execution_count": 2,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "index.search('benzene', fields='name').loc[:, ['ID', 'name', 'formula']]"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 3,
+   "id": "bbfbe684",
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2026-05-20T17:38:24.955705Z",
+     "iopub.status.busy": "2026-05-20T17:38:24.955519Z",
+     "iopub.status.idle": "2026-05-20T17:38:24.959301Z",
+     "shell.execute_reply": "2026-05-20T17:38:24.958912Z"
+    }
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "{'mol2D': 'https://webbook.nist.gov/cgi/cbook.cgi?Str2File=C71432',\n",
+       " 'mol3D': 'https://webbook.nist.gov/cgi/cbook.cgi?Str3File=C71432',\n",
+       " 'Gas phase thermochemistry data': 'https://webbook.nist.gov/cgi/cbook.cgi?ID=C71432&Mask=1#Thermo-Gas',\n",
+       " 'Condensed phase thermochemistry data': 'https://webbook.nist.gov/cgi/cbook.cgi?ID=C71432&Mask=2#Thermo-Condensed',\n",
+       " 'Phase change data': 'https://webbook.nist.gov/cgi/cbook.cgi?ID=C71432&Mask=4#Thermo-Phase',\n",
+       " 'Reaction thermochemistry data': 'https://webbook.nist.gov/cgi/cbook.cgi?ID=C71432&Mask=8#Thermo-React',\n",
+       " 'Gas phase ion energetics data': 'https://webbook.nist.gov/cgi/cbook.cgi?ID=C71432&Mask=20#Ion-Energetics',\n",
+       " 'Ion clustering data': 'https://webbook.nist.gov/cgi/cbook.cgi?ID=C71432&Mask=40#Ion-Cluster',\n",
+       " 'IR Spectrum': 'https://webbook.nist.gov/cgi/cbook.cgi?ID=C71432&Mask=80#IR-Spec',\n",
+       " 'Mass spectrum (electron ionization)': 'https://webbook.nist.gov/cgi/cbook.cgi?ID=C71432&Mask=200#Mass-Spec',\n",
+       " 'UV/Visible spectrum': 'https://webbook.nist.gov/cgi/cbook.cgi?ID=C71432&Mask=400#UV-Vis-Spec',\n",
+       " 'Gas Chromatography': 'https://webbook.nist.gov/cgi/cbook.cgi?ID=C71432&Mask=2000#Gas-Chrom',\n",
+       " 'Vibrational and/or electronic energy levels': 'https://webbook.nist.gov/cgi/cbook.cgi?ID=C71432&Mask=800#Electronic-Spec',\n",
+       " \"Henry's Law data\": 'https://webbook.nist.gov/cgi/cbook.cgi?ID=C71432&Mask=10#Solubility',\n",
+       " 'Fluid Properties': 'https://webbook.nist.gov/cgi/fluid.cgi?ID=C71432&Action=Page',\n",
+       " 'Electron-Impact Ionization Cross Sections (on physics web site)': 'https://physics.nist.gov/cgi-bin/Ionization/table.pl?ionization=C6H6xx0',\n",
+       " 'Gas Phase Kinetics Database': 'https://kinetics.nist.gov/kinetics/rpSearch?cas=71432',\n",
+       " 'NIST Polycyclic Aromatic Hydrocarbon Structure Index': 'https://pah.nist.gov/?q=pah001',\n",
+       " 'X-ray Photoelectron Spectroscopy Database, version 5.0': 'https://srdata.nist.gov/xps/SpectralByCompdDd/2349',\n",
+       " 'NIST / TRC Web Thermo Tables, \"lite\" edition (thermophysical and thermochemical data)': 'https://wtt-lite.nist.gov/wtt-lite/index.html?cmp=benzene',\n",
+       " 'NIST / TRC Web Thermo Tables, professional edition (thermophysical and thermochemical data)': 'https://wtt-pro.nist.gov/wtt-pro/index.html?cmp=benzene'}"
+      ]
+     },
+     "execution_count": 3,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "index.available_properties('C71432')"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 4,
+   "id": "5f55c0bb",
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2026-05-20T17:38:24.960308Z",
+     "iopub.status.busy": "2026-05-20T17:38:24.960188Z",
+     "iopub.status.idle": "2026-05-20T17:38:24.963673Z",
+     "shell.execute_reply": "2026-05-20T17:38:24.963085Z"
+    }
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "True"
+      ]
+     },
+     "execution_count": 4,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "index.has_property('C71432', 'Mass spectrum (electron ionization)')"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "f9e9ece4",
+   "metadata": {},
+   "source": [
+    "The fixture is only a documentation example. Build a real local index with `nistchempy index build --accept-data-terms` when you need complete local discovery and section-availability filtering."
+   ]
+  }
+ ],
+ "metadata": {
+  "kernelspec": {
+   "display_name": "Python 3",
+   "language": "python",
+   "name": "python3"
+  },
+  "language_info": {
+   "codemirror_mode": {
+    "name": "ipython",
+    "version": 3
+   },
+   "file_extension": ".py",
+   "mimetype": "text/x-python",
+   "name": "python",
+   "nbconvert_exporter": "python",
+   "pygments_lexer": "ipython3",
+   "version": "3.13.13"
+  }
+ },
+ "nbformat": 4,
+ "nbformat_minor": 5
+}

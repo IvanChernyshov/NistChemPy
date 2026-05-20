@@ -1,0 +1,301 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Local index usage &mdash; NistChemPy 2.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="../_static/nbsphinx-code-cells.css?v=2aa19091" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=51b770b3"></script>
+      <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+      <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+      <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-mml-chtml.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Local index workflow" href="local_index_workflow.html" />
+    <link rel="prev" title="Structural Search" href="structural_search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            NistChemPy
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Cookbook:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="basic_search.html">Basic Search</a></li>
+<li class="toctree-l1"><a class="reference internal" href="compound_properties.html">Compound Properties</a></li>
+<li class="toctree-l1"><a class="reference internal" href="structural_search.html">Structural Search</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Local WebBook Index</a></li>
+<li class="toctree-l1"><a class="reference internal" href="local_index_workflow.html">Local Index Workflow</a></li>
+<li class="toctree-l1"><a class="reference internal" href="requests_config.html">Requests Configuration</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Package details:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="api.html">Package API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="data_notice.html">Data notice</a></li>
+<li class="toctree-l1"><a class="reference internal" href="development_workflows.html">Development workflows</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ai_assisted_development.html">AI-assisted development</a></li>
+<li class="toctree-l1"><a class="reference internal" href="changelog.html">Changelog</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">NistChemPy</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Local index usage</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/source/local_index.ipynb.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="Local-index-usage">
+<h1>Local index usage<a class="headerlink" href="#Local-index-usage" title="Link to this heading"></a></h1>
+<p>NistChemPy no longer ships a full WebBook-derived index. This notebook uses a tiny CSV fixture with the same column structure as a generated local index.</p>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
+
+<span class="kn">import</span> <span class="nn">nistchempy</span> <span class="k">as</span> <span class="nn">nist</span>
+
+<span class="n">index_path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="s1">&#39;example_index.csv&#39;</span><span class="p">)</span>
+<span class="k">if</span> <span class="ow">not</span> <span class="n">index_path</span><span class="o">.</span><span class="n">exists</span><span class="p">():</span>
+    <span class="n">index_path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="s1">&#39;docs/source/example_index.csv&#39;</span><span class="p">)</span>
+
+<span class="n">index</span> <span class="o">=</span> <span class="n">nist</span><span class="o">.</span><span class="n">get_local_index</span><span class="p">(</span><span class="n">index_path</span><span class="p">)</span>
+<span class="n">index</span><span class="o">.</span><span class="n">to_dataframe</span><span class="p">()</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="p">[</span><span class="s1">&#39;ID&#39;</span><span class="p">,</span> <span class="s1">&#39;name&#39;</span><span class="p">,</span> <span class="s1">&#39;formula&#39;</span><span class="p">,</span> <span class="s1">&#39;mol_weight&#39;</span><span class="p">]]</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[1]:
+</pre></div>
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>ID</th>
+      <th>name</th>
+      <th>formula</th>
+      <th>mol_weight</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>C7732185</td>
+      <td>Water</td>
+      <td>H2O</td>
+      <td>18.0153</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>C71432</td>
+      <td>Benzene</td>
+      <td>C6H6</td>
+      <td>78.1118</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>C64175</td>
+      <td>Ethanol</td>
+      <td>C2H6O</td>
+      <td>46.0684</td>
+    </tr>
+  </tbody>
+</table>
+</div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">index</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="s1">&#39;benzene&#39;</span><span class="p">,</span> <span class="n">fields</span><span class="o">=</span><span class="s1">&#39;name&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span> <span class="p">[</span><span class="s1">&#39;ID&#39;</span><span class="p">,</span> <span class="s1">&#39;name&#39;</span><span class="p">,</span> <span class="s1">&#39;formula&#39;</span><span class="p">]]</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[2]:
+</pre></div>
+</div>
+<div class="output_area rendered_html docutils container">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>ID</th>
+      <th>name</th>
+      <th>formula</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>1</th>
+      <td>C71432</td>
+      <td>Benzene</td>
+      <td>C6H6</td>
+    </tr>
+  </tbody>
+</table>
+</div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">index</span><span class="o">.</span><span class="n">available_properties</span><span class="p">(</span><span class="s1">&#39;C71432&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[3]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+{&#39;mol2D&#39;: &#39;https://webbook.nist.gov/cgi/cbook.cgi?Str2File=C71432&#39;,
+ &#39;mol3D&#39;: &#39;https://webbook.nist.gov/cgi/cbook.cgi?Str3File=C71432&#39;,
+ &#39;Gas phase thermochemistry data&#39;: &#39;https://webbook.nist.gov/cgi/cbook.cgi?ID=C71432&amp;Mask=1#Thermo-Gas&#39;,
+ &#39;Condensed phase thermochemistry data&#39;: &#39;https://webbook.nist.gov/cgi/cbook.cgi?ID=C71432&amp;Mask=2#Thermo-Condensed&#39;,
+ &#39;Phase change data&#39;: &#39;https://webbook.nist.gov/cgi/cbook.cgi?ID=C71432&amp;Mask=4#Thermo-Phase&#39;,
+ &#39;Reaction thermochemistry data&#39;: &#39;https://webbook.nist.gov/cgi/cbook.cgi?ID=C71432&amp;Mask=8#Thermo-React&#39;,
+ &#39;Gas phase ion energetics data&#39;: &#39;https://webbook.nist.gov/cgi/cbook.cgi?ID=C71432&amp;Mask=20#Ion-Energetics&#39;,
+ &#39;Ion clustering data&#39;: &#39;https://webbook.nist.gov/cgi/cbook.cgi?ID=C71432&amp;Mask=40#Ion-Cluster&#39;,
+ &#39;IR Spectrum&#39;: &#39;https://webbook.nist.gov/cgi/cbook.cgi?ID=C71432&amp;Mask=80#IR-Spec&#39;,
+ &#39;Mass spectrum (electron ionization)&#39;: &#39;https://webbook.nist.gov/cgi/cbook.cgi?ID=C71432&amp;Mask=200#Mass-Spec&#39;,
+ &#39;UV/Visible spectrum&#39;: &#39;https://webbook.nist.gov/cgi/cbook.cgi?ID=C71432&amp;Mask=400#UV-Vis-Spec&#39;,
+ &#39;Gas Chromatography&#39;: &#39;https://webbook.nist.gov/cgi/cbook.cgi?ID=C71432&amp;Mask=2000#Gas-Chrom&#39;,
+ &#39;Vibrational and/or electronic energy levels&#39;: &#39;https://webbook.nist.gov/cgi/cbook.cgi?ID=C71432&amp;Mask=800#Electronic-Spec&#39;,
+ &#34;Henry&#39;s Law data&#34;: &#39;https://webbook.nist.gov/cgi/cbook.cgi?ID=C71432&amp;Mask=10#Solubility&#39;,
+ &#39;Fluid Properties&#39;: &#39;https://webbook.nist.gov/cgi/fluid.cgi?ID=C71432&amp;Action=Page&#39;,
+ &#39;Electron-Impact Ionization Cross Sections (on physics web site)&#39;: &#39;https://physics.nist.gov/cgi-bin/Ionization/table.pl?ionization=C6H6xx0&#39;,
+ &#39;Gas Phase Kinetics Database&#39;: &#39;https://kinetics.nist.gov/kinetics/rpSearch?cas=71432&#39;,
+ &#39;NIST Polycyclic Aromatic Hydrocarbon Structure Index&#39;: &#39;https://pah.nist.gov/?q=pah001&#39;,
+ &#39;X-ray Photoelectron Spectroscopy Database, version 5.0&#39;: &#39;https://srdata.nist.gov/xps/SpectralByCompdDd/2349&#39;,
+ &#39;NIST / TRC Web Thermo Tables, &#34;lite&#34; edition (thermophysical and thermochemical data)&#39;: &#39;https://wtt-lite.nist.gov/wtt-lite/index.html?cmp=benzene&#39;,
+ &#39;NIST / TRC Web Thermo Tables, professional edition (thermophysical and thermochemical data)&#39;: &#39;https://wtt-pro.nist.gov/wtt-pro/index.html?cmp=benzene&#39;}
+</pre></div></div>
+</div>
+<div class="nbinput docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
+</pre></div>
+</div>
+<div class="input_area highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">index</span><span class="o">.</span><span class="n">has_property</span><span class="p">(</span><span class="s1">&#39;C71432&#39;</span><span class="p">,</span> <span class="s1">&#39;Mass spectrum (electron ionization)&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="nboutput nblast docutils container">
+<div class="prompt highlight-none notranslate"><div class="highlight"><pre><span></span>[4]:
+</pre></div>
+</div>
+<div class="output_area docutils container">
+<div class="highlight"><pre>
+True
+</pre></div></div>
+</div>
+<p>The fixture is only a documentation example. Build a real local index with <code class="docutils literal notranslate"><span class="pre">nistchempy</span> <span class="pre">index</span> <span class="pre">build</span> <span class="pre">--accept-data-terms</span></code> when you need complete local discovery and section-availability filtering.</p>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="structural_search.html" class="btn btn-neutral float-left" title="Structural Search" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="local_index_workflow.html" class="btn btn-neutral float-right" title="Local index workflow" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023-2026, Ivan Yu. Chernyshov.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

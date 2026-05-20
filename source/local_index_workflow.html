@@ -1,0 +1,274 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Local index workflow &mdash; NistChemPy 2.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=51b770b3"></script>
+      <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Request configuration" href="requests_config.html" />
+    <link rel="prev" title="Local index usage" href="local_index.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            NistChemPy
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Cookbook:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="basic_search.html">Basic Search</a></li>
+<li class="toctree-l1"><a class="reference internal" href="compound_properties.html">Compound Properties</a></li>
+<li class="toctree-l1"><a class="reference internal" href="structural_search.html">Structural Search</a></li>
+<li class="toctree-l1"><a class="reference internal" href="local_index.html">Local WebBook Index</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Local Index Workflow</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#what-the-index-contains">What the index contains</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#where-the-index-is-stored">Where the index is stored</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#how-to-check-status">How to check status</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#how-the-index-is-formed">How the index is formed</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#importing-an-existing-local-csv">Importing an existing local CSV</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#using-the-index-from-python">Using the index from Python</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#local-text-and-availability-search">Local text and availability search</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#local-structural-search">Local structural search</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="requests_config.html">Requests Configuration</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Package details:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="api.html">Package API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="data_notice.html">Data notice</a></li>
+<li class="toctree-l1"><a class="reference internal" href="development_workflows.html">Development workflows</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ai_assisted_development.html">AI-assisted development</a></li>
+<li class="toctree-l1"><a class="reference internal" href="changelog.html">Changelog</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">NistChemPy</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Local index workflow</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/source/local_index_workflow.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="local-index-workflow">
+<h1>Local index workflow<a class="headerlink" href="#local-index-workflow" title="Link to this heading"></a></h1>
+<p>NistChemPy no longer ships a prebuilt NIST Chemistry WebBook index. The local
+index is a user-generated cache that helps with broad compound discovery,
+property-availability filtering, and local search.</p>
+<p>The local index is not an official NIST product and is not covered by the
+NistChemPy software license. It is a local artifact created by the user from
+NIST Chemistry WebBook pages.</p>
+<section id="what-the-index-contains">
+<h2>What the index contains<a class="headerlink" href="#what-the-index-contains" title="Link to this heading"></a></h2>
+<p>A completed local index is a CSV table, usually named <code class="docutils literal notranslate"><span class="pre">index.csv</span></code>. It contains
+compound identifiers, basic metadata, structure-file links, and WebBook section
+availability URLs. Typical columns include:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">ID</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">name</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">synonyms</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">formula</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">mol_weight</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">inchi</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">inchi_key</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">cas_rn</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">mol2D</span></code> and <code class="docutils literal notranslate"><span class="pre">mol3D</span></code></p></li>
+<li><p>section columns such as <code class="docutils literal notranslate"><span class="pre">Mass</span> <span class="pre">spectrum</span> <span class="pre">(electron</span> <span class="pre">ionization)</span></code> and
+<code class="docutils literal notranslate"><span class="pre">Gas</span> <span class="pre">Chromatography</span></code></p></li>
+</ul>
+<p>The tiny <code class="docutils literal notranslate"><span class="pre">example_index.csv</span></code> fixture used in the documentation has the same
+kind of column layout, but it is not a replacement for a locally generated
+index.</p>
+</section>
+<section id="where-the-index-is-stored">
+<h2>Where the index is stored<a class="headerlink" href="#where-the-index-is-stored" title="Link to this heading"></a></h2>
+<p>By default, NistChemPy stores the local index in the platform-specific user
+cache directory under <code class="docutils literal notranslate"><span class="pre">nistchempy/webbook-index</span></code>. The exact path depends on
+the operating system.</p>
+<p>Print the resolved default path with:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>nistchempy<span class="w"> </span>index<span class="w"> </span>path
+</pre></div>
+</div>
+<p>The same path is available from Python:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">nistchempy</span> <span class="k">as</span> <span class="nn">nist</span>
+
+<span class="n">nist</span><span class="o">.</span><span class="n">WebBookIndex</span><span class="o">.</span><span class="n">default_path</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>Use <code class="docutils literal notranslate"><span class="pre">--path</span></code> to build or read an index at a project-local location:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>nistchempy<span class="w"> </span>index<span class="w"> </span>build<span class="w"> </span>--path<span class="w"> </span>./webbook-index<span class="w"> </span>--accept-data-terms
+nistchempy<span class="w"> </span>index<span class="w"> </span>search<span class="w"> </span>benzene<span class="w"> </span>--path<span class="w"> </span>./webbook-index
+</pre></div>
+</div>
+<p>Project-local index directories should normally be added to <code class="docutils literal notranslate"><span class="pre">.gitignore</span></code>.
+Do not commit generated full indexes, raw page caches, or other large
+WebBook-derived artifacts to public repositories.</p>
+</section>
+<section id="how-to-check-status">
+<h2>How to check status<a class="headerlink" href="#how-to-check-status" title="Link to this heading"></a></h2>
+<p>Use the status command if you built an index earlier and forgot where it is, or
+if you want to check whether a build completed:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>nistchempy<span class="w"> </span>index<span class="w"> </span>status
+nistchempy<span class="w"> </span>index<span class="w"> </span>status<span class="w"> </span>--path<span class="w"> </span>./webbook-index
+</pre></div>
+</div>
+</section>
+<section id="how-the-index-is-formed">
+<h2>How the index is formed<a class="headerlink" href="#how-the-index-is-formed" title="Link to this heading"></a></h2>
+<p>A full local-index build has two conceptual stages:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>discovery strategy -&gt; seeds.csv -&gt; compound-page enrichment -&gt; index.csv
+</pre></div>
+</div>
+<p>The discovery stage finds candidate WebBook compounds and writes
+<code class="docutils literal notranslate"><span class="pre">seeds.csv</span></code>. The enrichment stage visits compound pages and extracts metadata,
+structure links, and section availability URLs into <code class="docutils literal notranslate"><span class="pre">index.csv</span></code>.</p>
+<p>Supported discovery strategies are:</p>
+<dl class="simple">
+<dt><code class="docutils literal notranslate"><span class="pre">formula-browser</span></code></dt><dd><p>Traverses the WebBook formula browser and is the default general-purpose
+strategy.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">sitemap</span></code></dt><dd><p>Reads WebBook sitemap files when available. It is useful as an audit or
+supplementary source.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">formula-search</span></code></dt><dd><p>Uses bounded formula-search subdivision. This strategy requires explicit
+formula bounds and records unresolved query regions for later inspection.</p>
+</dd>
+</dl>
+<p>Build the default index with:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>nistchempy<span class="w"> </span>index<span class="w"> </span>build<span class="w"> </span>--accept-data-terms
+</pre></div>
+</div>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>A full section-availability index can require visiting one WebBook page per
+compound.</p>
+<p>With a polite 3 second delay and roughly 100,000-150,000 pages, an initial
+rebuild can take about <strong>3.5-5+ days</strong> before retries and network overhead.</p>
+<p>Use <code class="docutils literal notranslate"><span class="pre">--path</span></code> for an explicit cache location and rerun the command to
+resume interrupted enrichment work.</p>
+</div>
+</section>
+<section id="importing-an-existing-local-csv">
+<h2>Importing an existing local CSV<a class="headerlink" href="#importing-an-existing-local-csv" title="Link to this heading"></a></h2>
+<p>If you already have a local index CSV, import it into the cache layout:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>nistchempy<span class="w"> </span>index<span class="w"> </span>build<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--from-csv<span class="w"> </span>/path/to/index.csv<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--path<span class="w"> </span>./webbook-index<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--accept-data-terms
+</pre></div>
+</div>
+<p>This does not make the CSV redistributable. It only records it as a local user
+artifact in NistChemPy’s current cache layout.</p>
+</section>
+<section id="using-the-index-from-python">
+<h2>Using the index from Python<a class="headerlink" href="#using-the-index-from-python" title="Link to this heading"></a></h2>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">nistchempy</span> <span class="k">as</span> <span class="nn">nist</span>
+
+<span class="n">index</span> <span class="o">=</span> <span class="n">nist</span><span class="o">.</span><span class="n">get_local_index</span><span class="p">(</span><span class="s1">&#39;./webbook-index&#39;</span><span class="p">)</span>
+<span class="n">index</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="s1">&#39;benzene&#39;</span><span class="p">)</span>
+<span class="n">index</span><span class="o">.</span><span class="n">available_properties</span><span class="p">(</span><span class="s1">&#39;C71432&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="local-text-and-availability-search">
+<h2>Local text and availability search<a class="headerlink" href="#local-text-and-availability-search" title="Link to this heading"></a></h2>
+<p>The local index supports text search over metadata columns and filtering by
+available WebBook sections:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">index</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="s1">&#39;benzene&#39;</span><span class="p">)</span>
+<span class="n">index</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">has_sections</span><span class="o">=</span><span class="s1">&#39;Mass spectrum (electron ionization)&#39;</span><span class="p">)</span>
+<span class="n">index</span><span class="o">.</span><span class="n">available_properties</span><span class="p">(</span><span class="s1">&#39;C71432&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="local-structural-search">
+<h2>Local structural search<a class="headerlink" href="#local-structural-search" title="Link to this heading"></a></h2>
+<p>If RDKit is installed, the local index can also perform lightweight structural
+screening using the indexed <code class="docutils literal notranslate"><span class="pre">inchi</span></code> and <code class="docutils literal notranslate"><span class="pre">inchi_key</span></code> columns:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">index</span><span class="o">.</span><span class="n">structural_search</span><span class="p">(</span><span class="n">smiles</span><span class="o">=</span><span class="s1">&#39;c1ccccc1&#39;</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;exact&#39;</span><span class="p">)</span>
+<span class="n">index</span><span class="o">.</span><span class="n">structural_search</span><span class="p">(</span><span class="n">smiles</span><span class="o">=</span><span class="s1">&#39;CCO&#39;</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;substructure&#39;</span><span class="p">)</span>
+<span class="n">index</span><span class="o">.</span><span class="n">structural_search</span><span class="p">(</span><span class="n">smiles</span><span class="o">=</span><span class="s1">&#39;CCO&#39;</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;similarity&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>This is a linear scan over the local index, not a persistent fingerprint
+database. It is useful for small and medium local indexes and exploratory work.
+For authoritative online structural search, use <code class="docutils literal notranslate"><span class="pre">nist.run_structural_search</span></code>.</p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="local_index.html" class="btn btn-neutral float-left" title="Local index usage" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="requests_config.html" class="btn btn-neutral float-right" title="Request configuration" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023-2026, Ivan Yu. Chernyshov.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -1,0 +1,228 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Welcome to the NistChemPy documentation! &mdash; NistChemPy 2.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=9edc463e" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=51b770b3"></script>
+      <script src="_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Basic online search" href="source/basic_search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="#" class="icon icon-home">
+            NistChemPy
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Cookbook:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="source/basic_search.html">Basic Search</a></li>
+<li class="toctree-l1"><a class="reference internal" href="source/compound_properties.html">Compound Properties</a></li>
+<li class="toctree-l1"><a class="reference internal" href="source/structural_search.html">Structural Search</a></li>
+<li class="toctree-l1"><a class="reference internal" href="source/local_index.html">Local WebBook Index</a></li>
+<li class="toctree-l1"><a class="reference internal" href="source/local_index_workflow.html">Local Index Workflow</a></li>
+<li class="toctree-l1"><a class="reference internal" href="source/requests_config.html">Requests Configuration</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Package details:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="source/api.html">Package API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="source/data_notice.html">Data notice</a></li>
+<li class="toctree-l1"><a class="reference internal" href="source/development_workflows.html">Development workflows</a></li>
+<li class="toctree-l1"><a class="reference internal" href="source/ai_assisted_development.html">AI-assisted development</a></li>
+<li class="toctree-l1"><a class="reference internal" href="source/changelog.html">Changelog</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="#">NistChemPy</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="#" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Welcome to the NistChemPy documentation!</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/index.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="welcome-to-the-nistchempy-documentation">
+<h1>Welcome to the NistChemPy documentation!<a class="headerlink" href="#welcome-to-the-nistchempy-documentation" title="Link to this heading"></a></h1>
+<a class="reference external image-reference" href="https://doi.org/10.5281/zenodo.20235917"><img alt="DOI" src="https://img.shields.io/badge/DOI-10.5281%2Fzenodo.20235917-blue.svg" />
+</a>
+<div class="toctree-wrapper compound">
+</div>
+<div class="toctree-wrapper compound">
+</div>
+<p><strong>NistChemPy</strong> provides unofficial Python tools for querying <a class="reference external" href="https://webbook.nist.gov/chemistry/">NIST Chemistry WebBook</a> pages and extracting selected molecular-property records.
+It is not affiliated with, maintained by, or endorsed by NIST.
+Because the Chemistry WebBook does not provide a stable public web API for this package, functionality may depend on the current structure and behavior of the external web service.</p>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>NistChemPy no longer ships a prebuilt NIST Chemistry WebBook compound index.</p>
+<p>Live WebBook search and individual compound-page parsing remain separate functionality, but local index search now requires a user-generated local index/cache.</p>
+<p>Rebuilding a full section-availability index can require visiting one WebBook page per compound. With a polite 3 second delay and roughly 100,000-150,000 pages, the initial rebuild can take about <strong>3.5-5+ days</strong> before retries and network overhead.</p>
+</div>
+<p>NistChemPy currently supports extraction of basic compound metadata, selected spectral records (IR, THz, MS, and UV-Vis), and gas chromatography records where these are available from the corresponding WebBook pages.
+Additional properties may be reachable through source URLs stored by the package, but direct extraction is intentionally limited to the implemented record types.</p>
+<p>For serious scientific use, users should verify retrieved records against the original NIST Chemistry WebBook pages and the primary literature references given there.
+Package output should not be treated as an official NIST data product, a complete database dump, or a stable production API.</p>
+<section id="main-features">
+<h2>Main features<a class="headerlink" href="#main-features" title="Link to this heading"></a></h2>
+<ol class="arabic">
+<li><p>Search:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>Search by <a class="reference external" href="https://webbook.nist.gov/chemistry/name-ser/">name</a>, <a class="reference external" href="https://webbook.nist.gov/chemistry/form-ser/">chemical formula</a>, <a class="reference external" href="https://webbook.nist.gov/chemistry/cas-ser/">CAS RN</a>, <a class="reference external" href="https://webbook.nist.gov/chemistry/inchi-ser/">InChI / InChI Key</a>: <cite>nistchempy.run_search</cite>.</p></li>
+<li><p>Search by <a class="reference external" href="https://webbook.nist.gov/chemistry/str-file/">structure</a>, including substructural search: <cite>nistchempy.run_structural_search</cite>. RDKit is optional and is used for SMILES/InChI-to-MOL conversion helpers and local index structural search.</p></li>
+<li><p>Search over a user-local compound index/cache with <code class="docutils literal notranslate"><span class="pre">nistchempy.WebBookIndex.from_cache()</span></code> or <code class="docutils literal notranslate"><span class="pre">nistchempy.get_local_index()</span></code>. NistChemPy does not redistribute a prebuilt WebBook-derived index.</p></li>
+</ul>
+</div></blockquote>
+</li>
+<li><p>Compound info (<cite>nistchempy.compound.NistCompound</cite>):</p>
+<blockquote>
+<div><ul>
+<li><p>Object stores parsed properties and corresponding source URLs.</p></li>
+<li><p>Supports extraction of selected records:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>2D and 3D atomic coordinates.</p></li>
+<li><p>Spectral data (IR, MS, UV-Vis).</p></li>
+<li><p>Gas chromatography data.</p></li>
+</ul>
+</div></blockquote>
+</li>
+<li><p>Supports JSON-like structured outputs via <code class="docutils literal notranslate"><span class="pre">to_dict()</span></code>, <code class="docutils literal notranslate"><span class="pre">to_record()</span></code>, and <code class="docutils literal notranslate"><span class="pre">to_records()</span></code> helpers.</p></li>
+</ul>
+</div></blockquote>
+</li>
+</ol>
+<p>For more details see the CookBook section of this documentation.</p>
+</section>
+<section id="related-project-nistchemdata">
+<h2>Related project: NistChemData<a class="headerlink" href="#related-project-nistchemdata" title="Link to this heading"></a></h2>
+<p><a class="reference external" href="https://github.com/muCommons/NistChemData">NistChemData</a> is a companion repository for local reconstruction workflows and provenance-sensitive extraction scripts.
+It is not an official NIST product and is not promoted here as an authoritative, complete, current, or independently licensed redistribution of the NIST Chemistry WebBook.</p>
+<p>Users should review the NistChemData data-use notice, original NIST Chemistry WebBook pages, applicable NIST terms, and source references before running those workflows or using generated local artifacts in scientific, commercial, or redistributed datasets.</p>
+</section>
+<section id="installation">
+<h2>Installation<a class="headerlink" href="#installation" title="Link to this heading"></a></h2>
+<p><strong>NistChemPy</strong> can be installed as a <a class="reference external" href="https://pypi.org/project/nistchempy/">PyPI package</a>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">&gt;</span> <span class="n">pip</span> <span class="n">install</span> <span class="n">nistchempy</span>
+</pre></div>
+</div>
+</section>
+<section id="requirements">
+<h2>Requirements<a class="headerlink" href="#requirements" title="Link to this heading"></a></h2>
+<ol class="arabic simple">
+<li><p>Python 3.9+;</p></li>
+<li><p>requests;</p></li>
+<li><p>beautifulsoup4;</p></li>
+<li><p>pandas;</p></li>
+<li><p>platformdirs;</p></li>
+</ol>
+</section>
+<section id="data-notice">
+<h2>Data notice<a class="headerlink" href="#data-notice" title="Link to this heading"></a></h2>
+<p>NistChemPy does not redistribute a prebuilt NIST Chemistry WebBook index or generated WebBook-derived datasets.
+Local indexes, caches, JSON exports, CSV files, and other artifacts generated by users are user-local data artifacts and are not covered by the NistChemPy software license.
+See the repository’s <code class="docutils literal notranslate"><span class="pre">DATA_NOTICE.md</span></code> file for the full notice.</p>
+</section>
+<section id="ai-assisted-development">
+<h2>AI-assisted development<a class="headerlink" href="#ai-assisted-development" title="Link to this heading"></a></h2>
+<p>Starting with the 1.0.6 cleanup/update and continuing through the 2.0.0 development line, OpenAI coding agents were used to assist with implementation, refactoring, documentation, and tests. Other AI models were also used to discuss architecture and implementation details. See the <a class="reference internal" href="source/ai_assisted_development.html"><span class="doc">AI-assisted development</span></a> note for details.</p>
+</section>
+<section id="citation">
+<h2>Citation<a class="headerlink" href="#citation" title="Link to this heading"></a></h2>
+<p>Please cite the Zenodo Concept DOI for NistChemPy:</p>
+<p><code class="docutils literal notranslate"><span class="pre">10.5281/zenodo.20235917</span></code></p>
+<p>The Concept DOI is preferred for general citations because it represents the software across archived versions.</p>
+<p>If you use NistChemPy in research, please cite the software using the metadata in the repository’s <code class="docutils literal notranslate"><span class="pre">CITATION.cff</span></code> file.</p>
+</section>
+<section id="useful-links">
+<h2>Useful links<a class="headerlink" href="#useful-links" title="Link to this heading"></a></h2>
+<ol class="arabic simple">
+<li><p><a class="reference external" href="https://webbook.nist.gov/chemistry/">NIST Chemistry WebBook</a>: web application for accessing NIST Chemistry WebBook records.</p></li>
+<li><p><a class="reference external" href="https://github.com/muCommons/NistChemPy">GitHub</a>: GitHub page of the package.</p></li>
+<li><p><a class="reference external" href="https://pypi.org/project/nistchempy/">PyPI package</a>: PyPI page of the package.</p></li>
+<li><p><a class="reference external" href="https://github.com/muCommons/NistChemData">NistChemData</a>: companion workflow repository with provenance-sensitive data-use caveats.</p></li>
+</ol>
+</section>
+<section id="indices-and-tables">
+<h2>Indices and tables<a class="headerlink" href="#indices-and-tables" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p><a class="reference internal" href="genindex.html"><span class="std std-ref">Index</span></a></p></li>
+<li><p><a class="reference internal" href="search.html"><span class="std std-ref">Search Page</span></a></p></li>
+</ul>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="source/basic_search.html" class="btn btn-neutral float-right" title="Basic online search" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023-2026, Ivan Yu. Chernyshov.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
