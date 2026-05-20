@@ -8,7 +8,7 @@ import pytest
 import nistchempy as nist
 from nistchempy.indexing.cache import resolve_index_path
 from nistchempy.cli import main as cli_main
-from nistchempy.indexing.builder import DiscoverySeed
+from nistchempy.indexing.schema import DiscoverySeed
 from nistchempy.indexing.builder import LocalIndexBuilder
 
 
@@ -751,7 +751,7 @@ def _compound_page_html(compound_id='C71432', name='Benzene'):
 
 
 def test_resolve_seed_url_supports_url_and_webbook_id():
-    from nistchempy.indexing.builder import resolve_seed_url
+    from nistchempy.indexing.enrichment import resolve_seed_url
 
     assert resolve_seed_url({'lookup_url': '/cgi/cbook.cgi?ID=C71432'}) == (
         'https://webbook.nist.gov/cgi/cbook.cgi?ID=C71432'
@@ -763,7 +763,7 @@ def test_resolve_seed_url_supports_url_and_webbook_id():
 
 def test_flatten_compound_info_keeps_cas_and_renames_data_refs():
     from bs4 import BeautifulSoup
-    from nistchempy.indexing.builder import flatten_compound_info
+    from nistchempy.indexing.enrichment import flatten_compound_info
     from nistchempy.parsing import parse_compound_page
 
     soup = BeautifulSoup(_compound_page_html(), features='html.parser')
@@ -783,7 +783,7 @@ def test_flatten_compound_info_keeps_cas_and_renames_data_refs():
 
 def test_flatten_compound_info_can_omit_cas():
     from bs4 import BeautifulSoup
-    from nistchempy.indexing.builder import flatten_compound_info
+    from nistchempy.indexing.enrichment import flatten_compound_info
     from nistchempy.parsing import parse_compound_page
 
     soup = BeautifulSoup(_compound_page_html(), features='html.parser')

@@ -12,9 +12,9 @@ from nistchempy.exceptions import NistChemPyIndexBuildError
 from nistchempy.exceptions import NistChemPyIndexNotFoundError
 from nistchempy.indexing.core import MANIFEST_FILENAME
 from nistchempy.indexing.core import WebBookIndex
-from nistchempy.indexing.builder import PARTIAL_INDEX_FILENAME
-from nistchempy.indexing.builder import SEEDS_FILENAME
-from nistchempy.indexing.builder import VALID_DISCOVERY_STRATEGIES
+from nistchempy.indexing.schema import PARTIAL_INDEX_FILENAME
+from nistchempy.indexing.schema import SEEDS_FILENAME
+from nistchempy.indexing.schema import VALID_DISCOVERY_STRATEGIES
 
 
 _NOTICE = '''NistChemPy does not ship a prebuilt NIST Chemistry WebBook index.

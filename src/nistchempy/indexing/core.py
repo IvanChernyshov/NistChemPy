@@ -196,13 +196,13 @@ class WebBookIndex:
             pandas.DataFrame: Written discovery seed table.
         '''
         from nistchempy.exceptions import NistChemPyIndexBuildError
-        from nistchempy.indexing.builder import DEFAULT_DISCOVERY_STRATEGY
-        from nistchempy.indexing.builder import FORMULA_SEARCH_DISCOVERY_STRATEGY
-        from nistchempy.indexing.builder import SITEMAP_DISCOVERY_STRATEGY
-        from nistchempy.indexing.builder import discover_formula_browser
-        from nistchempy.indexing.builder import discover_formula_search
-        from nistchempy.indexing.builder import discover_sitemap
-        from nistchempy.indexing.builder import unavailable_discovery_message
+        from nistchempy.indexing.schema import DEFAULT_DISCOVERY_STRATEGY
+        from nistchempy.indexing.schema import FORMULA_SEARCH_DISCOVERY_STRATEGY
+        from nistchempy.indexing.schema import SITEMAP_DISCOVERY_STRATEGY
+        from nistchempy.indexing.build import discover_formula_browser
+        from nistchempy.indexing.build import discover_formula_search
+        from nistchempy.indexing.build import discover_sitemap
+        from nistchempy.indexing.build import unavailable_discovery_message
 
         if strategy == DEFAULT_DISCOVERY_STRATEGY:
             return discover_formula_browser(
@@ -279,7 +279,7 @@ class WebBookIndex:
         Returns:
             WebBookIndex: Loaded final local index object.
         '''
-        from nistchempy.indexing.builder import enrich_index_from_seeds
+        from nistchempy.indexing.build import enrich_index_from_seeds
 
         return enrich_index_from_seeds(
             path=path,
@@ -342,7 +342,7 @@ class WebBookIndex:
         Returns:
             WebBookIndex: Loaded local index object.
         '''
-        from nistchempy.indexing.builder import build_index
+        from nistchempy.indexing.build import build_index
 
         return build_index(
             path=path,

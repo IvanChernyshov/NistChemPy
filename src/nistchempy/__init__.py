@@ -11,7 +11,7 @@ __license__ = 'MIT'
 
 
 from nistchempy.indexing.core import WebBookIndex, get_local_index
-from nistchempy.indexing.builder import import_index_csv
+from nistchempy.indexing.build import import_index_csv
 from nistchempy.compound import get_compound
 from nistchempy.search import run_search, run_structural_search
 from nistchempy.search import NistSearchParameters
