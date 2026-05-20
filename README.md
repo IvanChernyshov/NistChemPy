@@ -1,5 +1,8 @@
 # NistChemPy
 
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.20235917.svg)](https://doi.org/10.5281/zenodo.20235917)
+
+
 Unofficial Python tools for querying NIST Chemistry WebBook pages and extracting molecular-property records.
 
 
@@ -184,5 +187,12 @@ Starting with the 1.0.6 cleanup/update and continuing through the 2.0.0 developm
 
 
 ## Citation
+
+
+Please cite the Zenodo Concept DOI for NistChemPy:
+
+[10.5281/zenodo.20235917](https://doi.org/10.5281/zenodo.20235917)
+
+The Concept DOI is preferred for general citations because it represents the software across archived versions.
 
 If you use NistChemPy in research, please cite the software using the metadata in [CITATION.cff](CITATION.cff).

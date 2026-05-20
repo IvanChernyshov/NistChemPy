@@ -29,4 +29,5 @@ license: MIT
 repository-code: "https://github.com/muCommons/NistChemPy"
 url: "https://mucommons.github.io/NistChemPy/"
 version: 2.0.0.dev0
+doi: 10.5281/zenodo.20235917
 date-released: "2026-05-20"

@@ -2,6 +2,11 @@
 Welcome to the NistChemPy documentation!
 =========================================
 
+.. image:: https://zenodo.org/badge/DOI/10.5281/zenodo.20235917.svg
+   :target: https://doi.org/10.5281/zenodo.20235917
+   :alt: DOI
+
+
 .. toctree::
    :hidden:
    :maxdepth: 2
@@ -124,6 +129,13 @@ Starting with the 1.0.6 cleanup/update and continuing through the 2.0.0 developm
 
 Citation
 ========
+
+
+Please cite the Zenodo Concept DOI for NistChemPy:
+
+``10.5281/zenodo.20235917``
+
+The Concept DOI is preferred for general citations because it represents the software across archived versions.
 
 If you use NistChemPy in research, please cite the software using the metadata in the repository's ``CITATION.cff`` file.
 
