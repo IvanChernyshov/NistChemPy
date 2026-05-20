@@ -1,0 +1,5 @@
+##TITLE=Dummy spectrum
+##XYDATA=(X++Y..Y)
+1 10
+2 20
+##END=
