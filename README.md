@@ -35,6 +35,8 @@ For serious scientific use, users should verify retrieved records against the or
 
         - Gas chromatography data.
 
+    - Parsed metadata and loaded property objects can be exported as structured records with `to_dict()`, `to_record()`, and `to_records()`. Record collections can be serialized with `nistchempy.records.write_records_json()` or `nistchempy.records.write_records_jsonl()`.
+
 For more details see the CookBook section of the [documentation](https://ivanchernyshov.github.io/NistChemPy/).
 
 

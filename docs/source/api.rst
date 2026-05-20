@@ -75,6 +75,13 @@ Structured records
    :member-order: bysource
    :noindex:
 
+.. automodule:: nistchempy.records.io
+   :members:
+   :undoc-members:
+   :show-inheritance:
+   :member-order: bysource
+   :noindex:
+
 Local indexes
 -------------
 

@@ -28,6 +28,8 @@ Unreleased
 
 * Adds lightweight structured records for compound metadata, molfiles, spectra, and gas chromatography outputs.
 
+* Adds JSON and JSON Lines export helpers for structured record collections.
+
 * Adds ``to_record()``, ``to_dict()``, and ``to_records()`` helpers for compound and loaded property objects.
 
 * Adds local-index availability helpers such as ``available_properties()`` and ``has_property()``.
