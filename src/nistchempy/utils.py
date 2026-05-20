@@ -35,3 +35,21 @@ def get_crawl_delay(
     parser.parse(nr.text.split('\n'))
     
     return parser.crawl_delay(useragent)
+
+
+def safe_filename(text: str, replacement: str = '_') -> str:
+    '''Return a filesystem-friendly filename fragment.
+
+    Args:
+        text: Input text to sanitize.
+        replacement: Replacement character for unsafe characters.
+
+    Returns:
+        str: Sanitized filename. Empty results are returned as ``'file'``.
+    '''
+    unsafe = '<>:"/\\|?*\n\r\t'
+    cleaned = ''.join(replacement if ch in unsafe else ch for ch in str(text))
+    cleaned = cleaned.strip(' .')
+    while replacement * 2 in cleaned:
+        cleaned = cleaned.replace(replacement * 2, replacement)
+    return cleaned or 'file'

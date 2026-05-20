@@ -22,4 +22,6 @@ from nistchempy.exceptions import NistChemPyIndexError
 from nistchempy.exceptions import NistChemPyIndexNotFoundError
 from nistchempy.exceptions import NistChemPyIndexBuildError
 from nistchempy.exceptions import NistChemPyDataTermsError
-from nistchempy.utils import get_crawl_delay
+from nistchempy.utils import get_crawl_delay, safe_filename
+from nistchempy.records import CompoundRecord, MolfileRecord
+from nistchempy.records import SpectrumRecord, ChromatogramRecord

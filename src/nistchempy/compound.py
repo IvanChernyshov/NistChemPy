@@ -19,6 +19,11 @@ import pandas as _pd
 
 import nistchempy.requests as _ncpr
 import nistchempy.parsing as _parsing
+from nistchempy.records import ChromatogramRecord as _ChromatogramRecord
+from nistchempy.records import CompoundRecord as _CompoundRecord
+from nistchempy.records import MolfileRecord as _MolfileRecord
+from nistchempy.records import SpectrumRecord as _SpectrumRecord
+from nistchempy.utils import safe_filename as _safe_filename
 
 import dataclasses as _dcs
 import typing as _tp
@@ -48,6 +53,7 @@ class Spectrum():
     spec_type: str
     spec_idx: str
     jdx_text: str
+    source_url: str = ''
     
     
     def __str__(self):
@@ -61,6 +67,33 @@ class Spectrum():
         return self.__str__()
     
     
+    def to_record(self) -> _SpectrumRecord:
+        '''Return this spectrum as a structured record.
+
+        Returns:
+            SpectrumRecord: JSON-like spectrum record.
+        '''
+        return _SpectrumRecord(
+            compound_id=self.compound.ID or '',
+            spectrum_type=self.spec_type,
+            spectrum_index=str(self.spec_idx),
+            jdx_text=self.jdx_text,
+            source_url=self.source_url,
+        )
+
+
+    def to_dict(self, include_raw: bool = True) -> dict:
+        '''Return this spectrum as a JSON-friendly dictionary.
+
+        Args:
+            include_raw: If True, include raw JCAMP-DX text.
+
+        Returns:
+            dict: Structured spectrum data.
+        '''
+        return self.to_record().to_dict(include_raw=include_raw)
+
+
     def save(self, name: str = None, path_dir: str = None) -> None:
         '''Saves spectrum in JDX format
         
@@ -70,7 +103,10 @@ class Spectrum():
             path_dir (str): directory where output file will be saved
         
         '''
-        path = name if name else f'{self.compound.ID}_{self.spec_type}_{self.spec_idx}.jdx'
+        default_name = _safe_filename(
+            f'{self.compound.ID}_{self.spec_type}_{self.spec_idx}.jdx'
+        )
+        path = name if name else default_name
         if path_dir:
             path = _os.path.join(path_dir, path)
         with open(path, 'w') as outf:
@@ -96,6 +132,7 @@ class Chromatogram():
     column_type: str
     temp_regime: str
     data: _pd.core.frame.DataFrame
+    source_url: str = ''
     
     
     def __str__(self):
@@ -107,6 +144,34 @@ class Chromatogram():
         return self.__str__()
     
     
+    def to_record(self) -> _ChromatogramRecord:
+        '''Return this chromatogram as a structured record.
+
+        Returns:
+            ChromatogramRecord: JSON-like gas chromatography record.
+        '''
+        return _ChromatogramRecord(
+            compound_id=self.compound.ID or '',
+            ri_type=self.ri_type,
+            column_type=self.column_type,
+            temp_regime=self.temp_regime,
+            data=self.data.copy(),
+            source_url=self.source_url,
+        )
+
+
+    def to_dict(self, orient: str = 'records') -> dict:
+        '''Return this chromatogram as a JSON-friendly dictionary.
+
+        Args:
+            orient: DataFrame orientation passed to ``DataFrame.to_dict``.
+
+        Returns:
+            dict: Structured gas chromatography data.
+        '''
+        return self.to_record().to_dict(orient=orient)
+
+
     def save(self, name: str = None, path_dir: str = None, **kwargs) -> None:
         '''Saves chromatograms in CSV format
         
@@ -117,7 +182,10 @@ class Chromatogram():
             kwargs: parameters for pandas DataFrame to_csv method
         
         '''
-        path = name if name else f'{self.compound.ID}_{self.ri_type}_{self.column_type}_{self.temp_regime}.csv'
+        default_name = _safe_filename(
+            f'{self.compound.ID}_{self.ri_type}_{self.column_type}_{self.temp_regime}.csv'
+        )
+        path = name if name else default_name
         if path_dir:
             path = _os.path.join(path_dir, path)
         self.data.to_csv(path, **kwargs)
@@ -195,41 +263,121 @@ class NistCompound():
     
     def __repr__(self):
         return self.__str__()
+
+
+    def to_record(self) -> _CompoundRecord:
+        '''Return compound metadata as a structured record.
+
+        Returns:
+            CompoundRecord: JSON-like compound metadata record.
+        '''
+        source_url = ''
+        if self._nist_response is not None:
+            source_url = getattr(self._nist_response.response, 'url', '')
+        return _CompoundRecord(
+            compound_id=self.ID or '',
+            name=self.name or '',
+            synonyms=list(self.synonyms or []),
+            formula=self.formula,
+            mol_weight=self.mol_weight,
+            inchi=self.inchi,
+            inchi_key=self.inchi_key,
+            cas_rn=self.cas_rn,
+            mol_refs=dict(self.mol_refs or {}),
+            data_refs=dict(self.data_refs or {}),
+            nist_public_refs=dict(self.nist_public_refs or {}),
+            nist_subscription_refs=dict(self.nist_subscription_refs or {}),
+            source_url=source_url,
+        )
+
+
+    def to_dict(self) -> dict:
+        '''Return compound metadata as a JSON-friendly dictionary.
+
+        Returns:
+            dict: Structured compound metadata.
+        '''
+        return self.to_record().to_dict()
+
+
+    def iter_records(self):
+        '''Yield structured records for metadata and already loaded data.
+
+        This method does not download additional WebBook pages. It only returns
+        records for compound metadata and properties that have already been
+        loaded into the object.
+
+        Yields:
+            RecordBase: Compound, MOL file, spectrum, or chromatography record.
+        '''
+        yield self.to_record()
+        if self.mol2D is not None:
+            yield _MolfileRecord(
+                compound_id=self.ID or '',
+                dimension=2,
+                molfile=self.mol2D,
+                source_url=self.mol_refs.get('mol2D', ''),
+            )
+        if self.mol3D is not None:
+            yield _MolfileRecord(
+                compound_id=self.ID or '',
+                dimension=3,
+                molfile=self.mol3D,
+                source_url=self.mol_refs.get('mol3D', ''),
+            )
+        for attr in ('ir_specs', 'thz_specs', 'ms_specs', 'uv_specs'):
+            for spectrum in getattr(self, attr):
+                yield spectrum.to_record()
+        for chromatogram in self.gas_chromat:
+            yield chromatogram.to_record()
+
+
+    def to_records(self) -> _tp.List:
+        '''Return records for metadata and already loaded data.
+
+        Returns:
+            list: Structured records yielded by ``iter_records``.
+        '''
+        return list(self.iter_records())
     
     
 ##### Loading MOL-files #######################################################
     
-    def get_molfile(self, dim: int) -> None:
+    def get_molfile(self, dim: int) -> _tp.Optional[str]:
         '''Loads text block of 2D / 3D molfile
         
         Arguments:
             dim (int): dimensionality of molfile (2D / 3D)
+
+        Returns:
+            str | None: Downloaded MOL file text, or None if unavailable.
         
         '''
         if dim not in (2, 3):
             raise ValueError(f'Bad dimensionality (must be 2 or 3): {dim}')
         key = f'mol{dim}D'
         if key not in self.mol_refs:
-            return
+            return None
         nr = _ncpr.make_nist_request(self.mol_refs[key], config = self._request_config)
         if nr.ok:
             setattr(self, key, nr.text)
+            return nr.text
+        return None
     
     
-    def get_mol2D(self) -> None:
+    def get_mol2D(self) -> _tp.Optional[str]:
         '''Loads text block of 2D molfile'''
-        self.get_molfile(2)
+        return self.get_molfile(2)
     
     
-    def get_mol3D(self) -> None:
-        '''Loads text block of 2D molfile'''
-        self.get_molfile(3)
+    def get_mol3D(self) -> _tp.Optional[str]:
+        '''Loads text block of 3D molfile'''
+        return self.get_molfile(3)
     
     
-    def get_molfiles(self) -> None:
+    def get_molfiles(self) -> _tp.Dict[str, _tp.Optional[str]]:
         '''Loads text block of all available molfiles'''
-        self.get_mol2D()
-        self.get_mol3D()
+        return {'mol2D': self.get_mol2D(), 'mol3D': self.get_mol3D()}
     
     
 ##### Loading spectra #########################################################
@@ -252,12 +400,15 @@ class NistCompound():
                   'Type': SPEC_TYPES[spec_type]}
         # request
         nr = _ncpr.make_nist_request(_ncpr.SEARCH_URL, params, config = self._request_config)
-        spec = Spectrum(self, spec_type, spec_idx, nr.text) if nr.ok else None
+        spec = Spectrum(
+            self, spec_type, spec_idx, nr.text,
+            source_url=getattr(nr.response, 'url', '')
+        ) if nr.ok else None
         
         return spec
     
     
-    def get_spectra(self, spec_type: str) -> None:
+    def get_spectra(self, spec_type: str) -> _tp.Optional[_tp.List[Spectrum]]:
         '''Loads all available spectra of given type (IR / TZ / MS / UV)
         
         Arguments:
@@ -286,34 +437,37 @@ class NistCompound():
             X = self.get_spectrum(spec_type, idx)
             if X: spectra.append(X)
         setattr(self, key, spectra)
+        return spectra
     
     
-    def get_ir_spectra(self) -> None:
+    def get_ir_spectra(self) -> _tp.Optional[_tp.List[Spectrum]]:
         '''Loads all available IR spectra'''
-        self.get_spectra('IR')
+        return self.get_spectra('IR')
     
     
-    def get_thz_spectra(self) -> None:
+    def get_thz_spectra(self) -> _tp.Optional[_tp.List[Spectrum]]:
         '''Loads all available THz spectra'''
-        self.get_spectra('TZ')
+        return self.get_spectra('TZ')
     
     
-    def get_ms_spectra(self) -> None:
+    def get_ms_spectra(self) -> _tp.Optional[_tp.List[Spectrum]]:
         '''Loads all available MS spectra'''
-        self.get_spectra('MS')
+        return self.get_spectra('MS')
     
     
-    def get_uv_spectra(self) -> None:
+    def get_uv_spectra(self) -> _tp.Optional[_tp.List[Spectrum]]:
         '''Loads all available UV-Vis spectra'''
-        self.get_spectra('UV')
+        return self.get_spectra('UV')
     
     
-    def get_all_spectra(self) -> None:
+    def get_all_spectra(self) -> dict:
         '''Loads all available spectra'''
-        self.get_ir_spectra()
-        self.get_thz_spectra()
-        self.get_ms_spectra()
-        self.get_uv_spectra()
+        return {
+            'IR': self.get_ir_spectra(),
+            'TZ': self.get_thz_spectra(),
+            'MS': self.get_ms_spectra(),
+            'UV': self.get_uv_spectra(),
+        }
     
     
     def save_spectra(self, spec_type: str, path_dir: str = './') -> None:
@@ -391,11 +545,11 @@ class NistCompound():
     
 ##### Gas chromatography ######################################################
     
-    def get_gas_chromatography(self) -> None:
+    def get_gas_chromatography(self) -> _tp.Optional[_tp.List[Chromatogram]]:
         '''Loads info on gas chromatography'''
         ref = self.data_refs.get('cGC', None)
         if not ref:
-            return
+            return None
         # request
         nr = _ncpr.make_nist_request(ref, config = self._request_config)
         if not nr.ok or nr.soup is None:
@@ -409,8 +563,9 @@ class NistCompound():
                 return None
             # get Chromatogram
             info = _parsing.parse_chromatography_table(nrx.soup)
-            X = Chromatogram(self, **info)
+            X = Chromatogram(self, **info, source_url=ref)
             self.gas_chromat.append(X)
+        return self.gas_chromat
     
     
     def save_gas_chromatography(self, path_dir: str = './', **kwargs) -> None:

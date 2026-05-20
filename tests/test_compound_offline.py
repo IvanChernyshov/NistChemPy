@@ -182,3 +182,103 @@ def test_get_compound_uses_inchi_url_and_id_params(monkeypatch):
     assert calls[0][0].endswith('/cgi/inchi/InChI=1S/dummy')
     assert calls[0][1] == {}
     assert calls[1][1] == {'ID': 'C111111'}
+
+
+def test_compound_to_record_and_to_dict():
+    compound = _compound()
+
+    record = compound.to_record()
+    data = compound.to_dict()
+
+    assert record.compound_id == 'C111111'
+    assert data['ID'] == 'C111111'
+    assert data['name'] == 'Dummybenzene'
+    assert data['cas_rn'] == '000-00-0'
+
+
+def test_compound_iter_records_includes_loaded_data(monkeypatch):
+    compound = _compound()
+
+    def fake_request(url, params=None, config=None):
+        _ = params, config
+        if 'Str2File' in url:
+            return request_module.NistResponse(
+                FakeResponse(
+                    load_text(Path('text') / 'mol2d.mol'),
+                    content_type='text/plain',
+                    url='https://example.test/mol2d',
+                )
+            )
+        if 'Table=on' in url:
+            return nist_response_from_html('gas_chromatography_table.html')
+        if 'Mask=2000' in url:
+            return nist_response_from_html('gas_chromatography_page.html')
+        if params and 'JCAMP' in params:
+            return request_module.NistResponse(
+                FakeResponse(
+                    load_text(Path('text') / 'dummy.jdx'),
+                    content_type='text/plain',
+                    url='https://example.test/ms',
+                )
+            )
+        return nist_response_from_html('spectra_listing.html')
+
+    monkeypatch.setattr(request_module, 'make_nist_request', fake_request)
+
+    compound.get_mol2D()
+    compound.get_ms_spectra()
+    compound.get_gas_chromatography()
+    records = compound.to_records()
+    record_types = [record.record_type for record in records]
+
+    assert record_types == [
+        'compound',
+        'molfile',
+        'spectrum',
+        'spectrum',
+        'gas_chromatography',
+    ]
+    assert records[1].source_url.endswith('Str2File=C111111')
+    assert records[2].source_url == 'https://example.test/ms'
+
+
+def test_spectrum_and_chromatogram_to_dict():
+    compound = _compound()
+    spectrum = compound_module.Spectrum(
+        compound,
+        'MS',
+        '0',
+        'dummy jdx',
+        source_url='https://example.test/ms',
+    )
+    chromat = compound_module.Chromatogram(
+        compound,
+        'Kovats RI',
+        'non-polar',
+        'isothermal',
+        __import__('pandas').DataFrame({'A': [1]}),
+        source_url='https://example.test/gc',
+    )
+
+    assert spectrum.to_dict()['jdx_text'] == 'dummy jdx'
+    assert chromat.to_dict()['data'][0]['A'] == 1
+
+
+def test_loaders_return_loaded_objects(monkeypatch):
+    compound = _compound()
+
+    def fake_request(url, params=None, config=None):
+        _ = url, config
+        if params and 'JCAMP' in params:
+            return request_module.NistResponse(
+                FakeResponse(load_text(Path('text') / 'dummy.jdx'), content_type='text/plain')
+            )
+        return nist_response_from_html('spectra_listing.html')
+
+    monkeypatch.setattr(request_module, 'make_nist_request', fake_request)
+
+    spectra = compound.get_ms_spectra()
+    all_spectra = compound.get_all_spectra()
+
+    assert len(spectra) == 2
+    assert [spec.spec_idx for spec in all_spectra['MS']] == ['0', '1']

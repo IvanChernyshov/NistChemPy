@@ -138,6 +138,19 @@ def test_local_index_section_filter(tmp_path):
     assert list(result['ID']) == ['C71432']
 
 
+
+
+def test_local_index_available_properties(tmp_path):
+    _write_index(tmp_path)
+    index = nist.WebBookIndex.from_cache(tmp_path)
+
+    properties = index.available_properties('C71432')
+
+    assert 'Mass spectrum (electron ionization)' in properties
+    assert index.has_property('C71432', 'Mass spectrum (electron ionization)')
+    assert not index.has_property('C64175', 'Mass spectrum (electron ionization)')
+    assert 'name' not in index.property_columns()
+
 def test_get_local_index_convenience(tmp_path):
     _write_index(tmp_path)
     index = nist.get_local_index(tmp_path)
@@ -1272,3 +1285,12 @@ def test_default_search_fields_include_cas_rn(tmp_path):
     result = index.search('71-43-2')
 
     assert list(result['ID']) == ['C71432']
+
+
+def test_documentation_index_fixture_matches_local_index_schema():
+    fixture = __import__('pathlib').Path(__file__).parent / 'fixtures' / 'index' / 'example_index.csv'
+    index = nist.get_local_index(fixture)
+
+    assert len(index.to_dataframe()) == 3
+    assert index.available_properties('C71432')
+    assert index.has_property('C71432', 'Mass spectrum (electron ionization)')

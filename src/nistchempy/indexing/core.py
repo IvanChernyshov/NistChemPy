@@ -529,6 +529,61 @@ class WebBookIndex:
 
         return result.copy()
 
+    def property_columns(self) -> _tp.List[str]:
+        '''Return local-index columns describing downloadable resources.
+
+        Metadata columns such as names, formula, identifiers, and molecular
+        weight are excluded. Structure links such as ``mol2D`` and ``mol3D``
+        are treated as available resource columns.
+
+        Returns:
+            list[str]: Property/resource column names present in the index.
+        '''
+        metadata = set(DEFAULT_SEARCH_FIELDS) | {'mol_weight'}
+        return [column for column in self.data.columns if column not in metadata]
+
+
+    def available_properties(self, compound_id: str) -> _tp.Dict[str, str]:
+        '''Return non-empty local-index resource URLs for a compound.
+
+        Args:
+            compound_id: NIST Chemistry WebBook compound ID.
+
+        Returns:
+            dict: Mapping of property/resource column names to local-index URL
+            values.
+
+        Raises:
+            KeyError: If the compound ID is absent from the local index.
+        '''
+        row = self.get(compound_id)
+        result = {}
+        for column in self.property_columns():
+            value = row.get(column, '')
+            if _pd.isna(value):
+                continue
+            value = str(value).strip()
+            if value:
+                result[column] = value
+        return result
+
+
+    def has_property(self, compound_id: str, property_name: str) -> bool:
+        '''Return whether a compound has a non-empty local-index property.
+
+        Args:
+            compound_id: NIST Chemistry WebBook compound ID.
+            property_name: Local-index property/resource column name.
+
+        Returns:
+            bool: True if the property column exists and has a non-empty value
+            for the compound.
+        '''
+        if property_name not in self.data.columns:
+            return False
+        return property_name in self.available_properties(compound_id)
+
+
     def search(
             self, query: str, fields=None, case=False, regex=False,
             sections=None, limit=None):

@@ -15,10 +15,11 @@ TEXT_DIR = FIXTURE_DIR / 'text'
 class FakeResponse:
     '''Small requests.Response-like object for offline tests.'''
 
-    def __init__(self, text='', ok=True, content_type='text/html'):
+    def __init__(self, text='', ok=True, content_type='text/html', url='https://example.test/fixture'):
         self.text = text
         self.ok = ok
         self.headers = {}
+        self.url = url
         if content_type is not None:
             self.headers['content-type'] = content_type
 

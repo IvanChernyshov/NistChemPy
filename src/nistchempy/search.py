@@ -176,12 +176,17 @@ class NistSearch():
         self._nist_response._save_response(path)
     
     
-    def load_found_compounds(self) -> None:
-        '''Loads found compounds'''
+    def load_found_compounds(self) -> _tp.List[_compound.NistCompound]:
+        '''Load and return found compounds.
+
+        Returns:
+            list: Loaded NistCompound objects.
+        '''
         self.compounds = []
         for ID in self.compound_ids:
             X = _compound.get_compound(ID, request_config = self._request_config)
             self.compounds.append(X)
+        return self.compounds
 
 
 
