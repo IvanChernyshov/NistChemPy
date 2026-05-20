@@ -362,6 +362,7 @@ class LocalIndexBuilder:
             },
         )
         lost_queries = []
+        failed_queries = []
         try:
             seeds = _discovery.discover_formula_search(
                 carbon_start=carbon_start,
@@ -374,6 +375,7 @@ class LocalIndexBuilder:
                 max_queries=max_queries,
                 search_func=search_func,
                 lost_queries=lost_queries,
+                failed_queries=failed_queries,
             )
         except ValueError as exc:
             raise NistChemPyIndexBuildError(str(exc)) from exc
@@ -398,10 +400,23 @@ class LocalIndexBuilder:
                 lost_query.get('reason', 'Formula-search query was lost.'),
                 lost_query,
             )
+        for failed_query in failed_queries:
+            self.append_error(
+                'formula_search_failed_query',
+                failed_query.get(
+                    'reason', 'Formula-search query did not succeed.'
+                ),
+                failed_query,
+            )
         if lost_queries:
             self.append_state(
                 'formula_search_lost_queries_recorded',
                 {'lost_query_count': len(lost_queries)},
+            )
+        if failed_queries:
+            self.append_state(
+                'formula_search_failed_queries_recorded',
+                {'failed_query_count': len(failed_queries)},
             )
         return seed_table
 

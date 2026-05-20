@@ -127,7 +127,8 @@ def discover_formula_browser(
 def discover_formula_search(
         carbon_start=1, carbon_end=None, hydrogen_max=149,
         heteroatom_max=50, elements=None, request_config=None, limit=None,
-        max_queries=None, search_func=None, lost_queries=None):
+        max_queries=None, search_func=None, lost_queries=None,
+        failed_queries=None):
     '''Discover compound seeds with bounded formula-search subdivision.
 
     This strategy promotes the legacy carbon-formula search prototype into a
@@ -155,6 +156,8 @@ def discover_formula_search(
         lost_queries: Optional list populated with unresolved formula queries
             that still hit the WebBook result cutoff after available
             refinement.
+        failed_queries: Optional list populated with unsuccessful WebBook
+            formula-search responses.
 
     Returns:
         list[dict]: Discovery seed dictionaries.
@@ -176,6 +179,8 @@ def discover_formula_search(
     query_count = 0
     if lost_queries is None:
         lost_queries = []
+    if failed_queries is None:
+        failed_queries = []
 
     def record_lost_query(formula, stage):
         lost_queries.append({
@@ -195,6 +200,13 @@ def discover_formula_search(
         query_count += 1
         result = search_func(formula, params=params, config=request_config)
         if not getattr(result, 'success', False):
+            failed_queries.append({
+                'query': formula,
+                'reason': getattr(result, 'message', '') or (
+                    'Formula-search request did not succeed.'
+                ),
+                'strategy': FORMULA_SEARCH_SOURCE,
+            })
             return False, False
         for compound_id in getattr(result, 'compound_ids', []) or []:
             seed = seed_from_formula_search_id(compound_id, formula)

@@ -445,6 +445,69 @@ def test_formula_search_discovery_records_unresolved_lost_queries():
     ]
 
 
+
+def test_formula_search_discovery_records_failed_queries():
+    from nistchempy.indexing.discovery import discover_formula_search
+
+    class FailedSearch:
+        success = False
+        lost = False
+        compound_ids = []
+        message = 'No matching species found.'
+
+    failed_queries = []
+
+    def fake_search(formula, params, config):
+        _ = params, config
+        assert formula == 'C1'
+        return FailedSearch()
+
+    seeds = discover_formula_search(
+        carbon_start=1,
+        carbon_end=1,
+        search_func=fake_search,
+        failed_queries=failed_queries,
+    )
+
+    assert seeds == []
+    assert failed_queries == [
+        {
+            'query': 'C1',
+            'reason': 'No matching species found.',
+            'strategy': 'formula-search',
+        }
+    ]
+
+
+def test_local_index_builder_logs_failed_formula_search_queries(tmp_path):
+    builder = LocalIndexBuilder(
+        path=tmp_path / 'cache',
+        strategy='formula-search',
+        accept_data_terms=True,
+    )
+
+    class FailedSearch:
+        success = False
+        lost = False
+        compound_ids = []
+        message = 'No matching species found.'
+
+    def fake_search(formula, params, config):
+        _ = formula, params, config
+        return FailedSearch()
+
+    builder.discover_formula_search(
+        carbon_start=1,
+        carbon_end=1,
+        search_func=fake_search,
+    )
+
+    errors = (tmp_path / 'cache' / 'errors.jsonl').read_text(
+        encoding='utf-8'
+    )
+    assert 'formula_search_failed_query' in errors
+    assert 'No matching species found.' in errors
+
 def test_formula_search_discovery_requires_explicit_carbon_end():
     from nistchempy.indexing.discovery import discover_formula_search
 
