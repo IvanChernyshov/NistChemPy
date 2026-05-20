@@ -104,6 +104,18 @@ A full page-enriched build may need to visit many compound pages. With a polite
 3 second delay, a full initial rebuild can take about **3.5-5+ days** before
 retries and network overhead.
 
+Useful CLI commands for existing local indexes:
+
+```bash
+nistchempy index path
+nistchempy index status
+nistchempy index search benzene
+```
+
+The documentation includes a Local Index Workflow cookbook page explaining the
+cache layout, discovery/enrichment pipeline, custom paths, CSV import, and
+RDKit-assisted local structural search.
+
 Generated local index/cache files are user-local artifacts and are not covered
 by the NistChemPy software license. See [DATA_NOTICE.md](DATA_NOTICE.md) for the
 repository-level data notice. For migration/testing, an existing local CSV can

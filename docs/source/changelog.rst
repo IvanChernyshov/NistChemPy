@@ -40,6 +40,10 @@ Structured records and export helpers
 Search, parsing, and request handling
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* Adds optional RDKit-backed SMILES/InChI conversion helpers for live WebBook structural search.
+
+* Adds RDKit-assisted local structural search over local-index ``inchi`` and ``inchi_key`` columns.
+
 * Hardens compound-page parsing, request handling, search error reporting, and gas chromatography parsing against malformed pages and non-HTML responses.
 
 * Fixes parser warnings and deprecated BeautifulSoup API usage.
@@ -57,6 +61,8 @@ Project structure and release safeguards
 
 Documentation and development workflow
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* Adds a structural-search notebook and a local-index workflow cookbook page.
 
 * Restores user-facing notebooks to real online WebBook workflows with pregenerated outputs, while Sphinx still does not execute notebooks during documentation builds.
 
