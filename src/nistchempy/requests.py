@@ -31,14 +31,15 @@ INCHI_URL = f'{BASE_URL}/cgi/inchi'
 
 @_dcs.dataclass
 class RequestConfig():
-    '''Contains parameters used by make_nist_request function
-    
-    Attrubutes:
-        delay (float): time delay in seconds after getting response from NIST
-        max_attempts (_tp.Optional[int]): if > 1, enables reattempting of getting response
-            in case of request errors or non-OK response
-        kwargs (dict): kwargs for requests.get inside of make_nist_request
-    
+    '''Configuration for NIST Chemistry WebBook HTTP requests.
+
+    Attributes:
+        delay: Time delay in seconds after receiving a response from NIST.
+        max_attempts: Number of request attempts. Values greater than one
+            enable retrying after request errors or non-OK responses.
+        kwargs: Extra keyword arguments passed to the underlying requests
+            function. The mapping is copied during initialization.
+
     '''
     delay: float = 0.0
     max_attempts: _tp.Optional[int] = 1
