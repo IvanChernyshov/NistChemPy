@@ -341,4 +341,3 @@ def unavailable_discovery_message() -> str:
         'Supported discovery strategies are formula-browser, formula-search, '
         'and sitemap.'
     )
-

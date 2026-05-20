@@ -483,5 +483,3 @@ def get_compound(
     X = compound_from_response(nr, request_config)
     
     return X
-
-

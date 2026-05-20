@@ -19,4 +19,3 @@ class NistChemPyIndexBuildError(NistChemPyIndexError):
 
 class NistChemPyDataTermsError(NistChemPyIndexBuildError):
     '''Raised when local index creation lacks explicit acknowledgement.'''
-

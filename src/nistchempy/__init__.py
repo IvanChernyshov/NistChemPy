@@ -23,5 +23,3 @@ from nistchempy.exceptions import NistChemPyIndexNotFoundError
 from nistchempy.exceptions import NistChemPyIndexBuildError
 from nistchempy.exceptions import NistChemPyDataTermsError
 from nistchempy.utils import get_crawl_delay
-
-

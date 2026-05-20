@@ -415,5 +415,3 @@ def run_structural_search(
     search = search_from_response(nr, search_parameters, config)
     
     return search
-
-

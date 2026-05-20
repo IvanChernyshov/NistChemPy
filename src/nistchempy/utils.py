@@ -35,5 +35,3 @@ def get_crawl_delay(
     parser.parse(nr.text.split('\n'))
     
     return parser.crawl_delay(useragent)
-
-

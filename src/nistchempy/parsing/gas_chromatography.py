@@ -104,5 +104,3 @@ def parse_chromatography_table(soup: _bs4.BeautifulSoup) -> dict:
     info['data'] = _pd.DataFrame(data)
     
     return info
-
-

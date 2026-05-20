@@ -498,5 +498,3 @@ def parse_compound_page(soup: _bs4.BeautifulSoup) -> _tp.Optional[dict]:
             'nist_subscription_refs': nist_subscription_refs}
     
     return info
-
-

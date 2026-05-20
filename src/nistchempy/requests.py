@@ -200,5 +200,3 @@ def make_nist_post_request(url: str, data: _tp.Optional[dict] = None,
         _time.sleep(config.delay)
         if nr.ok or n_err == config.max_attempts:
             return nr
-
-

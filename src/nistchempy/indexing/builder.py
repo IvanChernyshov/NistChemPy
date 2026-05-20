@@ -1008,4 +1008,3 @@ class LocalIndexBuilder:
             encoding='utf-8',
         )
         tmp_manifest.replace(self.manifest_path)
-
