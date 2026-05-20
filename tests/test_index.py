@@ -85,6 +85,40 @@ def test_load_local_index_from_csv_file(tmp_path):
     assert index.has_capability('section_availability')
 
 
+
+def test_direct_csv_ignores_unrelated_parent_manifest(tmp_path):
+    csv_path = tmp_path / 'source.csv'
+    pd.DataFrame([{'ID': 'C71432', 'name': 'benzene'}]).to_csv(
+        csv_path, index=False
+    )
+    (tmp_path / 'manifest.json').write_text(
+        json.dumps({'strategy': 'unrelated-directory-manifest'}),
+        encoding='utf-8',
+    )
+
+    index = nist.get_local_index(csv_path)
+
+    assert index.manifest['strategy'] == 'legacy-csv'
+    assert index.manifest['source_path'] == str(csv_path)
+
+
+def test_direct_index_csv_uses_sibling_manifest(tmp_path):
+    _write_index(tmp_path)
+
+    index = nist.get_local_index(tmp_path / 'index.csv')
+
+    assert index.manifest['strategy'] == 'local-csv'
+
+
+def test_enrich_rejects_direct_csv_path(tmp_path):
+    csv_path = tmp_path / 'source.csv'
+    pd.DataFrame([{'ID': 'C71432', 'name': 'benzene'}]).to_csv(
+        csv_path, index=False
+    )
+
+    with pytest.raises(nist.NistChemPyIndexBuildError):
+        nist.WebBookIndex.enrich(path=csv_path, accept_data_terms=True)
+
 def test_missing_local_index(tmp_path):
     with pytest.raises(nist.NistChemPyIndexNotFoundError):
         nist.WebBookIndex.from_cache(tmp_path / 'missing')

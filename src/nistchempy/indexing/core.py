@@ -11,19 +11,9 @@ import pandas as _pd
 from nistchempy.indexing.cache import resolve_index_path as _resolve_index_path
 from nistchempy.exceptions import NistChemPyIndexError
 from nistchempy.exceptions import NistChemPyIndexNotFoundError
-
-
-INDEX_FILENAME = 'index.csv'
-MANIFEST_FILENAME = 'manifest.json'
-DEFAULT_SEARCH_FIELDS = (
-    'ID',
-    'name',
-    'synonyms',
-    'formula',
-    'inchi',
-    'inchi_key',
-    'cas_rn',
-)
+from nistchempy.indexing.schema import DEFAULT_SEARCH_FIELDS
+from nistchempy.indexing.schema import INDEX_FILENAME
+from nistchempy.indexing.schema import MANIFEST_FILENAME
 
 
 def _format_missing_index_message(path: _Path) -> str:
@@ -155,7 +145,9 @@ class WebBookIndex:
                 data['mol_weight'], errors='coerce'
             )
 
-        manifest = _read_manifest(index_path)
+        manifest = {}
+        if csv_path.name == INDEX_FILENAME:
+            manifest = _read_manifest(index_path)
         if not manifest:
             manifest = _infer_manifest(data, csv_path)
 
@@ -266,7 +258,9 @@ class WebBookIndex:
         from ``index.partial.jsonl``.
 
         Args:
-            path: Optional local index directory or CSV file.
+            path: Optional local index directory. Direct CSV paths are not
+                valid for enrichment because this operation needs cache
+                artifacts such as seeds.csv and index.partial.jsonl.
             seeds_path: Optional explicit seed CSV file. If omitted, use the
                 cache-local ``seeds.csv``.
             accept_data_terms: Explicit acknowledgement that generated local

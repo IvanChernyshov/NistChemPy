@@ -18,8 +18,6 @@ import nistchempy.requests as _requests
 from nistchempy.indexing.cache import resolve_index_path as _resolve_index_path
 from nistchempy.exceptions import NistChemPyDataTermsError
 from nistchempy.exceptions import NistChemPyIndexBuildError
-from nistchempy.indexing.core import INDEX_FILENAME
-from nistchempy.indexing.core import MANIFEST_FILENAME
 from nistchempy.indexing.core import WebBookIndex
 from nistchempy.indexing.enrichment import _append_jsonl
 from nistchempy.indexing.enrichment import _drop_cas_if_needed
@@ -30,6 +28,8 @@ from nistchempy.indexing.enrichment import flatten_compound_info
 from nistchempy.indexing.enrichment import resolve_seed_url
 from nistchempy.indexing.schema import DEFAULT_DISCOVERY_STRATEGY
 from nistchempy.indexing.schema import DEFAULT_INDEX_CAPABILITIES
+from nistchempy.indexing.schema import INDEX_FILENAME
+from nistchempy.indexing.schema import MANIFEST_FILENAME
 from nistchempy.indexing.schema import DEFAULT_SOURCE_NOTICE
 from nistchempy.indexing.schema import ERRORS_FILENAME
 from nistchempy.indexing.schema import FORMULA_SEARCH_DISCOVERY_STRATEGY
@@ -1130,7 +1130,9 @@ def enrich_index_from_seeds(
     '''Enrich local discovery seeds into a final local index.
 
     Args:
-        path: Optional local index directory.
+        path: Optional local index directory. Direct CSV paths are not
+            valid because enrichment needs cache-local seed, state, and
+            partial-index artifacts.
         seeds_path: Optional explicit discovery seed CSV path.
         accept_data_terms: Explicit acknowledgement that generated local data
             are local user artifacts.
@@ -1150,6 +1152,11 @@ def enrich_index_from_seeds(
         WebBookIndex: Loaded final local index object.
     '''
     resolved_path = _resolve_index_path(path)
+    if resolved_path.suffix.lower() == '.csv' or resolved_path.is_file():
+        raise NistChemPyIndexBuildError(
+            'Seed enrichment requires a local index directory, not a direct '
+            f'CSV file path: {resolved_path}.'
+        )
     manifest = _read_json_file(resolved_path / MANIFEST_FILENAME)
     inferred_strategy = strategy or manifest.get(
         'strategy', DEFAULT_DISCOVERY_STRATEGY

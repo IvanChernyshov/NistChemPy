@@ -8,6 +8,8 @@ from dataclasses import dataclass as _dataclass
 
 import pandas as _pd
 
+INDEX_FILENAME = 'index.csv'
+MANIFEST_FILENAME = 'manifest.json'
 STATE_FILENAME = 'state.jsonl'
 ERRORS_FILENAME = 'errors.jsonl'
 SEEDS_FILENAME = 'seeds.csv'
@@ -30,6 +32,15 @@ VALID_MANIFEST_STRATEGIES = VALID_DISCOVERY_STRATEGIES + (
 DEFAULT_INDEX_CAPABILITIES = (
     'compound_discovery',
     'section_availability',
+)
+DEFAULT_SEARCH_FIELDS = (
+    'ID',
+    'name',
+    'synonyms',
+    'formula',
+    'inchi',
+    'inchi_key',
+    'cas_rn',
 )
 SEED_COLUMNS = (
     'lookup_key',
