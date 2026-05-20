@@ -27,12 +27,17 @@ def test_default_index_path_uses_default_cache(monkeypatch, tmp_path):
     assert cache.get_default_index_path() == tmp_path / cache.INDEX_DIR_NAME
 
 
-def test_fallback_cache_base_respects_xdg(monkeypatch, tmp_path):
+def test_fallback_cache_base_respects_xdg(monkeypatch):
     monkeypatch.setattr(cache._sys, 'platform', 'linux')
     monkeypatch.setattr(cache._os, 'name', 'posix')
-    monkeypatch.setenv('XDG_CACHE_HOME', str(tmp_path / 'xdg'))
+    monkeypatch.setattr(cache, '_Path', PurePath)
 
-    assert cache._fallback_cache_base() == tmp_path / 'xdg' / 'nistchempy'
+    xdg_cache_home = '/tmp/nistchempy-xdg-cache'
+    monkeypatch.setenv('XDG_CACHE_HOME', xdg_cache_home)
+
+    assert cache._fallback_cache_base() == (
+        PurePath(xdg_cache_home) / 'nistchempy'
+    )
 
 
 def test_fallback_cache_base_windows_localappdata(monkeypatch, tmp_path):
