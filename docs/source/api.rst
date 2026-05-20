@@ -36,6 +36,45 @@ Compounds
    :member-order: bysource
    :noindex:
 
+
+Structured records
+------------------
+
+.. automodule:: nistchempy.records
+   :members:
+   :undoc-members:
+   :show-inheritance:
+   :member-order: bysource
+   :noindex:
+
+.. automodule:: nistchempy.records.compound
+   :members:
+   :undoc-members:
+   :show-inheritance:
+   :member-order: bysource
+   :noindex:
+
+.. automodule:: nistchempy.records.molfile
+   :members:
+   :undoc-members:
+   :show-inheritance:
+   :member-order: bysource
+   :noindex:
+
+.. automodule:: nistchempy.records.spectra
+   :members:
+   :undoc-members:
+   :show-inheritance:
+   :member-order: bysource
+   :noindex:
+
+.. automodule:: nistchempy.records.chromatography
+   :members:
+   :undoc-members:
+   :show-inheritance:
+   :member-order: bysource
+   :noindex:
+
 Local indexes
 -------------
 

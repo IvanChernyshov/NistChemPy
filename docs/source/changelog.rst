@@ -26,7 +26,15 @@ Unreleased
 
 * Adds ``DATA_NOTICE.md`` and configures Sphinx to render pregenerated notebooks without live execution during documentation builds.
 
-* Rewrites documentation notebooks around synthetic/offline examples and adds maintainer workflow documentation for tests, notebook regeneration, docs builds, and release artifact checks.
+* Adds lightweight structured records for compound metadata, molfiles, spectra, and gas chromatography outputs.
+
+* Adds ``to_record()``, ``to_dict()``, and ``to_records()`` helpers for compound and loaded property objects.
+
+* Adds local-index availability helpers such as ``available_properties()`` and ``has_property()``.
+
+* Restores user-facing notebooks to real online WebBook workflows with pregenerated outputs, while Sphinx still does not execute notebooks during documentation builds.
+
+* Adds maintainer workflow documentation for tests, notebook regeneration, docs builds, and release artifact checks.
 
 1.0.6
 -----

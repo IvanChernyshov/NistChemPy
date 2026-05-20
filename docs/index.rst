@@ -64,6 +64,8 @@ Main features
 
         * Gas chromatography data.
 
+    * Supports JSON-like structured outputs via ``to_dict()``, ``to_record()``, and ``to_records()`` helpers.
+
 For more details see the CookBook section of this documentation.
 
 

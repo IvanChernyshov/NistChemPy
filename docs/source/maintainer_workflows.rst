@@ -64,9 +64,11 @@ when examples or public APIs change:
    jupyter nbconvert --execute docs/source/advanced_search.ipynb --inplace
    jupyter nbconvert --execute docs/source/requests_config.ipynb --inplace
 
-The committed notebooks should avoid live WebBook requests. Use synthetic local
-examples for deterministic docs and put live commands in commented cells or
-prose.
+User-facing notebooks may contain pregenerated live WebBook outputs. Sphinx
+does not execute notebooks during documentation builds, so rerun notebooks
+manually before release or after public API changes. Keep long-running or broad
+index reconstruction outside notebooks; use tiny local CSV fixtures for local
+index examples.
 
 Documentation build
 -------------------
