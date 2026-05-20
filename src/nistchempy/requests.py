@@ -9,6 +9,7 @@ Attributes:
 
 #%% Imports
 
+import numbers as _numbers
 import time as _time
 
 import requests as _requests
@@ -45,16 +46,37 @@ class RequestConfig():
     
     
     def __post_init__(self):
-        
+        try:
+            self.delay = float(self.delay)
+        except (TypeError, ValueError) as exc:
+            raise ValueError(
+                f'Time delay must be a non-negative number: {self.delay}'
+            ) from exc
+
         if self.delay < 0:
             raise ValueError(f'Time delay must be non-negative: {self.delay}')
-        
-        if self.max_attempts < 1 or int(self.max_attempts) != self.max_attempts:
-            raise ValueError(f'max_attempts must be a positive integer: {self.max_attempts}')
+
+        if isinstance(self.max_attempts, bool):
+            raise ValueError(
+                f'max_attempts must be a positive integer: {self.max_attempts}'
+            )
+        if not isinstance(self.max_attempts, _numbers.Integral):
+            raise ValueError(
+                f'max_attempts must be a positive integer: {self.max_attempts}'
+            )
+        if self.max_attempts < 1:
+            raise ValueError(
+                f'max_attempts must be a positive integer: {self.max_attempts}'
+            )
         self.max_attempts = int(self.max_attempts)
-        
-        if 'params' in self.kwargs:
-            self.kwargs.pop('params')
+
+        if self.kwargs is None:
+            self.kwargs = {}
+        if not isinstance(self.kwargs, dict):
+            raise TypeError(f'kwargs must be a dictionary: {self.kwargs!r}')
+        self.kwargs = dict(self.kwargs)
+
+        self.kwargs.pop('params', None)
         if 'timeout' not in self.kwargs:
             self.kwargs['timeout'] = 30.0
 
@@ -134,7 +156,7 @@ def make_nist_request(url: str, params: _tp.Optional[dict] = None,
     while True:
         # catch error
         try:
-            r = _requests.get(url, params, **config.kwargs)
+            r = _requests.get(url, params=params, **config.kwargs)
         except (KeyboardInterrupt, SystemExit):
             raise
         except Exception as e:
@@ -156,7 +178,7 @@ def make_nist_post_request(url: str, data: _tp.Optional[dict] = None,
                            json: _tp.Optional[dict] = None,
                            files: _tp.Optional[dict] = None,
                            config: _tp.Optional[RequestConfig] = None) -> NistResponse:
-    '''Dummy GET request to the NIST Chemistry WebBook
+    '''POST request to the NIST Chemistry WebBook
     
     Arguments:
         url (str): URL of the NIST webpage

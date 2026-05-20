@@ -16,7 +16,9 @@ import typing as _tp
 
 #%% Functions
 
-def get_chromatography_table_refs(soup: _bs4.BeautifulSoup) -> _tp.List[str]:
+def get_chromatography_table_refs(
+        soup: _tp.Optional[_bs4.BeautifulSoup]
+    ) -> _tp.List[str]:
     '''Extracts references to large format tables containing info on
     chromatographic experiments
     
@@ -27,13 +29,17 @@ def get_chromatography_table_refs(soup: _bs4.BeautifulSoup) -> _tp.List[str]:
         _tp.List[str]: list of URLs
     
     '''
-    refs = soup.find_all('a', string = _re.compile('View large format table', _re.IGNORECASE))
+    if soup is None:
+        return []
+    refs = soup.find_all('a', string=_re.compile('View large format table', _re.IGNORECASE))
     refs = [_ncpr.BASE_URL + ref['href'] for ref in refs]
     
     return refs
 
 
-def get_literature_references(soup: _bs4.BeautifulSoup) -> _tp.Dict[str, str]:
+def get_literature_references(
+        soup: _tp.Optional[_bs4.BeautifulSoup]
+    ) -> _tp.Dict[str, str]:
     '''Extracts literature references from the corresponding section
     
     Arguments:
@@ -44,7 +50,9 @@ def get_literature_references(soup: _bs4.BeautifulSoup) -> _tp.Dict[str, str]:
     
     '''
     refs = {}
-    for entry in soup.find_all('span', attrs = {'id': _re.compile(r'ref-\d+')}):
+    if soup is None:
+        return refs
+    for entry in soup.find_all('span', attrs={'id': _re.compile(r'ref-\d+')}):
         idx = entry['id']
         p = _deepcopy(entry.find_parent())
         for child in p.select('span'):
@@ -69,9 +77,17 @@ def parse_chromatography_table(soup: _bs4.BeautifulSoup) -> dict:
         dict: contains info to initialize nistchempy.compound.Chromatogram
     
     '''
+    if soup is None:
+        raise ValueError('Cannot parse chromatography table from empty page.')
+
     # get title info
-    h2 = [h2 for h2 in soup.find_all('h2') if h2.get('id', None)][0]
+    headers = [h2 for h2 in soup.find_all('h2') if h2.get('id', None)]
+    if not headers:
+        raise ValueError('Cannot find chromatography table title.')
+    h2 = headers[0]
     ps = [p.strip() for p in h2.text.split(',')]
+    if len(ps) < 3:
+        raise ValueError(f'Cannot parse chromatography table title: {h2.text!r}')
     info = {
         'ri_type': ps[0],
         'column_type': ps[1],
@@ -84,7 +100,10 @@ def parse_chromatography_table(soup: _bs4.BeautifulSoup) -> dict:
     for table in tables:
         rows = table.find_all('tr')
         for row in rows:
-            colname = row.find('th').text
+            header = row.find('th')
+            if header is None:
+                continue
+            colname = header.text
             if colname == 'Reference':
                 values = []
                 for elem in row.find_all('td'):
@@ -92,7 +111,7 @@ def parse_chromatography_table(soup: _bs4.BeautifulSoup) -> dict:
                         val = elem.text.strip()
                     else:
                         href = elem.find('a')['href']
-                        val = refs[href.replace('#', '')]
+                        val = refs.get(href.replace('#', ''), href)
                     values.append(val)
             else:
                 values = [elem.text.strip() for elem in row.find_all('td')]

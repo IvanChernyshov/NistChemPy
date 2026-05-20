@@ -272,7 +272,7 @@ class NistCompound():
             return None
         # request
         nr = _ncpr.make_nist_request(self.data_refs[key], config = self._request_config)
-        if not nr.ok:
+        if not nr.ok or nr.soup is None:
             return None
         # extract spectra indexes
         refs = nr.soup.find_all(attrs = {'href': _re.compile('Index=')})
@@ -398,14 +398,14 @@ class NistCompound():
             return
         # request
         nr = _ncpr.make_nist_request(ref, config = self._request_config)
-        if not nr.ok:
+        if not nr.ok or nr.soup is None:
             return None
         # get distinct tables
         refs = _parsing.get_chromatography_table_refs(nr.soup)
         for ref in refs:
             # request table
             nrx = _ncpr.make_nist_request(ref, config = self._request_config)
-            if not nrx.ok:
+            if not nrx.ok or nrx.soup is None:
                 return None
             # get Chromatogram
             info = _parsing.parse_chromatography_table(nrx.soup)
