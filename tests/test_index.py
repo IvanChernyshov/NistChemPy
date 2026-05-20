@@ -73,7 +73,7 @@ def test_load_local_index(tmp_path):
 
 def test_load_local_index_from_csv_file(tmp_path):
     _write_index(tmp_path)
-    csv_path = tmp_path / 'nist_data.csv'
+    csv_path = tmp_path / 'local_webbook_index.csv'
     (tmp_path / 'index.csv').replace(csv_path)
     (tmp_path / 'manifest.json').unlink()
 

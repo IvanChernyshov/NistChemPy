@@ -1,5 +1,5 @@
 [build-system]
-requires = ["setuptools>=42", "wheel"]
+requires = ["setuptools>=77", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
@@ -12,7 +12,8 @@ maintainers = [
 ]
 description = "Unofficial Python tools for querying NIST Chemistry WebBook pages and extracting molecular-property records"
 readme = {file = "README.md", content-type = "text/markdown"}
-license = {file = "LICENSE.md"}
+license = "MIT"
+license-files = ["LICENSE.md"]
 keywords = [
     "NIST Chemistry WebBook",
     "chemical data",
@@ -27,7 +28,6 @@ keywords = [
 ]
 classifiers = [
     "Development Status :: 4 - Beta",
-    "License :: OSI Approved :: MIT License",
     "Programming Language :: Python :: 3 :: Only",
     "Operating System :: OS Independent",
     "Intended Audience :: Science/Research",

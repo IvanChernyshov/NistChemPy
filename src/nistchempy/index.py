@@ -1,3 +1,3 @@
-'''Compatibility wrapper for user-local WebBook index support.'''
+'''Public local WebBook index namespace.'''
 
 from nistchempy.indexing.core import *  # noqa: F401,F403

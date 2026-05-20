@@ -131,7 +131,7 @@ No runtime API changes are intended in this release.
 
 * Fixes chemical formula parser.
 
-* Adds reference to repo containing data extracted from NIST Chemistry WebBook (`NistChemData <https://github.com/muCommons/NistChemData>`_).
+* Adds reference to the NistChemData companion repository (`NistChemData <https://github.com/muCommons/NistChemData>`_).
 
 
 1.0.1

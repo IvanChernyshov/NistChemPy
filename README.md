@@ -44,9 +44,9 @@ For more details see the Cookbook section of the [documentation](https://mucommo
 
 ## Related project: NistChemData
 
-[NistChemData](https://github.com/muCommons/NistChemData) is a historical companion repository containing extracted data files and extraction scripts produced with earlier NistChemPy workflows. It is not an official NIST product and is not promoted here as an authoritative, complete, current, or independently licensed redistribution of the NIST Chemistry WebBook.
+[NistChemData](https://github.com/muCommons/NistChemData) is a companion repository for local reconstruction workflows and provenance-sensitive extraction scripts. It is not an official NIST product and is not promoted here as an authoritative, complete, current, or independently licensed redistribution of the NIST Chemistry WebBook.
 
-Users should review the NistChemData data-use notice, original NIST Chemistry WebBook pages, applicable NIST terms, and source references before using those files in scientific, commercial, or redistributed datasets.
+Users should review the NistChemData data-use notice, original NIST Chemistry WebBook pages, applicable NIST terms, and source references before running those workflows or using generated local artifacts in scientific, commercial, or redistributed datasets.
 
 
 ## Installation
@@ -72,7 +72,7 @@ import nistchempy as nist
 
 index = nist.get_local_index('/path/to/webbook-index')
 # or, for a local CSV you already have locally:
-index = nist.get_local_index('/path/to/nist_data.csv')
+index = nist.get_local_index('/path/to/local_webbook_index.csv')
 ```
 
 NistChemPy can also build a user-local index by discovering candidate
@@ -123,7 +123,7 @@ also be imported into the new cache layout:
 
 ```bash
 nistchempy index build \
-  --from-csv /path/to/nist_data.csv \
+  --from-csv /path/to/local_webbook_index.csv \
   --path /path/to/webbook-index \
   --accept-data-terms
 ```

@@ -77,10 +77,10 @@ For more details see the CookBook section of this documentation.
 Related project: NistChemData
 =============================
 
-`NistChemData`_ is a historical companion repository containing extracted data files and extraction scripts produced with earlier NistChemPy workflows.
+`NistChemData`_ is a companion repository for local reconstruction workflows and provenance-sensitive extraction scripts.
 It is not an official NIST product and is not promoted here as an authoritative, complete, current, or independently licensed redistribution of the NIST Chemistry WebBook.
 
-Users should review the NistChemData data-use notice, original NIST Chemistry WebBook pages, applicable NIST terms, and source references before using those files in scientific, commercial, or redistributed datasets.
+Users should review the NistChemData data-use notice, original NIST Chemistry WebBook pages, applicable NIST terms, and source references before running those workflows or using generated local artifacts in scientific, commercial, or redistributed datasets.
 
 
 Installation
@@ -134,7 +134,7 @@ Useful links
 1. `NIST Chemistry WebBook`_: web application for accessing NIST Chemistry WebBook records.
 2. `GitHub`_: GitHub page of the package.
 3. `PyPI package`_: PyPI page of the package.
-4. `NistChemData`_: historical companion repository with extracted files and provenance-sensitive data-use caveats.
+4. `NistChemData`_: companion workflow repository with provenance-sensitive data-use caveats.
 
 
 Indices and tables
